@@ -1,0 +1,54 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/mnt/nfs/homes/tpouget/42-webserv/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+$(NAME)	Makefile	/^$(NAME):		$(OBJ\/OBJECTS)$/;"	t
+BUFFSIZE	main.cpp	/^# define BUFFSIZE /;"	d	file:
+CLIENTSOCKET_HPP	ClientSocket.hpp	/^# define CLIENTSOCKET_HPP$/;"	d
+CPPFLAGS	Makefile	/^CPPFLAGS		= ${INCLUDE_FLAGS} -MMD$/;"	m
+CXX	Makefile	/^CXX				= clang++-14 -gdwarf-4$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -pedantic-errors #-Werror $/;"	m
+ClientSocket	ClientSocket.cpp	/^ClientSocket::ClientSocket()$/;"	f	class:ClientSocket
+ClientSocket	ClientSocket.hpp	/^class ClientSocket : public SimpleSocket<struct sockaddr_in>$/;"	c
+INCLUDE_FLAGS	Makefile	/^INCLUDE_FLAGS	= $/;"	m
+LDFLAGS	Makefile	/^LDFLAGS			=$/;"	m
+LDLIBS	Makefile	/^LDLIBS			=$/;"	m
+NAME	Makefile	/^NAME			= webserv$/;"	m
+OBJ/DEPS	Makefile	/^OBJ\/DEPS		= $(patsubst	%.o,    %.d,		$(OBJ\/OBJECTS))$/;"	m
+OBJ/OBJECTS	Makefile	/^OBJ\/OBJECTS		= $(patsubst	%.cpp,  obj\/%.o,	$(SOURCES))$/;"	m
+SERVERSOCKET_HPP	ServerSocket.hpp	/^# define SERVERSOCKET_HPP$/;"	d
+SIMPLESOCKET_HPP	SimpleSocket.hpp	/^# define SIMPLESOCKET_HPP$/;"	d
+SOURCES	Makefile	/^SOURCES			= $(wildcard *.cpp)$/;"	m
+ServerSocket	ServerSocket.cpp	/^ServerSocket::ServerSocket()$/;"	f	class:ServerSocket
+ServerSocket	ServerSocket.hpp	/^class ServerSocket : public SimpleSocket<struct sockaddr_in>$/;"	c
+SimpleSocket	SimpleSocket.hpp	/^			SimpleSocket()$/;"	f	class:SimpleSocket
+SimpleSocket	SimpleSocket.hpp	/^			SimpleSocket(int domain, int type, int protocol)$/;"	f	class:SimpleSocket
+SimpleSocket	SimpleSocket.hpp	/^	class SimpleSocket$/;"	c
+_M_fd	SimpleSocket.hpp	/^			int			_M_fd;$/;"	m	class:SimpleSocket	typeref:typename:int
+_M_len	SimpleSocket.hpp	/^			socklen_t	_M_len;$/;"	m	class:SimpleSocket	typeref:typename:socklen_t
+_M_sockaddr	SimpleSocket.hpp	/^			T			_M_sockaddr;$/;"	m	class:SimpleSocket	typeref:typename:T
+accept	ServerSocket.cpp	/^void	ServerSocket::accept(ClientSocket& client_sock)$/;"	f	class:ServerSocket	typeref:typename:void
+all	Makefile	/^all:			$(NAME)$/;"	t
+allowReusable	ServerSocket.cpp	/^void	ServerSocket::allowReusable() const$/;"	f	class:ServerSocket	typeref:typename:void
+bind	ServerSocket.cpp	/^void	ServerSocket::bind(in_addr_t addr, in_port_t port)$/;"	f	class:ServerSocket	typeref:typename:void
+clean	Makefile	/^clean:$/;"	t
+fclean	Makefile	/^fclean:			clean$/;"	t
+getFd	SimpleSocket.hpp	/^			int	getFd() const$/;"	f	class:SimpleSocket	typeref:typename:int
+getSocketAddrPointer	SimpleSocket.hpp	/^			T*	getSocketAddrPointer()$/;"	f	class:SimpleSocket	typeref:typename:T *
+getSocketLenPointer	SimpleSocket.hpp	/^			socklen_t*	getSocketLenPointer()$/;"	f	class:SimpleSocket	typeref:typename:socklen_t *
+listen	ServerSocket.cpp	/^void	ServerSocket::listen(int backlog)$/;"	f	class:ServerSocket	typeref:typename:void
+main	main.cpp	/^int main()$/;"	f	typeref:typename:int
+obj	Makefile	/^obj:$/;"	t
+obj/%.o	Makefile	/^obj\/%.o:		%.cpp Makefile | obj$/;"	t
+re	Makefile	/^re:				fclean all$/;"	t
+setFd	ClientSocket.cpp	/^void	ClientSocket::setFd(int fd)$/;"	f	class:ClientSocket	typeref:typename:void
+~ClientSocket	ClientSocket.cpp	/^ClientSocket::~ClientSocket()$/;"	f	class:ClientSocket
+~ServerSocket	ServerSocket.cpp	/^ServerSocket::~ServerSocket()$/;"	f	class:ServerSocket
+~SimpleSocket	SimpleSocket.hpp	/^			virtual ~SimpleSocket()$/;"	f	class:SimpleSocket
