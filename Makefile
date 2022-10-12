@@ -39,7 +39,7 @@ all:			$(NAME)
 
 # Reminder : LDFLAGS (-L) always come before oject files !
 $(NAME):		$(OBJ/OBJECTS)
-				@echo "Linking..."
+				@echo -e '\e[032mLinking...\e[0m'
 				${CXX} -o $@ ${LDFLAGS} $^ ${LDLIBS}
 
 obj/%.o:		%.cpp Makefile | obj

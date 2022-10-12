@@ -1,0 +1,36 @@
+[
+ {
+  "directory": "/mnt/nfs/homes/tpouget/42-webserv",
+  "arguments": [
+   "c++",
+   "-MMD",
+   "-Wall",
+   "-Wextra",
+   "-std=c++98",
+   "-g3",
+   "-pedantic-errors",
+   "-c",
+   "main.cpp",
+   "-o",
+   "obj/main.o"
+  ],
+  "file": "main.cpp"
+ },
+ {
+  "directory": "/mnt/nfs/homes/tpouget/42-webserv",
+  "arguments": [
+   "c++",
+   "-MMD",
+   "-Wall",
+   "-Wextra",
+   "-std=c++98",
+   "-g3",
+   "-pedantic-errors",
+   "-c",
+   "ServerSocket.cpp",
+   "-o",
+   "obj/ServerSocket.o"
+  ],
+  "file": "ServerSocket.cpp"
+ }
+]
