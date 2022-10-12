@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/12 20:14:45 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/12 20:23:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ template <class T>
 				_M_fd = fd;
 			}
 
-			const int	getFd() const
+			int	getFd() const
 			{
 				return (_M_fd);
 			}

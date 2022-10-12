@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/12 19:45:52 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/12 20:23:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <sys/socket.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <utility>
 
 ServerSocket::ServerSocket()
