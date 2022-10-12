@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:53:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/11 19:23:15 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/12 14:46:44 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ class ServerSocket : public SimpleSocket<struct sockaddr_in>
 		void			bind(in_addr_t addr, in_port_t port);
 		void			listen(int backlog);
 		void			accept(ClientSocket& client_sock);
+		void			allowReusable() const;
+
 };
 
 #endif

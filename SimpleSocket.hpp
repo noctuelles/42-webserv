@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/11 19:42:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/12 14:52:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ template <class T>
 			SimpleSocket(int domain, int type, int protocol)
 			{
 				if ((_M_fd = ::socket(domain, type, protocol)) == -1)
-					throw (std::runtime_error("cannot create socket"));
+					throw (std::runtime_error("socket"));
 			}
 
 			virtual ~SimpleSocket()
