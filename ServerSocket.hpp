@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:53:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/12 14:46:44 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/12 19:45:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,19 +14,18 @@
 # define SERVERSOCKET_HPP
 
 # include "SimpleSocket.hpp"
-# include "ClientSocket.hpp"
+# include "SocketTypes.hpp"
 
-class ServerSocket : public SimpleSocket<struct sockaddr_in>
+class ServerSocket : public InternetSocket // see SocketTypes.hpp
 {
 	public:
 
 		ServerSocket();
 		~ServerSocket();
 
-		void			bind(in_addr_t addr, in_port_t port);
-		void			listen(int backlog);
-		void			accept(ClientSocket& client_sock);
-		void			allowReusable() const;
+		void	bind(in_addr_t addr, in_port_t port);
+		void	listen(int backlog);
+		bool	accept(InternetSocket& csock);
 
 };
 

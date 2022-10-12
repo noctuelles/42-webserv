@@ -1,5 +1,5 @@
 #include "ServerSocket.hpp"
-#include "ClientSocket.hpp"
+#include "SocketTypes.hpp"
 #include <exception>
 #include <stdexcept>
 #include <string.h>
@@ -12,47 +12,31 @@ int main()
 {
 	try
 	{
-		ServerSocket	myServerSock;
+		ServerSocket		myServerSock;
+		InternetSocket		myClient;
 
-		myServerSock.allowReusable();
+		myServerSock.setReusableMode(true);
+		myServerSock.setBlockingMode(true);
 		myServerSock.bind(INADDR_ANY, 8080);
 		myServerSock.listen(42);
 
-		fd_set			rfds, cfds;
-		int				max_sd;
-
-		FD_ZERO(&cfds);
-		max_sd = myServerSock.getFd();
-		FD_SET(myServerSock.getFd(), &cfds); // add the socket fd to the set.
-
-		while (true)
+		while (1)
 		{
-			ClientSocket	myClientSock;
-			size_t			rdead;
-			char			buffer[BUFFSIZE] = {0};
+			char	buffer[BUFFSIZE];
+			ssize_t	read_bytes;
 
-			memcpy(&rfds, &cfds, sizeof(cfds));
-
-			if (select(FD_SETSIZE, &rfds, NULL, NULL, NULL) == -1)
-				throw(std::runtime_error("select"));
-
-			for (size_t i = 0; i < FD_SETSIZE; i++)
+			memset(buffer, 0, sizeof(char) * BUFFSIZE);
+			while (myServerSock.accept(myClient) == false)
 			{
-				if (FD_ISSET(i, &rfds)) // this file descriptor has something to say.
-				{
-					if (i == myServerSock.getFd()) // add a new connection
-					{
-						myServerSock.accept(myClientSock);
-						FD_SET(myClientSock.getFd(), &cfds);
-					}
-					else
-					{
-						while ((rdead = read(i, buffer, BUFFSIZE)) > 0) // read blocks!!
-							write(STDOUT_FILENO, buffer, rdead);
-						FD_CLR(i, &cfds); // at this point the client has finished talking.
-					}
-				}
+				write(STDOUT_FILENO, ".", 1);
+				usleep(100000);
 			}
+
+			std::cout << "\n" << "Client accepted !\n";
+			std::cout << "Is the client a blocking socket ? " << myClient.isBlocking() << '\n';
+
+			while ((read_bytes = recv(myClient.getFd(), buffer, BUFFSIZE, 0)) > 0)
+				write(STDOUT_FILENO, buffer, read_bytes);
 		}
 	}
 	catch (const std::exception& e)

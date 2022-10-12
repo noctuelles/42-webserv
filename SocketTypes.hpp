@@ -1,25 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ClientSocket.cpp                                   :+:      :+:    :+:   */
+/*   SocketTypes.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/10/11 19:21:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/11 19:28:13 by plouvel          ###   ########.fr       */
+/*   Created: 2022/10/12 19:36:33 by plouvel           #+#    #+#             */
+/*   Updated: 2022/10/12 19:46:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ClientSocket.hpp"
+#ifndef SOCKETTYPES_HPP
+# define SOCKETTYPES_HPP
 
-ClientSocket::ClientSocket()
-	: SimpleSocket()
-{}
+template <class T>
+	class SimpleSocket;
 
-ClientSocket::~ClientSocket()
-{}
+typedef SimpleSocket<struct sockaddr_in>	InternetSocket;
 
-void	ClientSocket::setFd(int fd)
-{
-	_M_fd = fd;
-}
+#endif

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/12 14:53:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/12 19:45:52 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <sys/socket.h>
 #include <string.h>
+#include <fcntl.h>
+#include <utility>
 
 ServerSocket::ServerSocket()
 	: SimpleSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
@@ -38,24 +40,22 @@ void	ServerSocket::listen(int backlog)
 		throw (std::runtime_error("listen"));
 }
 
-void	ServerSocket::accept(ClientSocket& client_sock)
+bool	ServerSocket::accept(InternetSocket& csock)
 {
-	int	fd;
+	int	sa_fd;
 
-	fd = ::accept(_M_fd,
-			reinterpret_cast<struct sockaddr *>(client_sock.getSocketAddrPointer()),
-			client_sock.getSocketLenPointer());
-	if (fd < 0)
-		throw (std::runtime_error("accept"));
-	client_sock.setFd(fd);
-}
-
-void	ServerSocket::allowReusable() const
-{
-	int	on = 1;
-
-	if (setsockopt(_M_fd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on)) < 0)
-		throw (std::runtime_error("setsockopt"));
+	sa_fd = ::accept(_M_fd,
+			reinterpret_cast<struct sockaddr *>(&csock.getSockAddr()),
+			&csock.getSockLen());
+	if (sa_fd < 0)
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return (false);
+		else
+			throw (std::runtime_error("accept"));
+	}
+	csock.setFd(sa_fd);
+	return (true);
 }
 
 ServerSocket::~ServerSocket()
