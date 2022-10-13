@@ -25,7 +25,7 @@ class ServerSocket : public InternetSocket // see SocketTypes.hpp
 
 		void	bind(in_addr_t addr, in_port_t port);
 		void	listen(int backlog);
-		bool	accept(InternetSocket& csock);
+		int	accept();
 
 };
 

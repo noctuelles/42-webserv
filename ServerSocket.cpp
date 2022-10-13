@@ -41,22 +41,19 @@ void	ServerSocket::listen(int backlog)
 		throw (std::runtime_error("listen"));
 }
 
-bool	ServerSocket::accept(InternetSocket& csock)
+int	ServerSocket::accept()
 {
 	int	sa_fd;
 
-	sa_fd = ::accept(_M_fd,
-			reinterpret_cast<struct sockaddr *>(&csock.getSockAddr()),
-			&csock.getSockLen());
+	sa_fd = ::accept(_M_fd, NULL, NULL);
 	if (sa_fd < 0)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return (false);
+			return (-1);
 		else
 			throw (std::runtime_error("accept"));
 	}
-	csock.setFd(sa_fd);
-	return (true);
+	return (sa_fd);
 }
 
 ServerSocket::~ServerSocket()
