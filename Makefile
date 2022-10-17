@@ -45,7 +45,7 @@ RM				= rm -rf
 
 all:			$(NAME)
 
-# Reminder : LDFL_AGS (-L) always come before oject files !
+# Reminder : LDFLAGS (-L) always come before oject files !
 $(NAME):		$(OBJS/OBJECTS)
 				@echo -e '\e[032mLinking...\e[0m'
 				${CXX} -o $@ ${LDFLAGS} $^ ${LDLIBS}
