@@ -8,8 +8,19 @@
 
 # define BUFFSIZE 1024
 
+enum HttpMethod {GET, POST, HEAD};
+
+struct response
+{
+	struct initial_line
+	{
+		HttpMethod	method;
+	};
+};
+
 int main()
 {
+
 	try
 	{
 		ServerSocket		myServerSock;
@@ -65,7 +76,7 @@ int main()
 					{
 						int	rc;
 
-						std::cout << "Existing connection is readable - " << i << " !\n";	
+						std::cout << "Existing connection is readable - " << i << " !\n";
 						std::cout << (fcntl(i, F_GETFD) & O_NONBLOCK) << '\n';
 						while ((rc = recv(i, buffer, sizeof(buffer), 0)) > 0)
 						{
@@ -82,6 +93,9 @@ int main()
 						}
 						else if (rc < 0 && (errno != EAGAIN || errno != EWOULDBLOCK))
 							throw (std::runtime_error("recv"));
+						const char *s = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\n\r\nBonjour!";
+						write(i, s, strlen(s));
+						write(STDOUT_FILENO, s, strlen(s));
 					} // End of existing connection readable.
 				} // End of checking is the file descriptor has something to say.
 			} // End of the for loop

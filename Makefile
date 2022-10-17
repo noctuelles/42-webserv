@@ -11,15 +11,21 @@ SHELL			= bash
 
 NAME			= webserv
 
-SOURCES			= $(wildcard *.cpp)
-OBJ/OBJECTS		= $(patsubst	%.cpp,  obj/%.o,	$(SOURCES))
-OBJ/DEPS		= $(patsubst	%.o,    %.d,		$(OBJ/OBJECTS))
+SRCS_DIR		= srcs
+OBJS_DIR		= objs
+INC_DIR			= includes
+
+SOURCES			= main.cpp \
+				  ServerSocket.cpp \
+
+OBJS/OBJECTS	= $(addprefix $(OBJS_DIR)/, $(SOURCES:.cpp=.o))
+OBJS/DEPS		= $(patsubst	%.o,    %.d,		$(OBJS/OBJECTS))
 
 #DEBUG			= -DDEBUG
 
-## C preprocessor flags
-INCLUDE_FLAGS	= 
-CPPFLAGS		= ${INCLUDE_FLAGS} -MMD
+## C (and c++) preprocessor flags
+INCLUDE_FLAGS	= -I $(INC_DIR)
+CPPFLAGS		= $(INCLUDE_FLAGS) -MMD
 
 ## Add -Werror before correction
 CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -pedantic-errors #-Werror 
@@ -31,6 +37,8 @@ LDLIBS			=
 CXXFLAGS		+=	$(ASAN_FLAG)
 LDFLAGS			+=	$(ASAN_FLAG)
 
+RM				= rm -rf
+
 ##############
 ##  RULES   ##
 ##############
@@ -38,23 +46,24 @@ LDFLAGS			+=	$(ASAN_FLAG)
 all:			$(NAME)
 
 # Reminder : LDFLAGS (-L) always come before oject files !
-$(NAME):		$(OBJ/OBJECTS)
+$(NAME):		$(OBJS/OBJECTS)
 				@echo -e '\e[032mLinking...\e[0m'
 				${CXX} -o $@ ${LDFLAGS} $^ ${LDLIBS}
 
-obj/%.o:		%.cpp Makefile | obj
+$(OBJS_DIR)/%.o:		$(SRCS_DIR)/%.cpp Makefile | $(OBJS_DIR)
 				${CXX} ${DEBUG} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
 
-obj:
-				mkdir obj
+$(OBJS_DIR):
+				mkdir $@ 
+
 clean:
-				rm -rf obj
+				$(RM) $(OBJS_DIR)
 
 fclean:			clean
-				rm -rf $(NAME)
+				$(RM) $(NAME)
 
 re:				fclean all
 
--include $(OBJ/DEPS)
+-include $(OBJS/DEPS)
 
-.PHONY:			all clean fclean re diff
+.PHONY:			all clean fclean re
