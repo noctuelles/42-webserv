@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/12 20:23:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/17 19:40:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,11 @@ template <class T>
 		public:
 
 			SimpleSocket()
-				: _M_fd(), _M_sockaddr(), _M_len()
+				: _M_fd(), _M_sockaddr(), _M_len(), _M_should_close(true)
 			{}
 
 			SimpleSocket(int domain, int type, int protocol)
-				: _M_fd(), _M_sockaddr(), _M_len()
+				: _M_fd(), _M_sockaddr(), _M_len(), _M_should_close(true)
 			{
 				if ((_M_fd = ::socket(domain, type, protocol)) == -1)
 					throw (std::runtime_error("socket"));
@@ -36,7 +36,7 @@ template <class T>
 
 			virtual ~SimpleSocket()
 			{
-				if (_M_fd != -1)
+				if (_M_should_close)
 					close(_M_fd);
 			}
 
@@ -107,6 +107,11 @@ template <class T>
 				return !(static_cast<bool>(getFdFlags() & O_NONBLOCK));
 			}
 
+			void	shouldBeClose(bool should_close)
+			{
+				_M_should_close = should_close;
+			}
+
 		protected:
 
 			int			_M_fd;
@@ -116,6 +121,8 @@ template <class T>
 		private:
 
 			SimpleSocket&	operator=(const SimpleSocket& rhs);
+
+			bool	_M_should_close;
 	};
 
 #endif

@@ -4,8 +4,10 @@
 #include <stdexcept>
 #include <string.h>
 #include <errno.h>
+#include <list>
 #include <iostream>
 #include "EPoll.hpp"
+#include "HTTPClient.hpp"
 
 # define BUFFSIZE 1024
 
@@ -21,11 +23,11 @@ struct response
 
 int main()
 {
-
 	try
 	{
 		ServerSocket		myServerSock;
-		EPoll				myEPoll;
+		EPoll					myEPoll;
+		std::list<HTTPClient>	myClient; // list or vector ?
 
 		myServerSock.setReusableMode(true);
 		myServerSock.setBlockingMode(false);
@@ -38,19 +40,44 @@ int main()
 
 		while (true)
 		{
-			EPoll::event_iterator_pair it_pair = myEPoll.waitForEvents(EPoll::NOTIMEOUT);
+			std::cout << "epoll_wait() is blocking...\n";
+			myEPoll.waitForEvents(EPoll::NOTIMEOUT);
 
-			std::cout << "There's " << it_pair.second - it_pair.first << " event(s) to look for.\n";
+			std::cout << "\tThere's " << myEPoll.getEventsNbr() << " event(s) to look for.\n";
 
-			for (EPoll::event_iterator it = it_pair.first; it != it_pair.second; it++)
+			for (EPoll::iterator it = myEPoll.beginEvent(); it != myEPoll.endEvent(); it++)
 			{
-				InternetSocket*	ptr;
+				InternetSocket*	ptr = static_cast<InternetSocket*>(it->data.ptr);
 
-				ptr = static_cast<InternetSocket*>(it->data.ptr);
+				ptr = static_cast<InternetSocket*>(it->data.ptr); // updown cast
 				if (myServerSock.getFd() == ptr->getFd())
 				{
-					std::cout << "caca";
-					return (0);
+					int	incoming_fd;
+
+					while ((incoming_fd = myServerSock.accept()) > 0) // accept all incoming connection
+					{
+						HTTPClient	theClient(incoming_fd);
+
+						std::cout << "\t\tAccepting connection - " << incoming_fd << ".\n";
+						theClient.setBlockingMode(false);
+						myClient.push_back(theClient);
+						myEPoll.setEvent(EPOLLIN, &myClient.back());
+						myEPoll.add(theClient.getFd());
+						theClient.shouldBeClose(false); // prevent RAII closing the fd :x(
+					}
+				}
+				else
+				{
+					if (it->events & EPOLLIN)
+					{
+						char buffer[BUFFSIZE] = {0};
+						ssize_t		received_bytes;
+
+						std::cout << "\t\tConnection - " << ptr->getFd() << " - has something to say.\n";
+						if ((received_bytes = recv(ptr->getFd(), buffer, BUFFSIZE, 0)) < 0)
+							throw (std::runtime_error("recv"));
+						std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
+					}
 				}
 			}
 		}
