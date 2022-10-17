@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/17 18:37:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/17 20:38:40 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,11 @@ HTTPClient::HTTPClient(int fd)
 	: InternetSocket()
 {
 	setFd(fd);
+}
+
+bool	HTTPClient::operator==(const HTTPClient& rhs)
+{
+	return (getFd() == rhs.getFd());
 }
 
 HTTPClient::~HTTPClient()

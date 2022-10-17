@@ -27,7 +27,7 @@ int main()
 	{
 		ServerSocket		myServerSock;
 		EPoll					myEPoll;
-		std::list<HTTPClient>	myClient; // list or vector ?
+		std::list<HTTPClient>	myClient; // list or vector ? list provide constant time removal.
 
 		myServerSock.setReusableMode(true);
 		myServerSock.setBlockingMode(false);
@@ -76,7 +76,16 @@ int main()
 						std::cout << "\t\tConnection - " << ptr->getFd() << " - has something to say.\n";
 						if ((received_bytes = recv(ptr->getFd(), buffer, BUFFSIZE, 0)) < 0)
 							throw (std::runtime_error("recv"));
-						std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
+						if (received_bytes > 0)
+							std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
+						else
+						{
+							std::cout << "\t\t\tNothing to read: i'm gonna close this connection now.\n";
+							myEPoll.remove(ptr->getFd());
+							myClient.remove(*static_cast<HTTPClient*>(ptr)); // oups, this is O(n), the fd is closed automatically.
+																			 // note that downcasting is safe here because we're sure that's
+																			 // gonna be an httpclient.
+						}
 					}
 				}
 			}

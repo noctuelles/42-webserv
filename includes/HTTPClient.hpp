@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/17 18:35:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/17 20:38:51 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ class HTTPClient : public InternetSocket
 		HTTPClient();
 		HTTPClient(int fd);
 		~HTTPClient();
+
+		bool	operator==(const HTTPClient& rhs);
 
 	private:
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 11:53:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/17 20:12:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/17 20:22:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,9 @@ class EPoll
 		EPoll(const EPoll& other);
 		EPoll&	operator=(const EPoll& rhs);
 
-		static const int	_S_poll_hint_size = 1024;
+		static const int	_S_poll_hint_size = 1024; // as a hint for the kernel of how many fds gonna be registered with epoll_create()
+													  // note that since linux 2.6.8, the hint argument is ignored.
+													  // this argument only exist today for backward compatibility with other kernel.
 		static const size_t	_S_initial_events = 1024;
 
 		std::vector<struct epoll_event>	_M_events;
