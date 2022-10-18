@@ -6,20 +6,22 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 12:38:42 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/17 19:56:50 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/18 13:34:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "EPoll.hpp"
+#include <cwchar>
 #include <stdexcept>
 #include <utility>
 #include <cassert>
 #include <typeinfo>
+#include <algorithm>
 #include <unistd.h>
 
 
 EPoll::EPoll()
-	: _M_events(_S_initial_events), _M_curr_event(), _M_registred_fds(), _M_returned_events_size()
+	: _M_events(_S_initial_events), _M_registred_fds(0), _M_returned_events_size(0)
 {
 	_M_epoll_instance = epoll_create(_S_poll_hint_size);
 	if (_M_epoll_instance < 0)
@@ -28,7 +30,7 @@ EPoll::EPoll()
 
 void	EPoll::add(int fd)
 {
-	if (epoll_ctl(_M_epoll_instance, EPOLL_CTL_ADD, fd, &_M_curr_event) < 0)
+	if (epoll_ctl(_M_epoll_instance, EPOLL_CTL_ADD, fd,  &_M_curr_event) < 0)
 		throw (std::runtime_error("epoll_ctl"));
 	_M_registred_fds++;
 	if (_M_registred_fds > _M_events.size())
@@ -45,6 +47,7 @@ void	EPoll::remove(int fd)
 
 void	EPoll::modify(int fd)
 {
+	// don't use this function
 	if (epoll_ctl(_M_epoll_instance, EPOLL_CTL_MOD, fd, &_M_curr_event) < 0)
 		throw (std::runtime_error("epoll_ctl"));
 }

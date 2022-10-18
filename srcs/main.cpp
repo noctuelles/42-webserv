@@ -9,7 +9,7 @@
 #include "EPoll.hpp"
 #include "HTTPClient.hpp"
 
-# define BUFFSIZE 1024
+# define BUFFSIZE 1024 
 
 enum HttpMethod {GET, POST, HEAD};
 
@@ -34,10 +34,8 @@ int main()
 		myServerSock.bind(INADDR_ANY, 8080);
 		myServerSock.listen(42);
 
-		myEPoll.setEventData(&myServerSock);
-		myEPoll.setEventMask(EPOLLIN);
+		myEPoll.setEvent(EPOLLIN, &myServerSock);
 		myEPoll.add(myServerSock.getFd());
-
 		while (true)
 		{
 			std::cout << "epoll_wait() is blocking...\n";
@@ -50,41 +48,44 @@ int main()
 				InternetSocket*	ptr = static_cast<InternetSocket*>(it->data.ptr);
 
 				ptr = static_cast<InternetSocket*>(it->data.ptr); // updown cast
-				if (myServerSock.getFd() == ptr->getFd())
+				if (it->events & EPOLLIN)
 				{
-					int	incoming_fd;
-
-					while ((incoming_fd = myServerSock.accept()) > 0) // accept all incoming connection
+					if (myServerSock.getFd() == ptr->getFd())
 					{
-						HTTPClient	theClient(incoming_fd);
+						int	incoming_fd;
 
-						std::cout << "\t\tAccepting connection - " << incoming_fd << ".\n";
-						theClient.setBlockingMode(false);
-						myClient.push_back(theClient);
-						myEPoll.setEvent(EPOLLIN, &myClient.back());
-						myEPoll.add(theClient.getFd());
-						theClient.shouldBeClose(false); // prevent RAII closing the fd :x(
+						while ((incoming_fd = myServerSock.accept()) > 0) // accept all incoming connection
+						{
+							HTTPClient	theClient(incoming_fd);
+
+							std::cout << "\t\tAccepting connection - " << incoming_fd << ".\n";
+							myClient.push_back(theClient);
+							myEPoll.setEvent(EPOLLIN, &myClient.back());
+							myEPoll.add(theClient.getFd());
+							theClient.shouldBeClose(false); // prevent RAII closing the fd :x(
+						}
 					}
-				}
-				else
-				{
-					if (it->events & EPOLLIN)
+					else
 					{
+						HTTPClient*	clientPtr = static_cast<HTTPClient*>(ptr); // downcast is OK here.
+
 						char buffer[BUFFSIZE] = {0};
 						ssize_t		received_bytes;
 
-						std::cout << "\t\tConnection - " << ptr->getFd() << " - has something to say.\n";
-						if ((received_bytes = recv(ptr->getFd(), buffer, BUFFSIZE, 0)) < 0)
+						std::cout << "\t\tConnection - " << clientPtr->getFd() << " - has something to say.\n";
+						if ((received_bytes = recv(clientPtr->getFd(), buffer, BUFFSIZE, 0)) < 0)
 							throw (std::runtime_error("recv"));
 						if (received_bytes > 0)
+						{
 							std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
+							clientPtr->appendToBuffer(buffer, received_bytes);
+						}
 						else
 						{
 							std::cout << "\t\t\tNothing to read: i'm gonna close this connection now.\n";
+							std::cout << "\t\t\tThis is what i received throughout our connection:\n" << clientPtr->getBuffer();
 							myEPoll.remove(ptr->getFd());
-							myClient.remove(*static_cast<HTTPClient*>(ptr)); // oups, this is O(n), the fd is closed automatically.
-																			 // note that downcasting is safe here because we're sure that's
-																			 // gonna be an httpclient.
+							myClient.remove(*clientPtr); // oups, this is O(n), the fd is closed automatically.
 						}
 					}
 				}

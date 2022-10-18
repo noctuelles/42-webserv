@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/17 20:38:51 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/17 20:56:45 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,19 @@ class HTTPClient : public InternetSocket
 		HTTPClient(int fd);
 		~HTTPClient();
 
+		void	appendToBuffer(const char *buffer, size_t bytes);
+		const std::string&	getBuffer() const;
 		bool	operator==(const HTTPClient& rhs);
 
 	private:
 
-		std::string	_M_buffer;
+		enum State
+		{
+			FETCHING_DATA,
+			READY_FOR_RESPONSE
+		};
+
+		std::string	_M_buffer; // i'm excepting to receive text data !
 };
 
 #endif
