@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/17 19:40:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/19 17:16:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ template <class T>
 
 			/* These functions are shortcut function that avoid you to use setSockOpt or setFdFlags for common socket operations. */
 
-			void	setReusableMode(bool	reusable) const
+			void	setReusableMode(bool reusable) const
 			{
 				int	optval = (reusable) ? 1 : 0;
 				setSockOpt(SO_REUSEADDR, static_cast<void *>(&optval), sizeof(int));

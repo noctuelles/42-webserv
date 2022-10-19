@@ -6,20 +6,33 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/17 20:57:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/19 17:05:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HTTPClient.hpp"
 
 HTTPClient::HTTPClient()
-	: InternetSocket(), _M_buffer()
+	: InternetSocket(), _M_buffer(), _M_state(NO_CONN)
 {}
 
-HTTPClient::HTTPClient(int fd)
-	: InternetSocket(), _M_buffer()
+void	HTTPClient::init(int fd, bool blocking)
 {
 	setFd(fd);
+	setBlockingMode(blocking);
+	setState(FETCHING_DATA);
+}
+
+void	HTTPClient::terminate()
+{
+	close(_M_fd);
+	_M_buffer.clear();
+	setState(NO_CONN);
+}
+
+void	HTTPClient::setState(HTTPState state)
+{
+	_M_state = state;
 }
 
 bool	HTTPClient::operator==(const HTTPClient& rhs)

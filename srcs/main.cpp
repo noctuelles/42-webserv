@@ -1,4 +1,4 @@
-#include "ServerSocket.hpp"
+#include "ListeningSocket.hpp"
 #include "SocketTypes.hpp"
 #include <exception>
 #include <stdexcept>
@@ -21,73 +21,67 @@ struct response
 	};
 };
 
+namespace http
+{
+	namespace utils
+	{
+		inline bool	shouldConnectionBeClose(uint32_t events)
+		{
+			return (events & EPOLLRDHUP || events & EPOLLHUP || events & EPOLLERR);
+		}
+	}
+}
+
 int main()
 {
 	try
 	{
-		ServerSocket		myServerSock;
-		EPoll					myEPoll;
-		std::list<HTTPClient>	myClient; // list or vector ? list provide constant time removal.
+		ListeningSocket		myServerSock(INADDR_ANY, 8080);
+		EPoll				myEPoll(myServerSock.getFd(), EPOLLIN, myServerSock.getFd());
 
-		myServerSock.setReusableMode(true);
-		myServerSock.setBlockingMode(false);
-		myServerSock.bind(INADDR_ANY, 8080);
 		myServerSock.listen(42);
-
-		myEPoll.setEvent(EPOLLIN, &myServerSock);
-		myEPoll.add(myServerSock.getFd());
 		while (true)
 		{
-			std::cout << "epoll_wait() is blocking...\n";
 			myEPoll.waitForEvents(EPoll::NOTIMEOUT);
-
-			std::cout << "\tThere's " << myEPoll.getEventsNbr() << " event(s) to look for.\n";
-
-			for (EPoll::iterator it = myEPoll.beginEvent(); it != myEPoll.endEvent(); it++)
+			for (EPoll::iterator it = myEPoll.begin(); it != myEPoll.end(); it++)
 			{
 				InternetSocket*	ptr = static_cast<InternetSocket*>(it->data.ptr);
 
 				ptr = static_cast<InternetSocket*>(it->data.ptr); // updown cast
+				if (it->events & EPOLLRDHUP)
+				{
+					std::cout << "EPOLL HUP ! \n";
+					return (0);
+				}
 				if (it->events & EPOLLIN)
 				{
 					if (myServerSock.getFd() == ptr->getFd())
-					{
-						int	incoming_fd;
-
-						while ((incoming_fd = myServerSock.accept()) > 0) // accept all incoming connection
-						{
-							HTTPClient	theClient(incoming_fd);
-
-							std::cout << "\t\tAccepting connection - " << incoming_fd << ".\n";
-							myClient.push_back(theClient);
-							myEPoll.setEvent(EPOLLIN, &myClient.back());
-							myEPoll.add(theClient.getFd());
-							theClient.shouldBeClose(false); // prevent RAII closing the fd :x(
-						}
-					}
+						myServerSock.acceptConnections();
 					else
 					{
-						HTTPClient*	clientPtr = static_cast<HTTPClient*>(ptr); // downcast is OK here.
+						HTTPClient&	client = myServerSock[it->data.fd]; // downcast is OK here.
 
 						char buffer[BUFFSIZE] = {0};
 						ssize_t		received_bytes;
 
-						std::cout << "\t\tConnection - " << clientPtr->getFd() << " - has something to say.\n";
-						if ((received_bytes = recv(clientPtr->getFd(), buffer, BUFFSIZE, 0)) < 0)
+						std::cout << "\t\tConnection - " << client.getFd() << " - has something to say.\n";
+						if ((received_bytes = recv(client.getFd(), buffer, BUFFSIZE, 0)) < 0)
 							throw (std::runtime_error("recv"));
 						if (received_bytes > 0)
 						{
 							std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
-							clientPtr->appendToBuffer(buffer, received_bytes);
+							client.appendToBuffer(buffer, received_bytes);
 						}
 						else
 						{
 							std::cout << "\t\t\tNothing to read: i'm gonna close this connection now.\n";
-							std::cout << "\t\t\tThis is what i received throughout our connection:\n" << clientPtr->getBuffer();
-							myEPoll.remove(ptr->getFd());
-							myClient.remove(*clientPtr); // oups, this is O(n), the fd is closed automatically.
+							std::cout << "\t\t\tThis is what i received throughout our connection:\n" << client.getBuffer();
+							client.terminate();
 						}
 					}
+				}
+				if (it->events & EPOLLOUT)
+				{
 				}
 			}
 		}
