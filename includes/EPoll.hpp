@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 11:53:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/19 17:44:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/20 08:40:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@
 # include <sys/epoll.h>
 # include <stdexcept>
 
-class EPoll
+# include "FileDescriptor.hpp"
+
+class EPoll : public FileDescriptor
 {
 	public:
 
@@ -27,16 +29,18 @@ class EPoll
 
 		/* Stream socket constructor. */
 		template <class T>
-			EPoll(int sockfd, uint32_t events, T data)
-				: _M_events(_S_initial_events), _M_registred_fds(0), _M_returned_events_size(0)
+			EPoll(int fd, uint32_t events, T data)
+				: FileDescriptor(epoll_create(_S_poll_hint_size)),
+				  _M_events(_S_initial_events),
+				  _M_registred_fds(0),
+				  _M_returned_events_size(0)
 			{
-				_M_epoll_instance = epoll_create(_S_poll_hint_size);
-				if (_M_epoll_instance < 0)
+				if (_M_fd < 0)
 					throw (std::runtime_error("epoll_create"));
-				add(sockfd, events, data);
+				add(fd, events, data);
 			}
 
-		~EPoll();
+		virtual ~EPoll();
 
 		/* ######################### EPoll wrapper function ######################### */
 
@@ -48,7 +52,7 @@ class EPoll
 
 				event.events = events;
 				_M_setEventData(event, data);
-				if (epoll_ctl(_M_epoll_instance, EPOLL_CTL_ADD, fd,  &event) < 0)
+				if (epoll_ctl(_M_fd, EPOLL_CTL_ADD, fd,  &event) < 0)
 					throw (std::runtime_error("epoll_ctl"));
 				_M_registred_fds++;
 				if (_M_registred_fds > _M_events.size())
@@ -66,7 +70,7 @@ class EPoll
 
 				event.events = events;
 				_M_setEventData(event, data);
-				if (epoll_ctl(_M_epoll_instance, EPOLL_CTL_MOD, fd, &event) < 0)
+				if (epoll_ctl(_M_fd, EPOLL_CTL_MOD, fd, &event) < 0)
 					throw (std::runtime_error("epoll_ctl"));
 			}
 
@@ -94,9 +98,7 @@ class EPoll
 		static const size_t	_S_initial_events = 1024;
 
 		std::vector<struct epoll_event>	_M_events;
-		int								_M_epoll_instance; // is an fd.
 		size_t							_M_registred_fds;
-
 		size_t							_M_returned_events_size;
 };
 

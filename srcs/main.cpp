@@ -37,46 +37,45 @@ int main()
 	try
 	{
 		ListeningSocket		myServerSock(INADDR_ANY, 8080);
-		EPoll				myEPoll(myServerSock.getFd(), EPOLLIN, myServerSock.getFd());
+		EPoll				myEPoll(myServerSock.getFd(), EPOLLIN, &myServerSock);
 
 		myServerSock.listen(42);
+		myEPoll.setFdFlags(O_CLOEXEC); // Because we'll be forking and execve'ing for CGI, we DON'T want our child to herit the epoll instance!
 		while (true)
 		{
+			std::cout << "Blocking on epoll_wait()\n";
 			myEPoll.waitForEvents(EPoll::NOTIMEOUT);
 			for (EPoll::iterator it = myEPoll.begin(); it != myEPoll.end(); it++)
 			{
-				InternetSocket*	ptr = static_cast<InternetSocket*>(it->data.ptr);
+				InternetSocket*	sockPtr = static_cast<InternetSocket*>(it->data.ptr);
 
-				ptr = static_cast<InternetSocket*>(it->data.ptr); // updown cast
-				if (it->events & EPOLLRDHUP)
-				{
-					std::cout << "EPOLL HUP ! \n";
-					return (0);
-				}
 				if (it->events & EPOLLIN)
 				{
-					if (myServerSock.getFd() == ptr->getFd())
-						myServerSock.acceptConnections();
+					if (sockPtr->getFd() == myServerSock.getFd())
+					{
+						std::cout << "Accepting new connection\n";
+						myServerSock.acceptConnection(myEPoll);
+					}
 					else
 					{
-						HTTPClient&	client = myServerSock[it->data.fd]; // downcast is OK here.
+						HTTPClient*	client = static_cast<HTTPClient*>(sockPtr);
 
 						char buffer[BUFFSIZE] = {0};
 						ssize_t		received_bytes;
 
-						std::cout << "\t\tConnection - " << client.getFd() << " - has something to say.\n";
-						if ((received_bytes = recv(client.getFd(), buffer, BUFFSIZE, 0)) < 0)
+						std::cout << "\t\tConnection - " << client->getFd() << " - has something to say.\n";
+						if ((received_bytes = recv(client->getFd(), buffer, BUFFSIZE, 0)) < 0)
 							throw (std::runtime_error("recv"));
 						if (received_bytes > 0)
 						{
 							std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
-							client.appendToBuffer(buffer, received_bytes);
+							client->appendToBuffer(buffer, received_bytes);
 						}
 						else
 						{
 							std::cout << "\t\t\tNothing to read: i'm gonna close this connection now.\n";
-							std::cout << "\t\t\tThis is what i received throughout our connection:\n" << client.getBuffer();
-							client.terminate();
+							std::cout << "\t\t\tThis is what i received throughout our connection:\n" << client->getBuffer();
+							myServerSock.removeConnection(client);
 						}
 					}
 				}

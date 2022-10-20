@@ -6,28 +6,22 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/19 17:05:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/20 09:25:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HTTPClient.hpp"
 
-HTTPClient::HTTPClient()
-	: InternetSocket(), _M_buffer(), _M_state(NO_CONN)
-{}
-
-void	HTTPClient::init(int fd, bool blocking)
+HTTPClient::HTTPClient(int fd)
+	: InternetSocket(fd), _M_buffer(), _M_iterator()
 {
-	setFd(fd);
-	setBlockingMode(blocking);
-	setState(FETCHING_DATA);
+	setBlockingMode(false);
 }
 
-void	HTTPClient::terminate()
+HTTPClient::HTTPClient(int fd, const struct sockaddr_in& sockaddr, socklen_t slen )
+	: InternetSocket(fd, sockaddr, slen), _M_buffer(), _M_iterator()
 {
-	close(_M_fd);
-	_M_buffer.clear();
-	setState(NO_CONN);
+	setBlockingMode(false);
 }
 
 void	HTTPClient::setState(HTTPState state)
@@ -35,14 +29,19 @@ void	HTTPClient::setState(HTTPState state)
 	_M_state = state;
 }
 
-bool	HTTPClient::operator==(const HTTPClient& rhs)
-{
-	return (getFd() == rhs.getFd());
-}
-
 void	HTTPClient::appendToBuffer(const char *buffer, size_t bytes)
 {
 	_M_buffer.append(buffer, bytes);
+}
+
+void	HTTPClient::setIterator(const std::list<HTTPClient>::iterator& it)
+{
+	_M_iterator = it;
+}
+
+const std::list<HTTPClient>::iterator&	HTTPClient::getIterator() const
+{
+	return (_M_iterator);
 }
 
 const std::string&	HTTPClient::getBuffer() const
