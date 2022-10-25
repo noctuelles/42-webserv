@@ -16,7 +16,10 @@ OBJS_DIR		= objs
 INC_DIR			= includes
 
 SOURCES			= main.cpp \
-				  ServerSocket.cpp \
+				  FileDescriptor.cpp \
+				  ListeningSocket.cpp \
+				  HTTPClient.cpp \
+				  EPoll.cpp \
 
 OBJS/OBJECTS	= $(addprefix $(OBJS_DIR)/, $(SOURCES:.cpp=.o))
 OBJS/DEPS		= $(patsubst	%.o,    %.d,		$(OBJS/OBJECTS))

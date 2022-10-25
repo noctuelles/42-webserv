@@ -6,90 +6,87 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/12 20:23:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/20 09:24:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SIMPLESOCKET_HPP
 # define SIMPLESOCKET_HPP
 
+# include "FileDescriptor.hpp"
 # include <arpa/inet.h>
 # include <unistd.h>
 # include <fcntl.h>
 # include <stdexcept>
 
 template <class T>
-	class SimpleSocket
+	class SimpleSocket : public FileDescriptor
 	{
 		public:
 
-			SimpleSocket()
-				: _M_fd(), _M_sockaddr(), _M_len()
+			/* Create a SimpleSocket from connect() or accept() system call. */
+			SimpleSocket(int fd)
+				: FileDescriptor(fd), _M_sockaddr(), _M_len()
 			{}
 
+			/* Create a SimpleSocket from connect() or accept() system call. */
+			SimpleSocket(int fd, const T& sockaddr, socklen_t len)
+				: FileDescriptor(fd), _M_sockaddr(sockaddr), _M_len(len)
+			{}
+
+			// Allowing copy-construction with this RAII class, but :
+			// The SimpleSocket "other" transfer his ressource to the current instance and will not be
+			// released during destruction.
+			SimpleSocket(const SimpleSocket& other)
+				: FileDescriptor(other), _M_sockaddr(other._M_sockaddr), _M_len(other._M_len)
+			{}
+
+			/* Create a SimpleSocket from the socket() system call. */
 			SimpleSocket(int domain, int type, int protocol)
-				: _M_fd(), _M_sockaddr(), _M_len()
+				: FileDescriptor(0), _M_sockaddr(), _M_len()
 			{
 				if ((_M_fd = ::socket(domain, type, protocol)) == -1)
 					throw (std::runtime_error("socket"));
 			}
 
 			virtual ~SimpleSocket()
-			{
-				if (_M_fd != -1)
-					close(_M_fd);
-			}
+			{}
 
-			T&	getSockAddr()
+			const T&	getSockAddr()
 			{
 				return (_M_sockaddr);
 			}
 
-			socklen_t&	getSockLen()
+			socklen_t	getSockLen() const
 			{
 				return (_M_len);
 			}
 
-			void	setFd(int fd)
+			void	setSockAddr(const T& sockaddr)
 			{
-				_M_fd = fd;
+				_M_sockaddr = sockaddr;
 			}
 
-			int	getFd() const
+			void	setSockLen(socklen_t socklen)
 			{
-				return (_M_fd);
+				_M_len = socklen;
 			}
 
 			void	setSockOpt(int optname, void *optval, socklen_t optlen) const
 			{
-				if (setsockopt(_M_fd, SOL_SOCKET, optname, optval, optlen) < 0)
+				if (setsockopt(this->_M_fd, SOL_SOCKET, optname, optval, optlen) < 0)
 					throw (std::runtime_error("setsockopt"));
 			}
 
 			void	getSockOpt(int optname, void* optval, socklen_t* optlen) const
 			{
-				if (getsockopt(_M_fd, SOL_SOCKET, optname, optval, optlen) < 0)
+				if (getsockopt(this->_M_fd, SOL_SOCKET, optname, optval, optlen) < 0)
 					throw (std::runtime_error("getsockopt"));
-			}
-
-			int	getFdFlags() const
-			{
-				int ret;
-
-				if ((ret = fcntl(_M_fd, F_GETFL)) < 0)
-					throw (std::runtime_error("fcntl(F_GETFL)"));
-				return (ret);
-			}
-
-			void	setFdFlags(int fl) const
-			{
-				if (fcntl(_M_fd, F_SETFL, fl) < 0)
-					throw (std::runtime_error("fcntl(F_SETFL)"));
 			}
 
 			/* These functions are shortcut function that avoid you to use setSockOpt or setFdFlags for common socket operations. */
 
-			void	setReusableMode(bool	reusable) const
+			void	setReusableMode(bool reusable) const
 			{
 				int	optval = (reusable) ? 1 : 0;
 				setSockOpt(SO_REUSEADDR, static_cast<void *>(&optval), sizeof(int));
@@ -109,13 +106,8 @@ template <class T>
 
 		protected:
 
-			int			_M_fd;
 			T			_M_sockaddr;
 			socklen_t	_M_len;
-
-		private:
-
-			SimpleSocket&	operator=(const SimpleSocket& rhs);
 	};
 
 #endif

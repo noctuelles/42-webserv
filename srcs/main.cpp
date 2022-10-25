@@ -1,12 +1,15 @@
-#include "ServerSocket.hpp"
+#include "ListeningSocket.hpp"
 #include "SocketTypes.hpp"
 #include <exception>
 #include <stdexcept>
 #include <string.h>
 #include <errno.h>
+#include <list>
 #include <iostream>
+#include "EPoll.hpp"
+#include "HTTPClient.hpp"
 
-# define BUFFSIZE 1024
+# define BUFFSIZE 1024 
 
 enum HttpMethod {GET, POST, HEAD};
 
@@ -18,88 +21,69 @@ struct response
 	};
 };
 
+namespace http
+{
+	namespace utils
+	{
+		inline bool	shouldConnectionBeClose(uint32_t events)
+		{
+			return (events & EPOLLRDHUP || events & EPOLLHUP || events & EPOLLERR);
+		}
+	}
+}
+
 int main()
 {
-
 	try
 	{
-		ServerSocket		myServerSock;
-		fd_set			master_set, working_set;
-		int			max_fd;
+		ListeningSocket		myServerSock(INADDR_ANY, 8080);
+		EPoll				myEPoll(myServerSock.getFd(), EPOLLIN, &myServerSock);
 
-		myServerSock.setReusableMode(true);
-		myServerSock.setBlockingMode(false);
-		myServerSock.bind(INADDR_ANY, 8080);
 		myServerSock.listen(42);
-
-		max_fd = myServerSock.getFd();
-		FD_ZERO(&master_set);
-		FD_SET(myServerSock.getFd(), &master_set);
+		myEPoll.setFdFlags(O_CLOEXEC); // Because we'll be forking and execve'ing for CGI, we DON'T want our child to herit the epoll instance!
 		while (true)
 		{
-			char	buffer[BUFFSIZE];
-			int rfds, working_rfds;
-
-			memcpy(&working_set, &master_set, sizeof(master_set));
-
-			std::cout << "Waiting on select()...\n"; // select is a blocking call !
-			if ((rfds = select(max_fd + 1, &working_set, NULL, NULL, NULL)) < 0)
-				throw (std::runtime_error("select"));
-
-			working_rfds = rfds;
-			for (int i = 0; i <= max_fd && working_rfds > 0; i++)
+			std::cout << "Blocking on epoll_wait()\n";
+			myEPoll.waitForEvents(EPoll::NOTIMEOUT);
+			for (EPoll::iterator it = myEPoll.begin(); it != myEPoll.end(); it++)
 			{
-				if (FD_ISSET(i, &working_set))
-				{
-					working_rfds--;
-					if (i == myServerSock.getFd()) // this is our server socket, meaning that we have a new connection to accept
-					{
-						int	incoming_fd;
+				InternetSocket*	sockPtr = static_cast<InternetSocket*>(it->data.ptr);
 
-						// Accept each new incoming connection.
-						// if myServerSock.accept() fails, the functions throw an exception and the program ends.
-						// if myServerSock.accept() fails with EGAIN | EWOULDBLOCK, the functions return -1.
-						// if myServerSock.accept() sucedeed, it returns the fd of the new incoming connection.
-						while ((incoming_fd = myServerSock.accept()) > 0)
-						{
-							std::cout << "Accepting new incoming connection - " << incoming_fd << " !\n";
-							if (fcntl(incoming_fd, F_SETFL, fcntl(incoming_fd, F_GETFL) | O_NONBLOCK) < 0)
-								throw (std::runtime_error("fcntl"));
-							else
-								std::cout << "New connection is set to non blocking\n";
-							FD_SET(incoming_fd, &master_set);
-							if (incoming_fd > max_fd)
-								max_fd = incoming_fd;
-						}
+				if (it->events & EPOLLIN)
+				{
+					if (sockPtr->getFd() == myServerSock.getFd())
+					{
+						std::cout << "Accepting new connection\n";
+						myServerSock.acceptConnection(myEPoll);
 					}
 					else
 					{
-						int	rc;
+						HTTPClient*	client = static_cast<HTTPClient*>(sockPtr);
 
-						std::cout << "Existing connection is readable - " << i << " !\n";
-						std::cout << (fcntl(i, F_GETFD) & O_NONBLOCK) << '\n';
-						while ((rc = recv(i, buffer, sizeof(buffer), 0)) > 0)
-						{
-							std::cout << rc << " bytes received.\n";
-							write(STDOUT_FILENO, buffer, rc);
-						}
-						if (rc == 0)
-						{
-							std::cout << "Closing the connection with " << i << " !\n";
-							close(i);
-							FD_CLR(i, &master_set);
-							while (!FD_ISSET(max_fd, &master_set))
-								max_fd--;
-						}
-						else if (rc < 0 && (errno != EAGAIN || errno != EWOULDBLOCK))
+						char buffer[BUFFSIZE] = {0};
+						ssize_t		received_bytes;
+
+						std::cout << "\t\tConnection - " << client->getFd() << " - has something to say.\n";
+						if ((received_bytes = recv(client->getFd(), buffer, BUFFSIZE, 0)) < 0)
 							throw (std::runtime_error("recv"));
-						const char *s = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\n\r\nBonjour!";
-						write(i, s, strlen(s));
-						write(STDOUT_FILENO, s, strlen(s));
-					} // End of existing connection readable.
-				} // End of checking is the file descriptor has something to say.
-			} // End of the for loop
-		} // End of the server while loop
+						if (received_bytes > 0)
+						{
+							std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
+							client->appendToBuffer(buffer, received_bytes);
+						}
+						else
+						{
+							std::cout << "\t\t\tNothing to read: i'm gonna close this connection now.\n";
+							std::cout << "\t\t\tThis is what i received throughout our connection:\n" << client->getBuffer();
+							myServerSock.removeConnection(client);
+						}
+					}
+				}
+				if (it->events & EPOLLOUT)
+				{
+				}
+			}
+		}
 	}
 	catch (const std::exception& e)
 	{
