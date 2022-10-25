@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/20 09:35:25 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 00:05:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ void	ListeningSocket::acceptConnection(EPoll& epollInstance)
 
 	while ((sa_fd = ::accept(_M_fd, reinterpret_cast<struct sockaddr*>(&sa), &slen)) > 0)
 	{
-		_M_con.push_back(HTTPClient(sa_fd, sa, slen));
+		_M_con.push_back(HTTPClient(sa_fd, sa, slen, *this));
 
 		HTTPClient& inserted = _M_con.back();
 		inserted.setIterator((--_M_con.end()));

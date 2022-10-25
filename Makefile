@@ -18,6 +18,7 @@ INC_DIR			= includes
 SOURCES			= main.cpp \
 				  FileDescriptor.cpp \
 				  ListeningSocket.cpp \
+				  WebServ.cpp \
 				  HTTPClient.cpp \
 				  EPoll.cpp \
 

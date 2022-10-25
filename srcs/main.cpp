@@ -17,25 +17,22 @@ int main()
 	try
 	{
 		WebServ	server;
+		EPoll&	epoll = server.getPoller();
 
-		server.addSocket(8080);
-		server.launch();
-		while (true)
+		server.addListener(8080);
+		server.addListener(25565);
+		while (server.loop())
 		{
-			std::cout << "Blocking on epoll_wait()\n";
-			myEPoll.waitForEvents(EPoll::NOTIMEOUT);
-			for (EPoll::iterator it = myEPoll.begin(); it != myEPoll.end(); it++)
+			for (EPoll::iterator it = epoll.begin(); it != epoll.end(); it++)
 			{
 				InternetSocket*		sockPtr = static_cast<InternetSocket*>(it->data.ptr);
-				ListeningSocket*	listenSockPtr = NULL;
-				HTTPClient*			clientPtr = NULL;
 
 				if (it->events & EPOLLIN)
 				{
-					if (server.isListeningSocket(sockPtr))
+					if (server.isAListener(sockPtr))
 					{
 						std::cout << "Accepting new connection\n";
-						static_cast<ListeningSocket*>(sockPtr)->acceptConnection(server.getPoller());
+						static_cast<ListeningSocket*>(sockPtr)->acceptConnection(epoll);
 					}
 					else
 					{
@@ -48,13 +45,11 @@ int main()
 							throw (std::runtime_error("recv"));
 						if (received_bytes > 0)
 						{
-							client->parser.init(buffer, received_bytes);
 						}
 						else
 						{
-							std::cout << "\t\t\tNothing to read: i'm gonna close this connection now.\n";
-							std::cout << "\t\t\tThis is what i received throughout our connection:\n" << client->getBuffer();
-							myServerSock.removeConnection(client);
+							std::cout << "Connection removed\n";
+							client->getBindedSocket().removeConnection(client);
 						}
 					}
 				}

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/25 19:40:52 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 00:46:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,36 @@
 # include "ListeningSocket.hpp"
 # include "EPoll.hpp"
 # include <algorithm>
+# include <assert.h>
 
 class WebServ
 {
+	private:
+
+		struct ListeningSocketInit
+		{
+			explicit ListeningSocketInit(EPoll& poller)
+				: poll(poller) {}
+
+			inline void operator()(ListeningSocket& sock)
+			{
+				poll.add(sock.getFd(), EPoll::IN, &sock);
+				sock.listen(MaxPendingConnection);
+			}
+
+			EPoll& poll;
+		};
+
+		class SocketComp
+		{
+			public:
+				explicit SocketComp(int fd) : m_fd(fd) {}
+				~SocketComp() {}
+				inline bool operator()(const InternetSocket& sock) const {return (sock.getFd() == m_fd);}
+			private:
+				int m_fd;
+		};
+
 	public:
 
 		static const unsigned int	MaxPendingConnection = 5;
@@ -27,35 +54,33 @@ class WebServ
 		WebServ();
 		~WebServ();
 
-		struct SocketComp
-		{
-			explicit SocketComp(int fd) : m_fd(fd) {}
-			inline bool operator()(const InternetSocket& sock) const
-			{
-				return (sock.getFd() == m_fd);
-			}
-			private:
-				int m_fd;
-		};
-
-		void	addSocket(in_port_t port)
+		void	addListener(in_port_t port)
 		{
 			m_socks.push_back(ListeningSocket(INADDR_ANY, port));
-			m_poller.add(m_socks.back().getFd(), EPoll::IN, &m_socks.back());
 		}
 
-		void	launch()
+		void	initListener()
 		{
-			for (std::vector<ListeningSocket>::iterator it = m_socks.begin(); it != m_socks.end(); it++)
-				it->listen(MaxPendingConnection);
+			std::for_each(m_socks.begin(), m_socks.end(), ListeningSocketInit(m_poller));
+			m_listener_init = true;
 		}
 
-		bool	isListeningSocket(const InternetSocket* sock)
+		bool	isAListener(const InternetSocket* sock)
 		{
 			return (std::find_if(m_socks.begin(), m_socks.end(), SocketComp(sock->getFd())) != m_socks.end());
 		}
 
-		EPoll&	getPoller();
+		EPoll&	getPoller()
+		{
+			return (m_poller);
+		}
+
+		bool	loop()
+		{
+			assert(m_listener_init);
+			m_poller.waitForEvents(EPoll::NOTIMEOUT);
+			return (true);
+		}
 
 	private:
 
@@ -64,6 +89,7 @@ class WebServ
 
 		EPoll							m_poller;
 		std::vector<ListeningSocket>	m_socks;
+		bool							m_listener_init;
 
 };
 

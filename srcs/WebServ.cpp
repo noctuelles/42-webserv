@@ -6,14 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/25 19:14:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 00:40:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
 
 WebServ::WebServ()
-	: m_poller(), m_socks()
+	: m_poller(), m_socks(), m_listener_init(false)
 {}
 
 WebServ::~WebServ()
