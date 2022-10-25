@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/20 09:23:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/25 13:16:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <cstring>
 # include <list>
 # include "SocketTypes.hpp"
+# include "RequestParser.hpp"
 
 enum HTTPState
 {
@@ -37,9 +38,10 @@ class HTTPClient : public InternetSocket
 		void									setIterator(const std::list<HTTPClient>::iterator& it);
 		const std::list<HTTPClient>::iterator&	getIterator() const;
 
+		RequestParser					parser;
+
 	private:
 
-		std::string						_M_buffer; // i'm excepting to receive text data !
 		std::list<HTTPClient>::iterator	_M_iterator; // this iterator is used to provide constant time for erasing a client from a connection list.
 		HTTPState						_M_state;
 };

@@ -60,16 +60,14 @@ int main()
 					{
 						HTTPClient*	client = static_cast<HTTPClient*>(sockPtr);
 
-						char buffer[BUFFSIZE] = {0};
+						char		buffer[BUFFSIZE] = {0};
 						ssize_t		received_bytes;
 
-						std::cout << "\t\tConnection - " << client->getFd() << " - has something to say.\n";
 						if ((received_bytes = recv(client->getFd(), buffer, BUFFSIZE, 0)) < 0)
 							throw (std::runtime_error("recv"));
 						if (received_bytes > 0)
 						{
-							std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
-							client->appendToBuffer(buffer, received_bytes);
+							client->parser.init(buffer, received_bytes);
 						}
 						else
 						{
