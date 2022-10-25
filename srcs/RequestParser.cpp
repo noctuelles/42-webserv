@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/25 13:13:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/25 18:43:34 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,21 +14,22 @@
 #include <string.h>
 #include <cctype>
 
-const char*	RequestParser::_M_method[] =
+const char*	RequestParser::m_method[] =
 {
 	"GET",
 	"POST",
 	"DELETE"
 };
 
-const char*	RequestParser::_M_field_name[] =
+const char*	RequestParser::m_field_name[] =
 {
+	"host",
 	"connection"
 };
 
-const char*	RequestParser::_M_http = "HTTP/";
+const char*	RequestParser::m_http = "HTTP/";
 
-const char	RequestParser::_M_token[256]
+const char	RequestParser::m_token[256]
 {
 /*   0 nul    1 soh    2 stx    3 etx    4 eot    5 enq    6 ack    7 bel  */
         0,       0,       0,       0,       0,       0,       0,       0,
@@ -65,7 +66,7 @@ const char	RequestParser::_M_token[256]
 };
 
 RequestParser::RequestParser()
-	: _M_data(), _M_size(), _M_current_state(s_start_method), _M_info()
+	: m_data(), m_size(), m_current_state(s_start_method), m_info()
 {}
 
 RequestParser::~RequestParser()
@@ -73,14 +74,14 @@ RequestParser::~RequestParser()
 
 void	RequestParser::init(const char *data, std::size_t size)
 {
-	_M_data = data;
-	_M_data_end = data + size;
-	_M_size = size;
+	m_data = data;
+	m_data_end = data + size;
+	m_size = size;
 }
 
 RequestParser::t_parse_info&	RequestParser::getParsingInfo()
 {
-	return (_M_info);
+	return (m_info);
 }
 
 /* Using a simple state machine to parse the request.
@@ -90,26 +91,28 @@ int	RequestParser::parse()
 {
 	char	ch;
 
-	_M_index = 1;
-	while (_M_data != _M_data_end)
+	m_index = 1;
+	while (m_data != m_data_end)
 	{
-		ch = *_M_data;
-		switch (_M_current_state)
+		if (++m_header_size > MaxHeaderSize)
+			return (ErrBadRequest);
+		ch = *m_data;
+		switch (m_current_state)
 		{
 			case s_start_method:
 				// Determine the method.
 				switch (ch)
 				{
 					case 'G':
-						_M_info.method = m_get;
+						m_info.method = m_get;
 						_changeState(s_parse_method);
 						break;
 					case 'P':
-						_M_info.method = m_post;
+						m_info.method = m_post;
 						_changeState(s_parse_method);
 						break;
 					case 'D':
-						_M_info.method = m_delete;
+						m_info.method = m_delete;
 						_changeState(s_parse_method);
 						break;
 					default:
@@ -119,37 +122,37 @@ int	RequestParser::parse()
 
 			case s_parse_method:
 				// Check if the method is implemented.
-				if (ch == _M_method[_M_info.method][_M_index])
-					_M_index++;
-				else if (ch == ' ' && _M_method[_M_info.method][_M_index] == '\0')
-					_changeState(s_parse_req_line), _M_index = 0;
+				if (ch == m_method[m_info.method][m_index])
+					m_index++;
+				else if (ch == ' ' && m_method[m_info.method][m_index] == '\0')
+					_changeState(s_parse_req_line), m_index = 0;
 				else
 					return (ErrMethodNotImplemented);
 				break;
 
 			case s_parse_req_line:
-				if (_M_index >= MaxRequestLineSize)
+				if (m_index >= MaxRequestLineSize)
 					return (ErrUriTooLong);
 				if (ch == ' ')
-					_changeState(s_http), _M_info.req_line[_M_index] = '\0', _M_index = 0;
+					_changeState(s_http), m_info.req_line[m_index] = '\0', m_index = 0;
 				else
-					_M_info.req_line[_M_index++] = ch;
+					m_info.req_line[m_index++] = ch;
 				break;
 
 			case s_http:
-				if (ch == _M_http[_M_index])
-					_M_index++;
+				if (ch == m_http[m_index])
+					m_index++;
 				else
 					return (ErrBadRequest);
-				if (_M_http[_M_index] == '\0')
+				if (m_http[m_index] == '\0')
 					_changeState(s_http_major_ver);
 				break;
 
 			case s_http_major_ver:
 				if (!std::isdigit(ch))
 					return (ErrBadRequest);
-				_M_info.ver_major = ch - '0';
-				if (_M_info.ver_major != MajorVersionSupported)
+				m_info.ver_major = ch - '0';
+				if (m_info.ver_major != MajorVersionSupported)
 					return (ErrHttpVersionNotSupported);
 				_changeState(s_http_dot);
 				break;
@@ -163,7 +166,7 @@ int	RequestParser::parse()
 			case s_http_minor_ver:
 				if (!std::isdigit(ch))
 					return (ErrBadRequest);
-				_M_info.ver_minor = ch - '0';
+				m_info.ver_minor = ch - '0';
 				_changeState(s_cr);
 				break;
 
@@ -184,15 +187,25 @@ int	RequestParser::parse()
 				_changeState(s_done);
 				break;
 
+			case s_start_header:
+				ch = m_token[static_cast<size_t>(ch)];
+				switch (ch)
+				{
+					case 'h': _changeState(s_parse_header); _changeField(f_host); break;
+
+					default: return (ErrBadRequest);
+				};
+				break;
+
 			default:
 				break;
 		};
-		_M_data++;
+		m_data++;
 	}
 	return (0);
 }
 
 inline void	RequestParser::_changeState(State s)
 {
-	_M_current_state = s;
+	m_current_state = s;
 }

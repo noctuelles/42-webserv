@@ -8,53 +8,34 @@
 #include <iostream>
 #include "EPoll.hpp"
 #include "HTTPClient.hpp"
+#include "WebServ.hpp"
 
 # define BUFFSIZE 1024 
-
-enum HttpMethod {GET, POST, HEAD};
-
-struct response
-{
-	struct initial_line
-	{
-		HttpMethod	method;
-	};
-};
-
-namespace http
-{
-	namespace utils
-	{
-		inline bool	shouldConnectionBeClose(uint32_t events)
-		{
-			return (events & EPOLLRDHUP || events & EPOLLHUP || events & EPOLLERR);
-		}
-	}
-}
 
 int main()
 {
 	try
 	{
-		ListeningSocket		myServerSock(INADDR_ANY, 8080);
-		EPoll				myEPoll(myServerSock.getFd(), EPOLLIN, &myServerSock);
+		WebServ	server;
 
-		myServerSock.listen(42);
-		myEPoll.setFdFlags(O_CLOEXEC); // Because we'll be forking and execve'ing for CGI, we DON'T want our child to herit the epoll instance!
+		server.addSocket(8080);
+		server.launch();
 		while (true)
 		{
 			std::cout << "Blocking on epoll_wait()\n";
 			myEPoll.waitForEvents(EPoll::NOTIMEOUT);
 			for (EPoll::iterator it = myEPoll.begin(); it != myEPoll.end(); it++)
 			{
-				InternetSocket*	sockPtr = static_cast<InternetSocket*>(it->data.ptr);
+				InternetSocket*		sockPtr = static_cast<InternetSocket*>(it->data.ptr);
+				ListeningSocket*	listenSockPtr = NULL;
+				HTTPClient*			clientPtr = NULL;
 
 				if (it->events & EPOLLIN)
 				{
-					if (sockPtr->getFd() == myServerSock.getFd())
+					if (server.isListeningSocket(sockPtr))
 					{
 						std::cout << "Accepting new connection\n";
-						myServerSock.acceptConnection(myEPoll);
+						static_cast<ListeningSocket*>(sockPtr)->acceptConnection(server.getPoller());
 					}
 					else
 					{

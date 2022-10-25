@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/25 13:11:46 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/25 18:41:56 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ class RequestParser
 			s_http_minor_ver,
 			s_cr,
 			s_lf,
+			s_start_header,
+			s_parse_header,
 			s_done,
 			s_err_state
 		};
@@ -58,6 +60,12 @@ class RequestParser
 			m_get,
 			m_post,
 			m_delete
+		};
+
+		enum Field
+		{
+			f_host,
+			f_connection
 		};
 
 		typedef struct s_parse_info
@@ -77,23 +85,25 @@ class RequestParser
 
 	private:
 
-		const char*	_M_data;
-		const char*	_M_data_end;
-		std::size_t	_M_size;
-		std::size_t	_M_index;
+		const char*	m_data;
+		const char*	m_data_end;
+		size_t		m_size;
+		size_t		m_index;
 
-		std::size_t	_M_header_size;
-		State		_M_current_state;
+		size_t		m_header_size;
+		State		m_current_state;
+		Field		m_curr_field;
 
-		t_parse_info	_M_info;
+		t_parse_info	m_info;
 
 		inline void	_changeState(State s);
+		inline void	_changeField(Field f);
 		void	_advance(std::size_t n);
 
-		static const char*	_M_http;
-		static const char*	_M_method[];
-		static const char*	_M_field_name[];
-		static const char	_M_token[256];
+		static const char*	m_http;
+		static const char*	m_method[];
+		static const char*	m_field_name[];
+		static const char	m_token[256];
 };
 
 #endif

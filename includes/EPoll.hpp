@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 11:53:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/20 08:40:48 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/25 19:17:45 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,9 @@ class EPoll : public FileDescriptor
 	public:
 
 		typedef std::vector<struct epoll_event>::iterator		iterator;
+
+		static const int IN = EPOLLIN;
+		static const int OUT = EPOLLOUT;
 
 		EPoll();
 
