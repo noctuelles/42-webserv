@@ -17,11 +17,9 @@ int main()
 {
 	try
 	{
-		WebServ	server;
+		ft::WebServ	server;
 		EPoll&	epoll = server.getPoller();
 
-		server.addListener(8080);
-		server.addListener(25565);
 		server.initListener();
 		while (server.loop())
 		{
@@ -74,6 +72,7 @@ int main()
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "webserv: " << e.what() << ": " << strerror(errno) << '\n';
+		ft::WebServ::Logger::reason(e.what(), strerror(errno));
 	}
+	return (1);
 }

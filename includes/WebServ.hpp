@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 14:56:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 15:34:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,58 +19,66 @@
 # include <algorithm>
 # include <assert.h>
 
-class WebServ
+namespace ft
 {
-	private:
+	class WebServ
+	{
+		private:
 
-		struct ListeningSocketInit
-		{
-			explicit ListeningSocketInit(EPoll& poller)
-				: poll(poller) {}
-
-			inline void operator()(ListeningSocket& sock)
+			struct ListeningSocketInit
 			{
-				sock.listen(MaxPendingConnection);
-				poll.add(sock.getFd(), EPoll::IN, &sock);
-			}
+				explicit ListeningSocketInit(EPoll& poller)
+					: poll(poller) {}
 
-			EPoll& poll;
-		};
+				inline void operator()(ListeningSocket& sock)
+				{
+					sock.listen(MaxPendingConnection);
+					poll.add(sock.getFd(), EPoll::IN, &sock);
+				}
 
-		class SocketComp
-		{
-			public:
-				explicit SocketComp(int fd) : m_fd(fd) {}
-				~SocketComp() {}
-				inline bool operator()(const InternetSocket& sock) const {return (sock.getFd() == m_fd);}
-			private:
-				int m_fd;
-		};
+				EPoll& poll;
+			};
 
-	public:
+			class SocketComp
+			{
+				public:
+					explicit SocketComp(int fd) : m_fd(fd) {}
+					~SocketComp() {}
+					inline bool operator()(const InternetSocket& sock) const {return (sock.getFd() == m_fd);}
+				private:
+					int m_fd;
+			};
 
-		static const unsigned int	MaxPendingConnection = 5;
+		public:
 
-		WebServ();
-		~WebServ();
+			struct Logger
+			{
+				static void	reason(const char* cause, const char* reason);
+			};
 
-		void	addListener(in_port_t port);
-		void	initListener();
-		void	removeListener(int fd);
+			static const unsigned int	MaxPendingConnection = 5;
 
-		EPoll&	getPoller();
+			WebServ();
+			~WebServ();
 
-		bool	loop();
+			void	addListener(in_port_t port);
+			void	initListener();
+			void	removeListener(int fd);
 
-	private:
+			EPoll&	getPoller();
 
-		WebServ(const WebServ& other);
-		WebServ&	operator=(const WebServ& rhs);
+			bool	loop();
 
-		EPoll							m_poller;
-		std::vector<ListeningSocket>	m_socks;
-		bool							m_listener_init;
+		private:
 
-};
+			WebServ(const WebServ& other);
+			WebServ&	operator=(const WebServ& rhs);
+
+			EPoll							m_poller;
+			std::vector<ListeningSocket>	m_socks;
+			bool							m_listener_init;
+
+	};
+}
 
 #endif

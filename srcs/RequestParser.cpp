@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/25 18:43:34 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 15:48:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,35 +167,32 @@ int	RequestParser::parse()
 				if (!std::isdigit(ch))
 					return (ErrBadRequest);
 				m_info.ver_minor = ch - '0';
-				_changeState(s_cr);
+				_changeState(s_crlf);
 				break;
 
-			case s_cr:
-				if (ch != '\r')
+			case s_crlf:
+				if (ch == '\r')
+					break ;
+				else
+				{
+					if (ch != '\n')
+						return (ErrBadRequest);
+					_changeState(s_empty_line);
+				}
+				break;
+
+			case s_empty_line:
+				if (ch == '\r')
+					break ;
+				else
 				{
 					if (ch != '\n')
 						return (ErrBadRequest);
 					_changeState(s_done);
 				}
-				else
-					_changeState(s_lf);
 				break;
 
-			case s_lf:
-				if (ch != '\n')
-					return (ErrBadRequest);
-				_changeState(s_done);
-				break;
-
-			case s_start_header:
-				ch = m_token[static_cast<size_t>(ch)];
-				switch (ch)
-				{
-					case 'h': _changeState(s_parse_header); _changeField(f_host); break;
-
-					default: return (ErrBadRequest);
-				};
-				break;
+				case s_done:
 
 			default:
 				break;

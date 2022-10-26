@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/25 18:41:56 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 15:45:29 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,8 @@ class RequestParser
 			s_http_major_ver,
 			s_http_dot,
 			s_http_minor_ver,
-			s_cr,
-			s_lf,
+			s_crlf,
+			s_empty_line,
 			s_start_header,
 			s_parse_header,
 			s_done,
