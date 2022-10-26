@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 00:13:52 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 13:27:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class HTTPClient : public InternetSocket
 
 	private:
 
-		std::list<HTTPClient>::iterator	_M_iterator; // this iterator is used to provide constant time for erasing a client from a connection list.
+		std::list<HTTPClient>::iterator	m_iterator; // this iterator is used to provide constant time for erasing a client from a connection list.
 		ListeningSocket&				m_socket;
 };
 

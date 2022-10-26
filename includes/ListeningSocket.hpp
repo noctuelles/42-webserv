@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:53:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/20 08:54:38 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 13:23:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class ListeningSocket : public InternetSocket // see SocketTypes.hpp
 
 	private:
 
-		std::list<HTTPClient>	_M_con;
+		std::list<HTTPClient>	m_con;
 
 };
 

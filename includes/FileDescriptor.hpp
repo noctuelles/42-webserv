@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 08:13:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/20 08:26:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 13:13:57 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ class FileDescriptor
 
 		FileDescriptor(int fd);
 		FileDescriptor(const FileDescriptor& other);
+		FileDescriptor&	operator=(const FileDescriptor& rhs);
 		virtual ~FileDescriptor();
 
 		int		getFd() const;
@@ -27,12 +28,11 @@ class FileDescriptor
 
 	protected:
 
-		int				_M_fd;
+		int				m_fd;
 
 	private:
 
-		FileDescriptor&	operator=(const FileDescriptor& rhs);
-		mutable bool	_M_should_close;
+		mutable bool	m_should_close;
 };
 
 #endif
