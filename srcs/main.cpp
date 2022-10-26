@@ -12,6 +12,7 @@
 #include "ClientSocket.hpp"
 #include "FileUtils.hpp"
 #include "WebServ.hpp"
+#include "HTTP.hpp"
 
 # define BUFFSIZE 1024 
 
@@ -20,14 +21,7 @@ int main()
 	try
 	{
 		ft::WebServ	server;
-		EPoll&	epoll = server.getPoller();
-
-		server.loadErrorPage(400, "error_pages/400.html");
-		server.loadErrorPage(404, "error_pages/404.html");
-		server.loadErrorPage(405, "error_pages/405.html");
-		server.loadErrorPage(505, "error_pages/505.html");
-
-		std::cout << server.getErrorPage(4048).data() << '\n';
+		EPoll&		epoll = server.getPoller();
 
 		server.addListener(8080);
 		server.initListener();

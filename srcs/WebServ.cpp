@@ -6,12 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 17:47:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 19:41:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
 #include "FileUtils.hpp"
+#include "HTTP.hpp"
+#include <exception>
 #include <vector>
 #include <iostream>
 
@@ -23,8 +25,15 @@ namespace ft
 	}
 
 	WebServ::WebServ()
-		: m_poller(), m_socks(), m_listener_init(false)
-	{}
+		: m_poller(), m_socks(), m_custom_err(), m_errtable(), m_listener_init(false)
+	{
+		m_custom_err.reserve(50);
+		m_errtable[http::BadRequest]          = http::DefaultPageBadRequest;
+		m_errtable[http::Forbidden]           = http::DefaultPageForbidden;
+		m_errtable[http::NotFound]            = http::DefaultPageNotFound;
+		m_errtable[http::NotImplemented]      = http::DefaultPageNotImplemented;
+		m_errtable[http::VersionNotSupported] = http::DefaultPageVersionNotSupported;
+	}
 
 	void	WebServ::addListener(in_port_t port)
 	{
@@ -45,12 +54,20 @@ namespace ft
 		m_socks.erase(it);
 	}
 
-	void	WebServ::loadErrorPage(unsigned int errcode, const char* filename)
+	void	WebServ::loadErrorPage(http::StatusCode errcode, const char* filename)
 	{
-		m_errtable.insert(std::make_pair(errcode, ft::loadFileContent(filename, MaxErrorPageSize)));
+		try
+		{
+			m_custom_err.push_back(ft::io::loadFileContent(filename, MaxErrorPageSize));
+			m_errtable.at(errcode) = reinterpret_cast<const char *>(m_custom_err.back().data());
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "webserv: cannot load error page '" << filename << "': default page is loaded instead.\n";
+		}
 	}
 
-	std::vector<unsigned char>&	WebServ::getErrorPage(unsigned int errcode)
+	const char*	WebServ::getErrorPage(http::StatusCode errcode)
 	{
 		return (m_errtable.at(errcode));
 	}
@@ -68,7 +85,6 @@ namespace ft
 			ft::WebServ::Logger::reason("fatal error", "no listening socket available");
 			return (false);
 		}
-		std::cout << "Blocking on epoll_wait()...\n";
 		m_poller.waitForEvents(EPoll::NOTIMEOUT);
 		return (true);
 	}

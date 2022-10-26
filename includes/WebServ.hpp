@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 17:51:15 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 19:42:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,13 @@
 # define WEBSERV_CLASS_HPP
 
 # include <vector>
-# include "ListeningSocket.hpp"
-# include "EPoll.hpp"
 # include <algorithm>
 # include <assert.h>
+
+# include "ListeningSocket.hpp"
+# include "EPoll.hpp"
+# include "HTTP.hpp"
+# include "FileUtils.hpp"
 
 namespace ft
 {
@@ -64,8 +67,8 @@ namespace ft
 
 			void	addListener(in_port_t port);
 			void	initListener();
-			void	loadErrorPage(unsigned int errcode, const char *filename);
-			std::vector<unsigned char>&	getErrorPage(unsigned int errcode);
+			void	loadErrorPage(http::StatusCode errcode, const char *filename);
+			const char*	getErrorPage(http::StatusCode errcode);
 			void	removeListener(int fd);
 
 			EPoll&	getPoller();
@@ -77,11 +80,13 @@ namespace ft
 			WebServ(const WebServ& other);
 			WebServ&	operator=(const WebServ& rhs);
 
-			EPoll													m_poller;
-			std::vector<ListeningSocket>							m_socks;
+			EPoll							m_poller;
+			std::vector<ListeningSocket>	m_socks;
+			std::vector<io::FileContent>	m_custom_err;
 
-			std::map<unsigned int, std::vector<unsigned char> >	m_errtable;
-			bool													m_listener_init;
+			std::map<http::StatusCode, const char *>			m_errtable;
+
+			bool	m_listener_init;
 
 	};
 }

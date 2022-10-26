@@ -20,6 +20,7 @@ SOURCES			= main.cpp \
 				  FileUtils.cpp \
 				  ListeningSocket.cpp \
 				  ClientSocket.cpp \
+				  HTTP.cpp \
 				  WebServ.cpp \
 				  EPoll.cpp \
 
