@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 19:42:11 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 23:51:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,8 @@ namespace ft
 				static void	reason(const char* cause, const char* reason);
 			};
 
-			static const size_t			MaxErrorPageSize = 2097152; // 1MB
+			static const size_t			MaxStatusCode        = 600;
+			static const size_t			MaxErrorPageSize     = 2097152; // 2MB
 			static const unsigned int	MaxPendingConnection = 5;
 
 			WebServ();
@@ -67,8 +68,12 @@ namespace ft
 
 			void	addListener(in_port_t port);
 			void	initListener();
-			void	loadErrorPage(http::StatusCode errcode, const char *filename);
-			const char*	getErrorPage(http::StatusCode errcode);
+
+			void		setStatusCodePage(http::StatusCode, const char*);
+			const char*	getStatusCodePage(http::StatusCode) const;
+			const char*	getStatusCodePhrase(http::StatusCode) const;
+
+			const char*	getHTTPVersion() const;
 			void	removeListener(int fd);
 
 			EPoll&	getPoller();
@@ -80,14 +85,13 @@ namespace ft
 			WebServ(const WebServ& other);
 			WebServ&	operator=(const WebServ& rhs);
 
-			EPoll							m_poller;
-			std::vector<ListeningSocket>	m_socks;
-			std::vector<io::FileContent>	m_custom_err;
+			EPoll								m_poller;
+			std::vector<ListeningSocket>		m_socks;
 
-			std::map<http::StatusCode, const char *>			m_errtable;
+			std::vector<io::FileContent>		m_custom_status_page;
+			std::pair<const char*, const char*>	m_status_table[MaxStatusCode];
 
 			bool	m_listener_init;
-
 	};
 }
 

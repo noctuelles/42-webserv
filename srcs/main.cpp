@@ -18,13 +18,16 @@
 
 int main()
 {
+	using namespace ft;
 	try
 	{
-		ft::WebServ	server;
+		WebServ	server;
 		EPoll&		epoll = server.getPoller();
 
 		server.addListener(8080);
 		server.initListener();
+		server.setStatusCodePage(http::BadRequest, "error_pages/40z4.html");
+
 		while (server.loop())
 		{
 			for (EPoll::iterator it = epoll.begin(); it != epoll.end(); it++)

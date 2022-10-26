@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 19:41:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 23:52:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,15 @@ namespace ft
 	}
 
 	WebServ::WebServ()
-		: m_poller(), m_socks(), m_custom_err(), m_errtable(), m_listener_init(false)
+		: m_poller(), m_socks(), m_custom_status_page(), m_status_table(), m_listener_init(false)
 	{
-		m_custom_err.reserve(50);
-		m_errtable[http::BadRequest]          = http::DefaultPageBadRequest;
-		m_errtable[http::Forbidden]           = http::DefaultPageForbidden;
-		m_errtable[http::NotFound]            = http::DefaultPageNotFound;
-		m_errtable[http::NotImplemented]      = http::DefaultPageNotImplemented;
-		m_errtable[http::VersionNotSupported] = http::DefaultPageVersionNotSupported;
+		m_custom_status_page.reserve(MaxStatusCode);
+
+		m_status_table[http::BadRequest]          = http::InfoBadRequest;
+		m_status_table[http::Forbidden]           = http::InfoForbidden;
+		m_status_table[http::NotFound]            = http::InfoNotFound;
+		m_status_table[http::NotImplemented]      = http::InfoNotImplemented;
+		m_status_table[http::VersionNotSupported] = http::InfoVersionNotSupported;
 	}
 
 	void	WebServ::addListener(in_port_t port)
@@ -54,22 +55,27 @@ namespace ft
 		m_socks.erase(it);
 	}
 
-	void	WebServ::loadErrorPage(http::StatusCode errcode, const char* filename)
+	void	WebServ::setStatusCodePage(http::StatusCode statuscode, const char* filename)
 	{
 		try
 		{
-			m_custom_err.push_back(ft::io::loadFileContent(filename, MaxErrorPageSize));
-			m_errtable.at(errcode) = reinterpret_cast<const char *>(m_custom_err.back().data());
+			m_custom_status_page.push_back(ft::io::loadFileContent(filename, MaxErrorPageSize));
+			m_status_table[statuscode].second = reinterpret_cast<const char *>(m_custom_status_page.back().data());
 		}
 		catch (const std::exception& e)
 		{
-			std::cerr << "webserv: cannot load error page '" << filename << "': default page is loaded instead.\n";
+			std::cerr << "webserv: cannot load error page '" << filename << "': default page is used instead.\n";
 		}
 	}
 
-	const char*	WebServ::getErrorPage(http::StatusCode errcode)
+	const char*	WebServ::getStatusCodePage(http::StatusCode statuscode) const
 	{
-		return (m_errtable.at(errcode));
+		return (m_status_table[statuscode].second);
+	}
+
+	const char*	WebServ::getStatusCodePhrase(http::StatusCode statuscode) const
+	{
+		return (m_status_table[statuscode].first);
 	}
 
 	EPoll&	WebServ::getPoller()
