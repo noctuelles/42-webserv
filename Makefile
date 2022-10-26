@@ -18,7 +18,8 @@ INC_DIR			= includes
 SOURCES			= main.cpp \
 				  FileDescriptor.cpp \
 				  ListeningSocket.cpp \
-				  HTTPClient.cpp \
+				  ClientSocket.cpp \
+				  WebServ.cpp \
 				  EPoll.cpp \
 
 OBJS/OBJECTS	= $(addprefix $(OBJS_DIR)/, $(SOURCES:.cpp=.o))

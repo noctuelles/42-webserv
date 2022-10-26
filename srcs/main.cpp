@@ -6,76 +6,63 @@
 #include <errno.h>
 #include <list>
 #include <iostream>
+#include <typeinfo>
 #include "EPoll.hpp"
-#include "HTTPClient.hpp"
+#include "ClientSocket.hpp"
+#include "WebServ.hpp"
 
 # define BUFFSIZE 1024 
-
-enum HttpMethod {GET, POST, HEAD};
-
-struct response
-{
-	struct initial_line
-	{
-		HttpMethod	method;
-	};
-};
-
-namespace http
-{
-	namespace utils
-	{
-		inline bool	shouldConnectionBeClose(uint32_t events)
-		{
-			return (events & EPOLLRDHUP || events & EPOLLHUP || events & EPOLLERR);
-		}
-	}
-}
 
 int main()
 {
 	try
 	{
-		ListeningSocket		myServerSock(INADDR_ANY, 8080);
-		EPoll				myEPoll(myServerSock.getFd(), EPOLLIN, &myServerSock);
+		WebServ	server;
+		EPoll&	epoll = server.getPoller();
 
-		myServerSock.listen(42);
-		myEPoll.setFdFlags(O_CLOEXEC); // Because we'll be forking and execve'ing for CGI, we DON'T want our child to herit the epoll instance!
-		while (true)
+		server.addListener(8080);
+		server.addListener(25565);
+		server.initListener();
+		while (server.loop())
 		{
-			std::cout << "Blocking on epoll_wait()\n";
-			myEPoll.waitForEvents(EPoll::NOTIMEOUT);
-			for (EPoll::iterator it = myEPoll.begin(); it != myEPoll.end(); it++)
+			for (EPoll::iterator it = epoll.begin(); it != epoll.end(); it++)
 			{
-				InternetSocket*	sockPtr = static_cast<InternetSocket*>(it->data.ptr);
+				InternetSocket*		inSockPtr       = static_cast<InternetSocket*>(it->data.ptr);
+				ListeningSocket*	listenSockPtr   = dynamic_cast<ListeningSocket*>(inSockPtr);
+				ClientSocket*		clientPtr       = dynamic_cast<ClientSocket*>(inSockPtr);
 
+				// Check if error condition happened on the associated file descriptor watched by epoll.
+				if (it->events & EPOLLERR || it->events & EPOLLHUP)
+				{
+					if (listenSockPtr)
+						server.removeListener(listenSockPtr->getFd());
+					else
+						clientPtr->getBindedSocket()->removeConnection(clientPtr);
+				}
 				if (it->events & EPOLLIN)
 				{
-					if (sockPtr->getFd() == myServerSock.getFd())
+					if (listenSockPtr)
 					{
 						std::cout << "Accepting new connection\n";
-						myServerSock.acceptConnection(myEPoll);
+						listenSockPtr->acceptConnection(epoll);
 					}
 					else
 					{
-						HTTPClient*	client = static_cast<HTTPClient*>(sockPtr);
-
-						char buffer[BUFFSIZE] = {0};
+						char		buffer[BUFFSIZE] = {0};
 						ssize_t		received_bytes;
 
-						std::cout << "\t\tConnection - " << client->getFd() << " - has something to say.\n";
-						if ((received_bytes = recv(client->getFd(), buffer, BUFFSIZE, 0)) < 0)
+						if ((received_bytes = recv(clientPtr->getFd(), buffer, BUFFSIZE, 0)) < 0)
 							throw (std::runtime_error("recv"));
 						if (received_bytes > 0)
 						{
-							std::cout << "\t\t\tI just readed " << received_bytes << " bytes!\n";
-							client->appendToBuffer(buffer, received_bytes);
+							// When parsing is done, use
+							// epoll.modify(clientPtr->getFd(), EPOLLOUT, clientPtr);
+							// to write a response to a client.
 						}
-						else
+						if (received_bytes == 0 || it->events & EPOLLRDHUP)
 						{
-							std::cout << "\t\t\tNothing to read: i'm gonna close this connection now.\n";
-							std::cout << "\t\t\tThis is what i received throughout our connection:\n" << client->getBuffer();
-							myServerSock.removeConnection(client);
+							std::cout << "Bye bye\n";
+							clientPtr->getBindedSocket()->removeConnection(clientPtr);
 						}
 					}
 				}
