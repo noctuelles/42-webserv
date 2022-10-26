@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 13:23:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 14:54:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,19 @@ ListeningSocket::ListeningSocket()
 {
 	setReusableMode(true);
 	setBlockingMode(false);
+}
+
+ListeningSocket::ListeningSocket(const ListeningSocket& other)
+	: InternetSocket(other), m_con(other.m_con)
+{}
+
+ListeningSocket&	ListeningSocket::operator=(const ListeningSocket& rhs)
+{
+	if (this == &rhs)
+		return (*this);
+	InternetSocket::operator=(rhs);
+	m_con = rhs.m_con;
+	return (*this);
 }
 
 ListeningSocket::ListeningSocket(in_addr_t addr, in_port_t port)
@@ -60,11 +73,11 @@ void	ListeningSocket::acceptConnection(EPoll& epollInstance)
 
 	while ((sa_fd = ::accept(m_fd, reinterpret_cast<struct sockaddr*>(&sa), &slen)) > 0)
 	{
-		m_con.push_back(HTTPClient(sa_fd, sa, slen, *this));
+		m_con.push_back(ClientSocket(sa_fd, sa, slen, this));
 
-		HTTPClient& inserted = m_con.back();
+		ClientSocket& inserted = m_con.back();
 		inserted.setIterator((--m_con.end()));
-		epollInstance.add(sa_fd, EPOLLIN, &inserted);
+		epollInstance.add(sa_fd, EPOLLIN | EPOLLRDHUP, &inserted);
 	}
 	if (sa_fd < 0)
 	{
@@ -73,7 +86,7 @@ void	ListeningSocket::acceptConnection(EPoll& epollInstance)
 	}
 }
 
-void	ListeningSocket::removeConnection(HTTPClient* clientPtr)
+void	ListeningSocket::removeConnection(ClientSocket* clientPtr)
 {
 	/* Automatically close the file descriptor and removing the file descriptor
 	 * from the interest list. */

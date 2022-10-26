@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 13:20:20 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 14:56:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ class WebServ
 
 		void	addListener(in_port_t port);
 		void	initListener();
-		bool	isListener(int fd);
+		void	removeListener(int fd);
 
 		EPoll&	getPoller();
 
@@ -69,6 +69,7 @@ class WebServ
 
 		EPoll							m_poller;
 		std::vector<ListeningSocket>	m_socks;
+		bool							m_listener_init;
 
 };
 

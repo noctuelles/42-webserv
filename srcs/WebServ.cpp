@@ -6,14 +6,16 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 13:20:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 14:56:45 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
+#include <vector>
+#include <iostream>
 
 WebServ::WebServ()
-	: m_poller(), m_socks()
+	: m_poller(), m_socks(), m_listener_init(false)
 {}
 
 void	WebServ::addListener(in_port_t port)
@@ -24,13 +26,16 @@ void	WebServ::addListener(in_port_t port)
 void	WebServ::initListener()
 {
 	std::for_each(m_socks.begin(), m_socks.end(), ListeningSocketInit(m_poller));
+	m_listener_init = true;
 }
 
-bool	WebServ::isListener(int fd)
+void	WebServ::removeListener(int fd)
 {
-	return (std::find_if(m_socks.begin(), m_socks.end(), SocketComp(fd)) != m_socks.end());
+	std::vector<ListeningSocket>::iterator it = std::find_if(m_socks.begin(), m_socks.end(), SocketComp(fd));
+	if (it == m_socks.end())
+		return ;
+	m_socks.erase(it);
 }
-
 
 EPoll&	WebServ::getPoller()
 {
@@ -39,6 +44,10 @@ EPoll&	WebServ::getPoller()
 
 bool	WebServ::loop()
 {
+	assert(m_listener_init);
+	if (m_socks.size() == 0)
+		return (false);
+	std::cout << "Blocking on epoll_wait()...\n";
 	m_poller.waitForEvents(EPoll::NOTIMEOUT);
 	return (true);
 }

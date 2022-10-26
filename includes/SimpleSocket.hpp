@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 13:24:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 14:28:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,16 @@ template <class T>
 			SimpleSocket(const SimpleSocket& other)
 				: FileDescriptor(other), m_sockaddr(other.m_sockaddr), m_len(other.m_len)
 			{}
+
+			SimpleSocket&	operator=(const SimpleSocket& rhs)
+			{
+				if (this == &rhs)
+					return (*this);
+				FileDescriptor::operator=(rhs);
+				m_sockaddr = rhs.m_sockaddr;
+				m_len = rhs.m_len;
+				return (*this);
+			}
 
 			/* Create a SimpleSocket from the socket() system call. */
 			SimpleSocket(int domain, int type, int protocol)
