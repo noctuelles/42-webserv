@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 15:34:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 17:51:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ namespace ft
 				static void	reason(const char* cause, const char* reason);
 			};
 
+			static const size_t			MaxErrorPageSize = 2097152; // 1MB
 			static const unsigned int	MaxPendingConnection = 5;
 
 			WebServ();
@@ -63,6 +64,8 @@ namespace ft
 
 			void	addListener(in_port_t port);
 			void	initListener();
+			void	loadErrorPage(unsigned int errcode, const char *filename);
+			std::vector<unsigned char>&	getErrorPage(unsigned int errcode);
 			void	removeListener(int fd);
 
 			EPoll&	getPoller();
@@ -74,9 +77,11 @@ namespace ft
 			WebServ(const WebServ& other);
 			WebServ&	operator=(const WebServ& rhs);
 
-			EPoll							m_poller;
-			std::vector<ListeningSocket>	m_socks;
-			bool							m_listener_init;
+			EPoll													m_poller;
+			std::vector<ListeningSocket>							m_socks;
+
+			std::map<unsigned int, std::vector<unsigned char> >	m_errtable;
+			bool													m_listener_init;
 
 	};
 }

@@ -6,11 +6,12 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 15:39:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/26 17:47:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
+#include "FileUtils.hpp"
 #include <vector>
 #include <iostream>
 
@@ -42,6 +43,16 @@ namespace ft
 		if (it == m_socks.end())
 			return ;
 		m_socks.erase(it);
+	}
+
+	void	WebServ::loadErrorPage(unsigned int errcode, const char* filename)
+	{
+		m_errtable.insert(std::make_pair(errcode, ft::loadFileContent(filename, MaxErrorPageSize)));
+	}
+
+	std::vector<unsigned char>&	WebServ::getErrorPage(unsigned int errcode)
+	{
+		return (m_errtable.at(errcode));
 	}
 
 	EPoll&	WebServ::getPoller()

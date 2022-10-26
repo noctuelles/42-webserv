@@ -17,6 +17,7 @@ INC_DIR			= includes
 
 SOURCES			= main.cpp \
 				  FileDescriptor.cpp \
+				  FileUtils.cpp \
 				  ListeningSocket.cpp \
 				  ClientSocket.cpp \
 				  WebServ.cpp \
