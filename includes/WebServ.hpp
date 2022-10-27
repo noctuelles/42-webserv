@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 23:51:15 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/27 15:52:27 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,6 @@ namespace ft
 				static void	reason(const char* cause, const char* reason);
 			};
 
-			static const size_t			MaxStatusCode        = 600;
 			static const size_t			MaxErrorPageSize     = 2097152; // 2MB
 			static const unsigned int	MaxPendingConnection = 5;
 
@@ -72,6 +71,7 @@ namespace ft
 			void		setStatusCodePage(http::StatusCode, const char*);
 			const char*	getStatusCodePage(http::StatusCode) const;
 			const char*	getStatusCodePhrase(http::StatusCode) const;
+			bool		isMethodAllowed(http::Method) const;
 
 			const char*	getHTTPVersion() const;
 			void	removeListener(int fd);
@@ -89,7 +89,8 @@ namespace ft
 			std::vector<ListeningSocket>		m_socks;
 
 			std::vector<io::FileContent>		m_custom_status_page;
-			std::pair<const char*, const char*>	m_status_table[MaxStatusCode];
+			std::pair<const char*, const char*>	m_status_table[http::MaxStatusCode];
+			const bool							m_forbidden_method[http::NbrAvailableMethod];
 
 			bool	m_listener_init;
 	};

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 23:52:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/27 18:02:57 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,15 @@ namespace ft
 	}
 
 	WebServ::WebServ()
-		: m_poller(), m_socks(), m_custom_status_page(), m_status_table(), m_listener_init(false)
+		: m_poller(), m_socks(), m_custom_status_page(), m_status_table(), m_forbidden_method(), m_listener_init(false)
 	{
-		m_custom_status_page.reserve(MaxStatusCode);
+		m_custom_status_page.reserve(http::MaxStatusCode);
 
 		m_status_table[http::BadRequest]          = http::InfoBadRequest;
 		m_status_table[http::Forbidden]           = http::InfoForbidden;
 		m_status_table[http::NotFound]            = http::InfoNotFound;
+		m_status_table[http::RequestTimeout]      = http::InfoRequestTimeout;
+		m_status_table[http::UriTooLong]          = http::InfoUriTooLong;
 		m_status_table[http::NotImplemented]      = http::InfoNotImplemented;
 		m_status_table[http::VersionNotSupported] = http::InfoVersionNotSupported;
 	}
@@ -76,6 +78,11 @@ namespace ft
 	const char*	WebServ::getStatusCodePhrase(http::StatusCode statuscode) const
 	{
 		return (m_status_table[statuscode].first);
+	}
+	
+	bool	WebServ::isMethodAllowed(http::Method method) const
+	{
+		return !(m_forbidden_method[method]);
 	}
 
 	EPoll&	WebServ::getPoller()

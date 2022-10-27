@@ -26,7 +26,7 @@ int main()
 
 		server.addListener(8080);
 		server.initListener();
-		server.setStatusCodePage(http::BadRequest, "error_pages/40z4.html");
+		std::cout << server.getStatusCodePage(http::UriTooLong) << '\n';
 
 		while (server.loop())
 		{

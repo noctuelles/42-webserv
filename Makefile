@@ -34,7 +34,7 @@ INCLUDE_FLAGS	= -I $(INC_DIR)
 CPPFLAGS		= $(INCLUDE_FLAGS) -MMD
 
 ## Add -Werror before correction
-CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -pedantic-errors #-Werror 
+CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -pedantic #-Werror 
 LDFLAGS			=
 LDLIBS			=
 
