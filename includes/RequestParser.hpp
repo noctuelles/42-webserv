@@ -6,15 +6,15 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/27 14:04:33 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/28 14:22:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef REQUESTPARSER_CLASS_HPP
+#ifndef  REQUESTPARSER_CLASS_HPP
 # define REQUESTPARSER_CLASS_HPP
 
-#include <cstddef>
-# include <map>
+# include <cstddef>
+# include <string>
 # include <utility>
 # include <cctype>
 
@@ -44,7 +44,7 @@ namespace ft
 					s_http_major_ver,
 					s_http_dot,
 					s_http_minor_ver,
-					s_end_request_line,
+					s_crlf,
 					s_end,
 					s_done
 				};
@@ -65,34 +65,30 @@ namespace ft
 				typedef struct s_parse_info
 				{
 					Method	method;
-					int	ver_major;
-					int	ver_minor;
+					int		ver_major;
+					int		ver_minor;
 					char	req_line[MaxRequestLineSize];
 				} t_parse_info;
 
 				RequestParser();
 				~RequestParser();
 
-				void	init(const char *data, std::size_t size);
-				t_parse_info&	getParsingInfo();
-				int		parse();
+				const t_parse_info&	getInfo() const;
+
+				int		parse(const std::string& buffer);
 
 			private:
 
-				const char*	m_data;
-				const char*	m_data_end;
 				size_t		m_size;
 				size_t		m_index;
 
-				size_t		m_header_size;
 				State		m_current_state;
-				Field		m_curr_field;
+				State		m_next_state;
 
 				t_parse_info	m_info;
 
+				inline void	_transitionState(State new_state, State next_state);
 				inline void	_changeState(State s);
-				inline void	_changeField(Field f);
-				void	_advance(std::size_t n);
 
 				static const char*	m_http;
 				static const char*	m_method[];

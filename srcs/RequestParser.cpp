@@ -6,13 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/27 17:36:28 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/28 14:29:44 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestParser.hpp"
 #include "HTTP.hpp"
-#include <string.h>
+#include <string>
+#include <iostream>
 #include <cctype>
 
 namespace ft
@@ -71,40 +72,22 @@ namespace ft
 		};
 
 		RequestParser::RequestParser()
-			: m_data(), m_size(), m_current_state(), m_info()
+			: m_size(), m_current_state(), m_info()
 		{}
 
 		RequestParser::~RequestParser()
 		{}
 
-		void	RequestParser::init(const char *data, std::size_t size)
-		{
-			m_current_state = s_start_request_line;
-			m_data = data;
-			m_data_end = data + size;
-			m_size = size;
-		}
-
-		RequestParser::t_parse_info&	RequestParser::getParsingInfo()
-		{
-			return (m_info);
-		}
-	}
-}
-
 		/* Using a simple state machine to parse the request.
 		 * That is: no memory allocation, no system call... */
 
-		int	RequestParser::parse()
+		int	RequestParser::parse(const std::string& buffer)
 		{
 			char	ch;
 
-			m_index = 1;
-			while (m_current_state != s_done && m_data != m_data_end)
+			for (std::string::const_iterator it = buffer.begin(); it != buffer.end(); it++)
 			{
-				if (++m_header_size > MaxHeaderSize)
-					return (BadRequest);
-				ch = *m_data;
+				ch = *it;
 				switch (m_current_state)
 				{
 					case s_start_request_line:
@@ -113,14 +96,17 @@ namespace ft
 						{
 							case 'G':
 								m_info.method = m_get;
+								m_index = 1;
 								_changeState(s_parse_method);
 								break;
 							case 'P':
 								m_info.method = m_post;
+								m_index = 1;
 								_changeState(s_parse_method);
 								break;
 							case 'D':
 								m_info.method = m_delete;
+								m_index = 1;
 								_changeState(s_parse_method);
 								break;
 							default:
@@ -179,35 +165,26 @@ namespace ft
 						if (!std::isdigit(ch))
 							return (BadRequest);
 						m_info.ver_minor = ch - '0';
-						_changeState(s_end_request_line);
-						break;
-
-					case s_end_request_line:
-						if (ch == '\r')
-							;
-						else
-						{
-							if (ch != '\n')
-								return (BadRequest);
-							_changeState(s_end);
-						}
+						_changeState(s_end);
 						break;
 
 					case s_end:
+						_transitionState(s_crlf, s_done);
+
+					case s_crlf:
 						if (ch == '\r')
 							;
 						else
 						{
 							if (ch != '\n')
 								return (BadRequest);
-							_changeState(s_done);
+							_changeState(m_next_state);
 						}
 						break;
 
 					default:
 						break;
 				};
-				m_data++;
 			}
 			if (m_current_state == s_done)
 				return (OK);
@@ -215,7 +192,23 @@ namespace ft
 				return (0);
 		}
 
+		const RequestParser::t_parse_info&	RequestParser::getInfo() const
+		{
+			return (m_info);
+		}
+
+		inline void	RequestParser::_transitionState(RequestParser::State new_state,
+				RequestParser::State next_state)
+		{
+			m_current_state = new_state;
+			m_next_state = next_state;
+		}
+
 		inline void	RequestParser::_changeState(State s)
 		{
 			m_current_state = s;
 		}
+	}
+}
+
+

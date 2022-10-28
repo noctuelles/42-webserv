@@ -8,6 +8,7 @@
 #include <list>
 #include <iostream>
 #include <typeinfo>
+#include <vector>
 #include "EPoll.hpp"
 #include "ClientSocket.hpp"
 #include "FileUtils.hpp"
@@ -16,13 +17,15 @@
 
 # define BUFFSIZE 1024 
 
+using namespace ft;
+
 int main()
 {
-	using namespace ft;
 	try
 	{
-		WebServ	server;
-		EPoll&		epoll = server.getPoller();
+		WebServ					server;
+		EPoll&					epoll = server.getPoller();
+		std::vector<uint8_t>	buffer(BUFFSIZE);
 
 		server.addListener(8080);
 		server.initListener();
@@ -53,21 +56,14 @@ int main()
 					}
 					else
 					{
-						char		buffer[BUFFSIZE] = {0};
-						ssize_t		received_bytes;
-
-						if ((received_bytes = recv(clientPtr->getFd(), buffer, BUFFSIZE, 0)) < 0)
-							throw (std::runtime_error("recv"));
-						if (received_bytes > 0)
+						switch (clientPtr->getState())
 						{
-							// When parsing is done, use
-							// epoll.modify(clientPtr->getFd(), EPOLLOUT, clientPtr);
-							// to write a response to a client.
-						}
-						if (received_bytes == 0 || it->events & EPOLLRDHUP)
-						{
-							std::cout << "Bye bye\n";
-							clientPtr->getBindedSocket()->removeConnection(clientPtr);
+							case ClientSocket::FETCHING_DATA:
+								clientPtr->receive();
+								break;
+							case ClientSocket::READY_FOR_RESPONSE:
+								epoll.modify(clientPtr->getFd(), EPOLLOUT, clientPtr);
+								break;
 						}
 					}
 				}
