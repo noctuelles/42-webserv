@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:52:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/28 17:40:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,9 @@ namespace ft
 
 			enum	State
 			{
-				FETCHING_DATA,
+				CONNECTION_ESTABLISHED,
+				FETCHING_REQUEST_HEADER,
+				FETCHING_REQUEST_BODY, // dismissed if the method is GET or DELETE !
 				READY_FOR_RESPONSE
 			};
 
@@ -42,7 +44,6 @@ namespace ft
 
 			class Disconnect : public std::exception
 			{
-
 			};
 
 			ClientSocket(int fd, ListeningSocket* sock);
@@ -52,18 +53,21 @@ namespace ft
 			~ClientSocket();
 			State	getState() const;
 
-			void										receive();
+			void	receive();
 			void										setIterator(const std::list<ClientSocket>::iterator& it);
 			const std::list<ClientSocket>::iterator&	getIterator() const;
 			ListeningSocket*							getBindedSocket();
 
-			static const size_t							BufferSize = 2048;
+			static const size_t							MaxBufferSize = 2048;
 
 		private:
 
+			static std::vector<uint8_t>			m_recv_buffer;
 			static std::string					m_buffer;
+
 			http::RequestParser					m_parser;
-			std::list<ClientSocket>::iterator	m_iterator; // this iterator is used to provide constant time for erasing a client from a connection list.
+
+			std::list<ClientSocket>::iterator	m_iterator;
 			State								m_state;
 			ListeningSocket*					m_socket;
 	};

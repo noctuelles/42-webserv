@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:43:06 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/27 18:00:34 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/28 18:47:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ namespace ft
 {
 	namespace http
 	{
+		const char*	CRLF = "\r\n";
+
 		const std::pair<const char*, const char*>	InfoOK = std::make_pair("200 OK", static_cast<const char*>(0));
 
 		const std::pair<const char*, const char*>	InfoBadRequest          = DEF_ERRPAGE("400 Bad Request");

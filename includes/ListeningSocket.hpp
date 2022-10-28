@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:53:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:51:01 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/28 16:15:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 # define LISTENINGSOCKET_CLASS_HPP
 
 # include "SimpleSocket.hpp"
-# include "ClientSocket.hpp"
 # include "SocketTypes.hpp"
 # include "EPoll.hpp"
+# include "ClientSocket.hpp"
 # include <vector>
 # include <list>
 

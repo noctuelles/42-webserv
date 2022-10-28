@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/27 16:54:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/28 18:27:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,17 @@
 # define HTTP_HPP
 
 # include <utility>
+# include <string>
+# include <map>
 
 namespace ft
 {
 	namespace http
 	{
+		typedef std::pair<std::string, std::string>				StringPair;
+		typedef std::pair<const std::string, const std::string>	ConstStringPair;
+		typedef std::map<const char*, std::string>				HeaderFieldMap;
+
 		typedef enum eStatusCode
 		{
 			OK                  = 200,
@@ -48,6 +54,7 @@ namespace ft
 		extern const std::pair<const char*, const char*>	InfoNotImplemented;
 		extern const std::pair<const char*, const char*>	InfoVersionNotSupported;
 		extern const std::pair<const char*, const char*>	InfoUriTooLong;
+		extern const char*	CRLF;
 	}
 }
 
