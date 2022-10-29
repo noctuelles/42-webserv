@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 16:12:22 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/29 19:40:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,9 +75,9 @@ namespace ft
 
 		while ((sa_fd = ::accept(m_fd, reinterpret_cast<struct sockaddr*>(&sa), &slen)) > 0)
 		{
-			m_con.push_back(ClientSocket(sa_fd, sa, slen, this));
+			m_con.push_back(Client(sa_fd, sa, slen, this));
 
-			ClientSocket& inserted = m_con.back();
+			Client& inserted = m_con.back();
 			inserted.setIterator((--m_con.end()));
 			epollInstance.add(sa_fd, EPOLLIN | EPOLLRDHUP, &inserted);
 		}
@@ -88,7 +88,7 @@ namespace ft
 		}
 	}
 
-	void	ListeningSocket::removeConnection(ClientSocket* clientPtr)
+	void	ListeningSocket::removeConnection(Client* clientPtr)
 	{
 		/* Automatically close the file descriptor and removing the file descriptor
 		 * from the interest list. */

@@ -6,13 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 18:27:11 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/29 17:16:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_HPP
 # define HTTP_HPP
 
+#include <exception>
 # include <utility>
 # include <string>
 # include <map>
@@ -27,7 +28,6 @@ namespace ft
 
 		typedef enum eStatusCode
 		{
-			OK                  = 200,
 			BadRequest          = 400,
 			Forbidden           = 403,
 			NotFound            = 404,
@@ -54,7 +54,9 @@ namespace ft
 		extern const std::pair<const char*, const char*>	InfoNotImplemented;
 		extern const std::pair<const char*, const char*>	InfoVersionNotSupported;
 		extern const std::pair<const char*, const char*>	InfoUriTooLong;
+
 		extern const char*	CRLF;
+
 	}
 }
 

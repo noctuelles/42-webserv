@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:22:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/29 18:07:35 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <cctype>
 
 # include <stdint.h>
+# include "HTTP.hpp"
 
 namespace ft
 {
@@ -37,23 +38,16 @@ namespace ft
 
 				enum State
 				{
-					s_start_request_line,
-					s_parse_method,
-					s_parse_req_line,
-					s_http,
-					s_http_major_ver,
-					s_http_dot,
-					s_http_minor_ver,
-					s_crlf,
-					s_end,
-					s_done
-				};
-
-				enum Method
-				{
-					m_get,
-					m_post,
-					m_delete
+					P_START_REQUEST_LINE,
+					P_PARSE_METHOD,
+					P_PARSE_REQ_LINE,
+					P_HTTP,
+					P_HTTP_MAJOR_VER,
+					P_HTTP_DOT,
+					P_HTTP_MINOR_VER,
+					P_CRLF,
+					P_END,
+					P_DONE
 				};
 
 				enum Field
@@ -65,8 +59,8 @@ namespace ft
 				typedef struct s_parse_info
 				{
 					Method	method;
-					int		ver_major;
-					int		ver_minor;
+					uint8_t	ver_major;
+					uint8_t	ver_minor;
 					char	req_line[MaxRequestLineSize];
 				} t_parse_info;
 
@@ -75,7 +69,7 @@ namespace ft
 
 				const t_parse_info&	getInfo() const;
 
-				int		parse(const std::string& buffer);
+				State		parse(const std::string& buffer);
 
 			private:
 
@@ -89,6 +83,8 @@ namespace ft
 
 				inline void	_transitionState(State new_state, State next_state);
 				inline void	_changeState(State s);
+
+				/* Static variables */ 
 
 				static const char*	m_http;
 				static const char*	m_method[];

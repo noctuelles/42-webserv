@@ -6,12 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 19:39:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/29 19:51:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
 #include "FileUtils.hpp"
+#include "ResponseHeader.hpp"
 #include "HTTP.hpp"
 #include <exception>
 #include <vector>
@@ -19,13 +20,14 @@
 
 namespace ft
 {
-	void WebServ::Logger::reason(const char* cause, const char* reason)
-	{
-		std::cerr << "webserv: " << cause << ": " << reason << ".\n";
-	}
+	std::pair<const char*, const char*>	WebServ::m_status_table[http::MaxStatusCode];
 
 	WebServ::WebServ()
-		: m_poller(), m_socks(), m_custom_status_page(), m_status_table(), m_forbidden_method(), m_listener_init(false)
+		: m_poller(),
+		m_socks(),
+		m_custom_status_page(),
+		m_forbidden_method(),
+		m_listener_init(false)
 	{
 		m_custom_status_page.reserve(http::MaxStatusCode);
 
@@ -70,12 +72,12 @@ namespace ft
 		}
 	}
 
-	const char*	WebServ::getStatusCodePage(http::StatusCode statuscode) const
+	const char*	WebServ::getStatusCodePage(http::StatusCode statuscode)
 	{
 		return (m_status_table[statuscode].second);
 	}
 
-	const char*	WebServ::getStatusCodePhrase(http::StatusCode statuscode) const
+	const char*	WebServ::getStatusCodePhrase(http::StatusCode statuscode)
 	{
 		return (m_status_table[statuscode].first);
 	}
@@ -85,21 +87,45 @@ namespace ft
 		return !(m_forbidden_method[method]);
 	}
 
-	EPoll&	WebServ::getPoller()
+	void	WebServ::run()
 	{
-		return (m_poller);
-	}
-
-	bool	WebServ::loop()
-	{
-		assert(m_listener_init);
-		if (m_socks.size() == 0)
+		while (true)
 		{
-			ft::WebServ::Logger::reason("fatal error", "no listening socket available");
-			return (false);
+			m_poller.waitForEvents(EPoll::NOTIMEOUT);
+			for (EPoll::iterator it = m_poller.begin(); it != m_poller.end(); it++)
+			{
+				InternetSocket*		inSockPtr       = static_cast<InternetSocket*>(it->data.ptr);
+				ListeningSocket*	listenSockPtr   = dynamic_cast<ListeningSocket*>(inSockPtr);
+				Client*				clientPtr       = dynamic_cast<Client*>(inSockPtr);
+
+				// Check if error condition happened on the associated file descriptor watched by epoll.
+				if (it->events & EPOLLERR || it->events & EPOLLHUP)
+				{
+					if (listenSockPtr)
+						removeListener(listenSockPtr->getFd());
+					else
+						clientPtr->getBindedSocket()->removeConnection(clientPtr);
+				}
+				if (it->events & EPOLLIN)
+				{
+					if (listenSockPtr)
+					{
+						std::cout << "Accepting new connection\n";
+						listenSockPtr->acceptConnection(m_poller);
+					}
+					else
+					{
+						// HERE we''ll be receiving things.
+						clientPtr->receive();
+						if (clientPtr->proceed() == Client::READY_FOR_RESPONSE_HEADER)
+							m_poller.modify(clientPtr->getFd(), EPOLLOUT, clientPtr);
+					}
+				}
+				if (it->events & EPOLLOUT) // Only client are registered on EPOLLOUT
+				{
+				}
+			}
 		}
-		m_poller.waitForEvents(EPoll::NOTIMEOUT);
-		return (true);
 	}
 
 	WebServ::~WebServ()

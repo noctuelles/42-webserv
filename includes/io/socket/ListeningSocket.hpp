@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:53:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 16:15:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/29 19:40:13 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 # include "SimpleSocket.hpp"
 # include "SocketTypes.hpp"
 # include "EPoll.hpp"
-# include "ClientSocket.hpp"
+# include "Client.hpp"
 # include <vector>
 # include <list>
 
@@ -35,11 +35,11 @@ namespace ft
 			void	bind(in_addr_t addr, in_port_t port);
 			void	listen(int backlog);
 			void	acceptConnection(EPoll& epollInstance);
-			void	removeConnection(ClientSocket* clientPtr);
+			void	removeConnection(Client* clientPtr);
 
 		private:
 
-			std::list<ClientSocket>	m_con;
+			std::list<Client>	m_con;
 
 	};
 }

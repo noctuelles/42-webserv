@@ -6,12 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:29:44 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/29 18:07:57 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestParser.hpp"
 #include "HTTP.hpp"
+#include "WebServ.hpp"
 #include <string>
 #include <iostream>
 #include <cctype>
@@ -81,7 +82,7 @@ namespace ft
 		/* Using a simple state machine to parse the request.
 		 * That is: no memory allocation, no system call... */
 
-		int	RequestParser::parse(const std::string& buffer)
+		RequestParser::State	RequestParser::parse(const std::string& buffer)
 		{
 			char	ch;
 
@@ -90,94 +91,94 @@ namespace ft
 				ch = *it;
 				switch (m_current_state)
 				{
-					case s_start_request_line:
+					case P_START_REQUEST_LINE:
 						// Determine the method.
 						switch (ch)
 						{
 							case 'G':
-								m_info.method = m_get;
+								m_info.method = Get;
 								m_index = 1;
-								_changeState(s_parse_method);
+								_changeState(P_PARSE_METHOD);
 								break;
 							case 'P':
-								m_info.method = m_post;
+								m_info.method = Post;
 								m_index = 1;
-								_changeState(s_parse_method);
+								_changeState(P_PARSE_METHOD);
 								break;
 							case 'D':
-								m_info.method = m_delete;
+								m_info.method = Delete;
 								m_index = 1;
-								_changeState(s_parse_method);
+								_changeState(P_PARSE_METHOD);
 								break;
 							default:
-								return (BadRequest);
+								throw (ft::WebServ::Exception(BadRequest));
 						};
 						break;
 
-					case s_parse_method:
+					case P_PARSE_METHOD:
 						// Check if the method is implemented.
 						if (ch == m_method[m_info.method][m_index])
 							m_index++;
 						else if (m_method[m_info.method][m_index] == '\0')
 						{
 							if (ch != ' ')
-								return (BadRequest);
-							_changeState(s_parse_req_line), m_index = 0;
+								throw (ft::WebServ::Exception(BadRequest));
+							_changeState(P_PARSE_REQ_LINE), m_index = 0;
 						}
 						else
-							return (NotImplemented);
+							throw (ft::WebServ::Exception(NotImplemented));
 						break;
 
-					case s_parse_req_line:
+					case P_PARSE_REQ_LINE:
 						if (m_index >= MaxRequestLineSize)
-							return (UriTooLong);
+							throw (ft::WebServ::Exception(UriTooLong));
 						if (ch == ' ')
-							_changeState(s_http), m_info.req_line[m_index] = '\0', m_index = 0;
+							_changeState(P_HTTP), m_info.req_line[m_index] = '\0', m_index = 0;
 						else
 							m_info.req_line[m_index++] = ch;
 						break;
 
-					case s_http:
+					case P_HTTP:
 						if (ch == m_http[m_index])
 							m_index++;
 						else
-							return (BadRequest);
+							throw (ft::WebServ::Exception(BadRequest));
 						if (m_http[m_index] == '\0')
-							_changeState(s_http_major_ver);
+							_changeState(P_HTTP_MAJOR_VER);
 						break;
 
-					case s_http_major_ver:
+					case P_HTTP_MAJOR_VER:
 						if (!std::isdigit(ch))
-							return (BadRequest);
+							throw (ft::WebServ::Exception(BadRequest));
 						m_info.ver_major = ch - '0';
 						if (m_info.ver_major != MajorVersionSupported)
-							return (VersionNotSupported);
-						_changeState(s_http_dot);
+							throw (ft::WebServ::Exception(VersionNotSupported));
+						_changeState(P_HTTP_DOT);
 						break;
 
-					case s_http_dot:
+					case P_HTTP_DOT:
 						if (ch != '.')
-							return (BadRequest);
-						_changeState(s_http_minor_ver);
+							throw (ft::WebServ::Exception(BadRequest));
+						_changeState(P_HTTP_MINOR_VER);
 						break;
 
-					case s_http_minor_ver:
+					case P_HTTP_MINOR_VER:
 						if (!std::isdigit(ch))
-							return (BadRequest);
+							throw (ft::WebServ::Exception(BadRequest));
 						m_info.ver_minor = ch - '0';
-						_changeState(s_end);
+						_changeState(P_END);
 						break;
 
-					case s_end:
-						_transitionState(s_crlf, s_done);
+					case P_END:
+						_transitionState(P_CRLF, P_DONE);
 
-					case s_crlf:
+					case P_CRLF:
 						if (ch == '\r')
 							;
 						else
 						{
 							if (ch != '\n')
-								return (BadRequest);
+								throw (ft::WebServ::Exception(BadRequest));
 							_changeState(m_next_state);
 						}
 						break;
@@ -186,10 +187,7 @@ namespace ft
 						break;
 				};
 			}
-			if (m_current_state == s_done)
-				return (OK);
-			else
-				return (0);
+			return (m_current_state);
 		}
 
 		const RequestParser::t_parse_info&	RequestParser::getInfo() const

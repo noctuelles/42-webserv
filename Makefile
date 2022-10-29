@@ -1,3 +1,15 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2022/10/29 18:01:34 by plouvel           #+#    #+#              #
+#    Updated: 2022/10/29 19:52:13 by plouvel          ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 ###################
 ##  VARIABLES   ##
 ##################
@@ -15,9 +27,16 @@ SRCS_DIR		= srcs
 OBJS_DIR		= objs
 INC_DIR			= includes
 
-SOURCES			= main.cpp \
-				  HTTP.cpp \
-				  ResponseHeader.cpp \
+SOURCES			= http/HTTP.cpp                 \
+				  http/RequestParser.cpp        \
+				  http/ResponseHeader.cpp       \
+				  http/Client.cpp               \
+				  io/EPoll.cpp                  \
+				  io/FileDescriptor.cpp         \
+				  io/FileUtils.cpp              \
+				  io/socket/ListeningSocket.cpp \
+				  main.cpp \
+				  WebServ.cpp \
 
 OBJS/OBJECTS	= $(addprefix $(OBJS_DIR)/, $(SOURCES:.cpp=.o))
 OBJS/DEPS		= $(patsubst	%.o,    %.d,		$(OBJS/OBJECTS))
@@ -25,8 +44,12 @@ OBJS/DEPS		= $(patsubst	%.o,    %.d,		$(OBJS/OBJECTS))
 #DEBUG			= -DDEBUG
 
 ## C (and c++) preprocessor flags
-INCLUDE_FLAGS	= -I $(INC_DIR)
-CPPFLAGS		= $(INCLUDE_FLAGS) -MMD
+INCLUDE_FLAGS	= -I $(INC_DIR) \
+				  -I $(INC_DIR)/http \
+				  -I $(INC_DIR)/io \
+				  -I $(INC_DIR)/io/socket
+
+CPPFLAGS		= $(INCLUDE_FLAGS)
 
 ## Add -Werror before correction
 CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -pedantic #-Werror 
@@ -51,11 +74,23 @@ $(NAME):		$(OBJS/OBJECTS)
 				@echo -e '\e[032mLinking...\e[0m'
 				${CXX} -o $@ ${LDFLAGS} $^ ${LDLIBS}
 
-$(OBJS_DIR)/%.o:		$(SRCS_DIR)/%.cpp Makefile | $(OBJS_DIR)
+$(OBJS_DIR)/%.o:		$(SRCS_DIR)/%.cpp Makefile | $(OBJS_DIR) $(OBJS_DIR)/http $(OBJS_DIR)/io $(OBJS_DIR)/io/socket
 				${CXX} ${DEBUG} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
 
+$(dir $@):
+	@mkdir -p $@
+
 $(OBJS_DIR):
-				mkdir $@ 
+				@mkdir $@ 
+
+$(OBJS_DIR)/http:
+				@mkdir $@ 
+
+$(OBJS_DIR)/io:
+				@mkdir $@ 
+
+$(OBJS_DIR)/io/socket:
+				@mkdir $@ 
 
 clean:
 				$(RM) $(OBJS_DIR)
