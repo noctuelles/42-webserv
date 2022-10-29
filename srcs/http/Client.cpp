@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 19:50:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/29 20:08:24 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,7 @@ namespace ft
 
 				if (m_parser.parse(m_buffer) == http::RequestParser::P_DONE)
 					m_state = READY_FOR_RESPONSE_BODY;
+
 				break;
 			case FETCHING_REQUEST_BODY:
 				break;

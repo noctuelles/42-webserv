@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 19:35:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/29 20:04:05 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,13 +30,27 @@ namespace ft
 
 		public:
 
+			/* CONNECTION_ESTABLISHED: ba
+			 *
+			 *
+			 * READY_FOR_RESPONSE_BODY: ready to perform operation on the underlying file in a GET or DELETE method.
+			 *                          usually, this involve opening the file or deleting it.
+			 *
+			 * SENDING_RESPONSE_BODY  : sending data to the client.
+			 */
+
 			enum	State
 			{
 				CONNECTION_ESTABLISHED,
+
 				FETCHING_REQUEST_HEADER,
-				FETCHING_REQUEST_BODY, // dismissed if the method is GET or DELETE !
+				FETCHING_REQUEST_BODY,
+
 				READY_FOR_RESPONSE_HEADER,
-				READY_FOR_RESPONSE_BODY
+				SENDING_RESPONSE_HEADER,
+
+				READY_FOR_RESPONSE_BODY,
+				SENDING_RESPONSE_BODY
 			};
 
 			Client(int fd, ListeningSocket* sock);
@@ -47,7 +61,8 @@ namespace ft
 			Client&	operator=(const Client& rhs);
 
 			void	receive();
-			void	send(const std::vector<uint8_t>& buffer);
+			void	send();
+
 			State	proceed();
 
 			void										setIterator(const std::list<Client>::iterator& it);
@@ -61,6 +76,8 @@ namespace ft
 
 			// Static buffer shared among all instances.
 			static std::vector<uint8_t>	m_recv_buffer;       // treating all
+			static std::vector<uint8_t>	m_send_buffer;
+
 			static std::string			m_buffer;
 
 			ssize_t						m_recv_bytes;
