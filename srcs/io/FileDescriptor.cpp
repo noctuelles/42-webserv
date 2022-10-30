@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 08:13:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:48:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 12:40:33 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,11 @@ namespace ft
 		m_should_close = true;
 		rhs.m_should_close = false;
 		return (*this);
+	}
+
+	FileDescriptor::operator int() const
+	{
+		return (m_fd);
 	}
 
 	FileDescriptor::~FileDescriptor()

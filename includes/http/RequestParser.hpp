@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 18:07:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 14:06:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,8 @@ namespace ft
 					P_HTTP_MINOR_VER,
 					P_CRLF,
 					P_END,
-					P_DONE
+					P_DONE,
+					P_DONE_ERR
 				};
 
 				enum Field
@@ -56,22 +57,36 @@ namespace ft
 					f_connection
 				};
 
-				typedef struct s_parse_info
-				{
-					Method	method;
-					uint8_t	ver_major;
-					uint8_t	ver_minor;
-					char	req_line[MaxRequestLineSize];
-				} t_parse_info;
-
 				RequestParser();
 				~RequestParser();
 
-				const t_parse_info&	getInfo() const;
+				// Note: these functions are implicitly declared as inlined.
+				Method	getMethod()						const {return (m_info.method);   }
+				uint8_t	getMajorVersion()				const {return (m_info.ver_major);}
+				uint8_t	getMinorVersion()				const {return (m_info.ver_minor);}
+				StatusCode	getErrorCode()				const {return (m_info.err_code); }
+				const std::string&	getRequestLine()	const {return (m_info.req_line); }
 
 				State		parse(const std::string& buffer);
 
 			private:
+
+				struct ParseInfo
+				{
+					ParseInfo()
+						: method(), ver_major(), ver_minor(), err_code(), req_line(), header_fields()
+					{
+						req_line.reserve(MaxRequestLineSize);
+					}
+
+					Method		method;
+					uint8_t		ver_major;
+					uint8_t		ver_minor;
+					StatusCode	err_code;
+					std::string	req_line;
+
+					std::map<std::string, std::string>	header_fields;
+				};
 
 				size_t		m_size;
 				size_t		m_index;
@@ -79,10 +94,15 @@ namespace ft
 				State		m_current_state;
 				State		m_next_state;
 
-				t_parse_info	m_info;
+				ParseInfo	m_info;
 
 				inline void	_transitionState(State new_state, State next_state);
 				inline void	_changeState(State s);
+				inline State	_errorState(StatusCode err_code)
+				{
+					m_info.err_code = err_code;
+					return (P_DONE_ERR);
+				};
 
 				/* Static variables */ 
 

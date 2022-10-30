@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 19:51:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 13:53:56 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,7 @@ namespace ft
 			m_poller.waitForEvents(EPoll::NOTIMEOUT);
 			for (EPoll::iterator it = m_poller.begin(); it != m_poller.end(); it++)
 			{
+				// Note: dynamic cast incur runtime costs.
 				InternetSocket*		inSockPtr       = static_cast<InternetSocket*>(it->data.ptr);
 				ListeningSocket*	listenSockPtr   = dynamic_cast<ListeningSocket*>(inSockPtr);
 				Client*				clientPtr       = dynamic_cast<Client*>(inSockPtr);
@@ -117,8 +118,15 @@ namespace ft
 					{
 						// HERE we''ll be receiving things.
 						clientPtr->receive();
-						if (clientPtr->proceed() == Client::READY_FOR_RESPONSE_HEADER)
-							m_poller.modify(clientPtr->getFd(), EPOLLOUT, clientPtr);
+						try
+						{
+							if (clientPtr->proceed() == Client::READY_FOR_RESPONSE_HEADER)
+								m_poller.modify(*clientPtr, EPOLLOUT, clientPtr);
+						}
+						catch (const Exception& e)
+						{
+
+						}
 					}
 				}
 				if (it->events & EPOLLOUT) // Only client are registered on EPOLLOUT

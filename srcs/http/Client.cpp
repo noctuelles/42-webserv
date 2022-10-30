@@ -6,12 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 20:08:24 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 14:58:27 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 #include "RequestParser.hpp"
+#include "ResponseHeader.hpp"
+#include "WebServ.hpp"
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -28,8 +30,9 @@ namespace ft
 		m_recv_bytes(),
 		m_parser(),
 		m_iterator(),
-		m_state(CONNECTION_ESTABLISHED),
-		m_socket(sock)
+		m_state(FETCHING_REQUEST_HEADER),
+		m_socket(sock),
+		m_file_handle()
 	{
 		setBlockingMode(false);
 	}
@@ -39,8 +42,9 @@ namespace ft
 		m_recv_bytes(),
 		m_parser(),
 		m_iterator(),
-		m_state(CONNECTION_ESTABLISHED),
-		m_socket(sock)
+		m_state(FETCHING_REQUEST_HEADER),
+		m_socket(sock),
+		m_file_handle()
 	{
 		setBlockingMode(false);
 	}
@@ -68,9 +72,6 @@ namespace ft
 	{
 		switch (m_state)
 		{
-			case CONNECTION_ESTABLISHED:
-				m_state = FETCHING_REQUEST_HEADER;
-				__attribute__((fallthrough));
 			case FETCHING_REQUEST_BODY:
 			case FETCHING_REQUEST_HEADER:
 				m_recv_bytes = recv(m_fd, m_recv_buffer.data(), m_recv_buffer.size(), 0);
@@ -93,8 +94,18 @@ namespace ft
 				m_buffer.assign(m_recv_buffer.begin(), m_recv_buffer.end());
 				m_buffer.resize(m_recv_bytes);
 
-				if (m_parser.parse(m_buffer) == http::RequestParser::P_DONE)
-					m_state = READY_FOR_RESPONSE_BODY;
+				switch (m_parser.parse(m_buffer))
+				{
+					case http::RequestParser::P_DONE:
+						m_state = SENDING_RESPONSE_HEADER;
+						// 
+						break;
+					case http::RequestParser::P_DONE_ERR:
+						m_state = SENDING_RESPONSE_ERROR_HEADER;
+						break;
+					default:
+						break;
+				}
 
 				break;
 			case FETCHING_REQUEST_BODY:
@@ -104,6 +115,21 @@ namespace ft
 				break ;
 		}
 		return (m_state);
+	}
+
+	void	Client::send()
+	{
+		switch (m_state)
+		{
+			case SENDING_RESPONSE_ERROR_HEADER:
+				http::ResponseHeader	respHeader(
+						m_parser.getMajorVersion(),
+						m_parser.getMinorVersion(),
+						ft::WebServ::getStatusCodePhrase(m_parser.getErrorCode()));
+				respHeader.addField("Content-Lenght", "10000");
+
+				break;
+		}
 	}
 
 	ListeningSocket*	Client::getBindedSocket()

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 08:13:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:48:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 12:40:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ namespace ft
 		public:
 
 			FileDescriptor(int fd);
+			operator	int() const;
 			FileDescriptor(const FileDescriptor& other);
 			FileDescriptor&	operator=(const FileDescriptor& rhs);
 			virtual ~FileDescriptor();

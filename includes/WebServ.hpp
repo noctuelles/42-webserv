@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 19:21:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 14:31:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ namespace ft
 
 		private:
 
-			static std::pair<const char*, const char*>	m_status_table[http::MaxStatusCode];
+			static	http::StatusInfo	m_status_table[http::MaxStatusCode];
 
 			WebServ(const WebServ& other);
 			WebServ&	operator=(const WebServ& rhs);

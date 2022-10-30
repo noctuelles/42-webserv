@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 18:07:57 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 14:07:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,7 @@ namespace ft
 								_changeState(P_PARSE_METHOD);
 								break;
 							default:
-								throw (ft::WebServ::Exception(BadRequest));
+								return (_errorState(BadRequest));
 						};
 						break;
 
@@ -126,45 +126,45 @@ namespace ft
 							_changeState(P_PARSE_REQ_LINE), m_index = 0;
 						}
 						else
-							throw (ft::WebServ::Exception(NotImplemented));
+							return (_errorState(NotImplemented));
 						break;
 
 					case P_PARSE_REQ_LINE:
 						if (m_index >= MaxRequestLineSize)
-							throw (ft::WebServ::Exception(UriTooLong));
+							return (_errorState(UriTooLong));
 						if (ch == ' ')
 							_changeState(P_HTTP), m_info.req_line[m_index] = '\0', m_index = 0;
 						else
-							m_info.req_line[m_index++] = ch;
+							m_info.req_line.push_back(ch);
 						break;
 
 					case P_HTTP:
 						if (ch == m_http[m_index])
 							m_index++;
 						else
-							throw (ft::WebServ::Exception(BadRequest));
+							return (_errorState(BadRequest));
 						if (m_http[m_index] == '\0')
 							_changeState(P_HTTP_MAJOR_VER);
 						break;
 
 					case P_HTTP_MAJOR_VER:
 						if (!std::isdigit(ch))
-							throw (ft::WebServ::Exception(BadRequest));
+							return (_errorState(BadRequest));
 						m_info.ver_major = ch - '0';
 						if (m_info.ver_major != MajorVersionSupported)
-							throw (ft::WebServ::Exception(VersionNotSupported));
+							return (_errorState(VersionNotSupported));
 						_changeState(P_HTTP_DOT);
 						break;
 
 					case P_HTTP_DOT:
 						if (ch != '.')
-							throw (ft::WebServ::Exception(BadRequest));
+							return (_errorState(BadRequest));
 						_changeState(P_HTTP_MINOR_VER);
 						break;
 
 					case P_HTTP_MINOR_VER:
 						if (!std::isdigit(ch))
-							throw (ft::WebServ::Exception(BadRequest));
+							return (_errorState(BadRequest));
 						m_info.ver_minor = ch - '0';
 						_changeState(P_END);
 						break;
@@ -178,7 +178,7 @@ namespace ft
 						else
 						{
 							if (ch != '\n')
-								throw (ft::WebServ::Exception(BadRequest));
+								return (_errorState(BadRequest));
 							_changeState(m_next_state);
 						}
 						break;
@@ -188,11 +188,6 @@ namespace ft
 				};
 			}
 			return (m_current_state);
-		}
-
-		const RequestParser::t_parse_info&	RequestParser::getInfo() const
-		{
-			return (m_info);
 		}
 
 		inline void	RequestParser::_transitionState(RequestParser::State new_state,

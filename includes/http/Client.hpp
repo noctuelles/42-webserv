@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 20:04:05 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 14:44:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <exception>
 # include <vector>
 # include <list>
+# include <fstream>
 # include "SocketTypes.hpp"
 # include "RequestParser.hpp"
 # include "HTTP.hpp"
@@ -41,15 +42,13 @@ namespace ft
 
 			enum	State
 			{
-				CONNECTION_ESTABLISHED,
-
 				FETCHING_REQUEST_HEADER,
 				FETCHING_REQUEST_BODY,
 
-				READY_FOR_RESPONSE_HEADER,
-				SENDING_RESPONSE_HEADER,
+				SENDING_RESPONSE_ERROR_HEADER,
+				SENDING_RESPONSE_ERROR_BODY,
 
-				READY_FOR_RESPONSE_BODY,
+				SENDING_RESPONSE_HEADER,
 				SENDING_RESPONSE_BODY
 			};
 
@@ -76,7 +75,6 @@ namespace ft
 
 			// Static buffer shared among all instances.
 			static std::vector<uint8_t>	m_recv_buffer;       // treating all
-			static std::vector<uint8_t>	m_send_buffer;
 
 			static std::string			m_buffer;
 
@@ -86,6 +84,11 @@ namespace ft
 			std::list<Client>::iterator	m_iterator;
 			State						m_state;
 			ListeningSocket*			m_socket;
+
+			http::StatusCode			m_status_code;
+
+			static std::vector<uint8_t>		m_file_buffer;
+			std::basic_ifstream<uint8_t>	m_file_handle;
 	};
 }
 
