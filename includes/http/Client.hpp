@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 14:44:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 21:35:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 namespace ft
 {
 	class ListeningSocket;
+	class WebServ;
 
 	class Client : public InternetSocket
 	{
@@ -49,7 +50,9 @@ namespace ft
 				SENDING_RESPONSE_ERROR_BODY,
 
 				SENDING_RESPONSE_HEADER,
-				SENDING_RESPONSE_BODY
+				SENDING_RESPONSE_BODY,
+
+				DONE
 			};
 
 			Client(int fd, ListeningSocket* sock);
@@ -60,14 +63,13 @@ namespace ft
 			Client&	operator=(const Client& rhs);
 
 			void	receive();
-			void	send();
+			State	send(const WebServ& servInstance);
 
 			State	proceed();
 
 			void										setIterator(const std::list<Client>::iterator& it);
-			const std::list<Client>::iterator&	getIterator() const;
+			const std::list<Client>::iterator&			getIterator() const;
 			ListeningSocket*							getBindedSocket();
-			const http::RequestParser::t_parse_info&	getParseInfo();
 
 			static const size_t							MaxBufferSize = 2048;
 
@@ -88,7 +90,7 @@ namespace ft
 			http::StatusCode			m_status_code;
 
 			static std::vector<uint8_t>		m_file_buffer;
-			std::basic_ifstream<uint8_t>	m_file_handle;
+			std::basic_ifstream<char>	m_file_handle;
 	};
 }
 

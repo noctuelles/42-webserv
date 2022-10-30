@@ -6,22 +6,36 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 16:38:10 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/26 18:19:33 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 21:19:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <vector>
-#include <limits>
-#include <sys/types.h>
+#ifndef UTILS_HPP
+# define UTILS_HPP
+
+# include <sstream>
+# include <vector>
+# include <limits>
+# include <string>
+# include <sys/types.h>
 
 namespace ft
 {
 	namespace io
 	{
-		typedef std::vector<unsigned char>	FileContent;
-
 		size_t	getFileSize(const char *filename);
 
-		FileContent	loadFileContent(const char* filename, size_t maxsize);
+		std::string	loadFileContent(const char* filename, size_t maxSize = std::numeric_limits<size_t>::max());
+	}
+
+	namespace utils
+	{
+		template <class T>
+			std::string	integralToString(T val)
+			{
+				return (static_cast<std::ostringstream &>(std::ostringstream() << std::dec << val).str());
+			}
 	}
 }
+
+#endif

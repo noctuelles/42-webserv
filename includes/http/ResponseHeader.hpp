@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/27 14:20:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 19:09:55 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 21:03:33 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ namespace ft
 		{
 			public:
 
-				ResponseHeader(uint8_t major_ver, uint8_t minor_ver, const char* status_code_reason);
+				ResponseHeader(uint8_t major_ver, uint8_t minor_ver, const std::string& phrase);
 				ResponseHeader(const ResponseHeader& other);
 				~ResponseHeader();
 

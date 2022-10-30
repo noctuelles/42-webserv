@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 18:02:49 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 19:10:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 21:20:49 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,17 +19,15 @@ namespace ft
 {
 	namespace http
 	{
-		ResponseHeader::ResponseHeader(uint8_t major_ver, uint8_t minor_ver, const char* status_code_reason)
+		ResponseHeader::ResponseHeader(uint8_t major_ver, uint8_t minor_ver, const std::string& phrase)
 			: m_status_line("HTTP/M.m"), m_header_field(), m_cache_change(true), m_cache()
 		{
-			assert(major_ver == 1);
-			assert(minor_ver >= 0 && minor_ver <= 9);
 			m_cache.reserve(DefaultCacheSize);
 			m_status_line[5] = major_ver + '0';
 			m_status_line[7] = minor_ver + '0';
 			m_status_line
 				.append(" ")
-				.append(status_code_reason)
+				.append(phrase)
 				.append(CRLF);
 		}
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 14:31:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 20:37:28 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,44 +63,15 @@ namespace ft
 			void	addListener(in_port_t port);
 			void	initListener();
 
-			void				setStatusCodePage(http::StatusCode, const char*);
-			static const char*	getStatusCodePage(http::StatusCode);
-			static const char*	getStatusCodePhrase(http::StatusCode);
-
-			bool		isMethodAllowed(http::Method) const;
-
+			void				setStatusCodePage(http::StatusCode, const char* filename);
+			const http::StatusInfo&	getStatusCodeInfo(http::StatusCode statusCode) const;
 			const char*	getHTTPVersion() const;
+
 			void		removeListener(int fd);
 			void		run();
 
-			class Exception
-			{
-				public:
-
-					Exception(http::StatusCode code)
-						: m_phrase(m_status_table[code].first),
-						  m_page(m_status_table[code].second)
-					{}
-
-					const char*	getPhrase() const throw()
-					{
-						return (m_phrase);
-					}
-
-					const char*	getPage() const throw()
-					{
-						return (m_page);
-					}
-
-				private:
-
-					const char*	m_phrase;
-					const char*	m_page;
-			};
-
 		private:
 
-			static	http::StatusInfo	m_status_table[http::MaxStatusCode];
 
 			WebServ(const WebServ& other);
 			WebServ&	operator=(const WebServ& rhs);
@@ -109,10 +80,8 @@ namespace ft
 			EPoll								m_poller;
 			// Vector to store all the listening sockets.
 			std::vector<ListeningSocket>		m_socks;
+			std::vector<http::StatusInfo>		m_status_table;
 
-			// Vector to store the custom status pages defined by the user.
-			std::vector<io::FileContent>		m_custom_status_page;
-			const bool							m_forbidden_method[http::NbrAvailableMethod];
 
 			bool	m_listener_init;
 	};

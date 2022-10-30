@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 14:07:48 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 21:44:20 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ namespace ft
 						else if (m_method[m_info.method][m_index] == '\0')
 						{
 							if (ch != ' ')
-								throw (ft::WebServ::Exception(BadRequest));
+								return (_errorState(BadRequest));
 							_changeState(P_PARSE_REQ_LINE), m_index = 0;
 						}
 						else
@@ -133,7 +133,7 @@ namespace ft
 						if (m_index >= MaxRequestLineSize)
 							return (_errorState(UriTooLong));
 						if (ch == ' ')
-							_changeState(P_HTTP), m_info.req_line[m_index] = '\0', m_index = 0;
+							_changeState(P_HTTP), m_index = 0;
 						else
 							m_info.req_line.push_back(ch);
 						break;

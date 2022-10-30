@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 14:29:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 21:31:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,16 +18,32 @@
 # include <string>
 # include <map>
 
+# define HTTP_ERRPAGE(X) (ft::http::StatusInfo(\
+				X, \
+					"<html>\n"\
+						"\t<head><title>"X"</title></head>\n"\
+						"\t<body>\n"\
+							"\t\t<center><h1>"X"</h1></center>\n"\
+							"\t\t<hr>\n"\
+							"\t\t<center><i>webserv</i></center>\n"\
+						"\t</body>\n"\
+					"</html>\n"))
+
+# define HTTP_STATUS(X) (ft::http::StatusInfo(\
+				X, \
+				""))
+
 namespace ft
 {
 	namespace http
 	{
 		typedef std::pair<std::string, std::string>				StringPair;
 		typedef std::pair<const std::string, const std::string>	ConstStringPair;
-		typedef std::map<const char*, std::string>				HeaderFieldMap;
+		typedef std::map<const std::string, std::string>		HeaderFieldMap;
 
 		typedef enum eStatusCode
 		{
+			OK                  = 200,
 			BadRequest          = 400,
 			Forbidden           = 403,
 			NotFound            = 404,
@@ -48,29 +64,20 @@ namespace ft
 
 		struct StatusInfo
 		{
-			StatusInfo(const char* phrase, const char* page, size_t page_size)
-				: phrase(phrase), page(page), page_size(page_size)
+			StatusInfo()
+				: phrase(), page()
 			{}
 
-			StatusInfo(const char* phrase, const char* page)
-				: phrase(phrase), page(page), page_size()
+			StatusInfo(const std::string& phrase, const std::string& page_content)
+				: phrase(phrase), page()
 			{
-				page_size = sizeof(page);
+				page.first = page_content.size();
+				page.second = page_content;
 			}
 
-			const char*	phrase;
-			const char*	page;
-			size_t		page_size;
+			std::string				phrase;
+			std::pair<size_t, std::string>	page;
 		};
-
-		extern const StatusInfo	StatusInfo_OK;
-		extern const StatusInfo	StatusInfo_BadRequest;
-		extern const StatusInfo	StatusInfo_Forbidden;
-		extern const StatusInfo	StatusInfo_NotFound;
-		extern const StatusInfo	StatusInfo_RequestTimeout;
-		extern const StatusInfo	StatusInfo_NotImplemented;
-		extern const StatusInfo	StatusInfo_VersionNotSupported;
-		extern const StatusInfo	StatusInfo_UriTooLong;
 
 		extern const char*	CRLF;
 

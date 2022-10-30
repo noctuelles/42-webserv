@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 13:53:56 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/30 21:17:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,24 +20,16 @@
 
 namespace ft
 {
-	std::pair<const char*, const char*>	WebServ::m_status_table[http::MaxStatusCode];
-
 	WebServ::WebServ()
 		: m_poller(),
 		m_socks(),
-		m_custom_status_page(),
-		m_forbidden_method(),
+		m_status_table(),
 		m_listener_init(false)
 	{
-		m_custom_status_page.reserve(http::MaxStatusCode);
+		m_status_table.resize(http::MaxStatusCode);
 
-		m_status_table[http::BadRequest]          = http::InfoBadRequest;
-		m_status_table[http::Forbidden]           = http::InfoForbidden;
-		m_status_table[http::NotFound]            = http::InfoNotFound;
-		m_status_table[http::RequestTimeout]      = http::InfoRequestTimeout;
-		m_status_table[http::UriTooLong]          = http::InfoUriTooLong;
-		m_status_table[http::NotImplemented]      = http::InfoNotImplemented;
-		m_status_table[http::VersionNotSupported] = http::InfoVersionNotSupported;
+		m_status_table[http::BadRequest]	= HTTP_ERRPAGE("400 Bad Request");
+		m_status_table[http::NotFound]		= HTTP_ERRPAGE("404 Not Found");
 	}
 
 	void	WebServ::addListener(in_port_t port)
@@ -63,8 +55,7 @@ namespace ft
 	{
 		try
 		{
-			m_custom_status_page.push_back(ft::io::loadFileContent(filename, MaxErrorPageSize));
-			m_status_table[statuscode].second = reinterpret_cast<const char *>(m_custom_status_page.back().data());
+			m_status_table[statuscode].page.second = io::loadFileContent(filename);
 		}
 		catch (const std::exception& e)
 		{
@@ -72,19 +63,9 @@ namespace ft
 		}
 	}
 
-	const char*	WebServ::getStatusCodePage(http::StatusCode statuscode)
+	const http::StatusInfo&	WebServ::getStatusCodeInfo(http::StatusCode statusCode) const
 	{
-		return (m_status_table[statuscode].second);
-	}
-
-	const char*	WebServ::getStatusCodePhrase(http::StatusCode statuscode)
-	{
-		return (m_status_table[statuscode].first);
-	}
-	
-	bool	WebServ::isMethodAllowed(http::Method method) const
-	{
-		return !(m_forbidden_method[method]);
+		return (m_status_table[statusCode]);
 	}
 
 	void	WebServ::run()
@@ -116,21 +97,22 @@ namespace ft
 					}
 					else
 					{
-						// HERE we''ll be receiving things.
 						clientPtr->receive();
-						try
+						switch (clientPtr->proceed())
 						{
-							if (clientPtr->proceed() == Client::READY_FOR_RESPONSE_HEADER)
+							case Client::SENDING_RESPONSE_ERROR_HEADER:
+							case Client::SENDING_RESPONSE_HEADER:
 								m_poller.modify(*clientPtr, EPOLLOUT, clientPtr);
-						}
-						catch (const Exception& e)
-						{
-
+								break;
+							default:
+								;
 						}
 					}
 				}
 				if (it->events & EPOLLOUT) // Only client are registered on EPOLLOUT
 				{
+					if (clientPtr->send(*this) == Client::DONE)
+						clientPtr->getBindedSocket()->removeConnection(clientPtr);
 				}
 			}
 		}
