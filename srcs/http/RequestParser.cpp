@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/31 17:26:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/31 18:31:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,6 +162,7 @@ namespace ft
 						if (!std::isdigit(ch))
 							return (_errorState(BadRequest));
 						m_info.ver_minor = utils::charToIntegral<uint8_t>(ch);
+						m_info.header_fields.push_back(HeaderField());
 						_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
 						break;
 
@@ -169,13 +170,11 @@ namespace ft
 					{
 						unsigned char	transformed_ch = m_token[ch];
 
-						m_info.header_fields.push_back(HeaderField());
 						if (!transformed_ch) // ch is not a token char
 						{
 							switch (ch)
 							{
 								case ':':
-									m_headerf_it = it;
 									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
 									break;
 								// These cases means that request contains no header fields at all.
@@ -199,16 +198,14 @@ namespace ft
 
 					case P_HEADER_FIELD_VALUE:
 					{
-						if (m_headerf_it != it && _previousState() == P_OWS)
-							_backField().second.append(m_headerf_it, it);
-
 						if (!_isVChar(ch))
 						{
 							switch (ch)
 							{
 								case '\r':
 								case '\n':
-									_transitionState(P_CRLF, P_DONE);
+									m_info.header_fields.push_back(HeaderField());
+									_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
 									break;
 
 								case ' ':
@@ -216,6 +213,8 @@ namespace ft
 									m_headerf_it = it; // save the iterator on the first OWS encountered.
 									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
 									break;
+								default:
+									;
 							}
 						}
 						else
@@ -241,7 +240,12 @@ namespace ft
 
 					case P_OWS:
 						if (!_isOWS(ch))
+						{
+							if (_previousState() == P_HEADER_FIELD_VALUE && !_isCRLF(ch))
+								_backField().second.append(m_headerf_it, it);
+							it--;
 							_changeState(m_next_state);
+						}
 						break;
 
 					default:

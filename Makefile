@@ -6,7 +6,7 @@
 #    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/29 18:01:34 by plouvel           #+#    #+#              #
-#    Updated: 2022/10/31 15:19:54 by plouvel          ###   ########.fr        #
+#    Updated: 2022/10/31 17:30:30 by plouvel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,16 +27,8 @@ SRCS_DIR		= srcs
 OBJS_DIR		= objs
 INC_DIR			= includes
 
-SOURCES			= http/HTTP.cpp                 \
-				  http/RequestParser.cpp        \
-				  http/ResponseHeader.cpp       \
-				  http/Client.cpp               \
-				  io/EPoll.cpp                  \
-				  io/FileDescriptor.cpp         \
-				  io/FileUtils.cpp              \
-				  io/socket/ListeningSocket.cpp \
+SOURCES			= http/RequestParser.cpp        \
 				  main.cpp \
-				  WebServ.cpp \
 
 OBJS/OBJECTS	= $(addprefix $(OBJS_DIR)/, $(SOURCES:.cpp=.o))
 OBJS/DEPS		= $(patsubst	%.o,    %.d,		$(OBJS/OBJECTS))

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/31 17:27:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/31 18:23:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,6 +151,7 @@ namespace ft
 				inline bool			_isVChar(unsigned char ch)		{return (ch > ' ' && ch < 0x7F);		}
 				inline bool			_isTknChar(unsigned char ch)	{return (m_token[ch] != 0);				}
 				inline bool			_isOWS(unsigned char ch)		{return (ch == ' ' || ch == '\t');		}
+				inline bool			_isCRLF(unsigned char ch)		{return (ch == '\r' || ch == '\n');		}
 				inline HeaderField&	_backField()					{return (m_info.header_fields.back());	}
 
 
@@ -175,6 +176,11 @@ namespace ft
 				inline State		_previousState() const
 				{
 					return (m_previous_state);
+				}
+
+				inline State		_nextState() const
+				{
+					return (m_next_state);
 				}
 
 				/* Static variables */ 

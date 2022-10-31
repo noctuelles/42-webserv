@@ -1,14 +1,13 @@
-#include "WebServ.hpp"
+#include "RequestParser.hpp"
 
 using namespace ft;
 
 int main()
 {
-	WebServ					server;
+	std::string	myBuffer("GET / HTTP/1.1\r\nBonjour:   \tToi!   cava    \r\n\r\n");
+	ft::http::RequestParser	reqPar;
 
-	server.addListener(8080);
-	server.initListener();
-	server.run();
+	reqPar.parse(myBuffer);
 
 	return (1);
 }
