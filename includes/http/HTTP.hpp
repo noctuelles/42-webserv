@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 21:31:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/31 17:03:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,29 +37,34 @@ namespace ft
 {
 	namespace http
 	{
-		typedef std::pair<std::string, std::string>				StringPair;
-		typedef std::pair<const std::string, const std::string>	ConstStringPair;
-		typedef std::map<const std::string, std::string>		HeaderFieldMap;
+		typedef std::pair<std::string, std::string>			HeaderField;
+
+		/* Supported status code. Vim users, press 'gx' to open links (with the cursor under the link obviously). */
 
 		typedef enum eStatusCode
 		{
-			OK                  = 200,
-			BadRequest          = 400,
-			Forbidden           = 403,
-			NotFound            = 404,
-			RequestTimeout      = 408,
-			UriTooLong          = 414,
-			NotImplemented      = 501,
-			VersionNotSupported = 505,
-			MaxStatusCode       = 600
+			OK							= 200,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-200-ok */
+			BadRequest					= 400,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-400-bad-request */
+			Forbidden					= 403,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-403-forbidden */
+			NotFound					= 404,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-408-request-timeout */
+			MethodNotAllowed			= 405,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-405-method-not-allowed */
+			RequestTimeout				= 408,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-408-request-timeout */
+			ContentTooLarge				= 413,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-413-content-too-large */
+			UnsupportedMediaType		= 415,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-415-unsupported-media-type */
+			UriTooLong					= 414,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-414-uri-too-long */
+			NotImplemented				= 501,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-501-not-implemented */
+			VersionNotSupported			= 505,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-505-http-version-not-suppor */
+			MaxStatusCode				= 600 	/* Not used, only a placeholder for allocating the right amount of size of memory. */
 		} StatusCode;
+
+		/* Supported method */
 
 		typedef enum eMethod
 		{
-			Get,
-			Post,
-			Delete,
-			NbrAvailableMethod
+			Get,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-get */
+			Post,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-post */
+			Delete,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-delete */
+			AvailableMethod						/* Not used, only a placeholder. */
 		} Method;
 
 		struct StatusInfo
@@ -75,8 +80,13 @@ namespace ft
 				page.second = page_content;
 			}
 
-			std::string				phrase;
+			std::string						phrase;
 			std::pair<size_t, std::string>	page;
+		};
+
+		// Multipurpose Internet Mail Extensions
+		struct MIME
+		{
 		};
 
 		extern const char*	CRLF;

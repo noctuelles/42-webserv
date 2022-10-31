@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 21:17:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/31 11:24:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,13 @@ namespace ft
 	{
 		m_status_table.resize(http::MaxStatusCode);
 
-		m_status_table[http::BadRequest]	= HTTP_ERRPAGE("400 Bad Request");
-		m_status_table[http::NotFound]		= HTTP_ERRPAGE("404 Not Found");
+		m_status_table[http::BadRequest]			= HTTP_ERRPAGE("400 Bad Request");
+		m_status_table[http::Forbidden]				= HTTP_ERRPAGE("403 Forbidden");
+		m_status_table[http::NotFound]				= HTTP_ERRPAGE("404 Not Found");
+		m_status_table[http::RequestTimeout]		= HTTP_ERRPAGE("408 Request Timeout");
+		m_status_table[http::UriTooLong]			= HTTP_ERRPAGE("414 Uri Too Long");
+		m_status_table[http::NotImplemented]		= HTTP_ERRPAGE("501 Not Implemented");
+		m_status_table[http::VersionNotSupported]	= HTTP_ERRPAGE("505 HTTP Version Not Supported");
 	}
 
 	void	WebServ::addListener(in_port_t port)
@@ -92,7 +97,6 @@ namespace ft
 				{
 					if (listenSockPtr)
 					{
-						std::cout << "Accepting new connection\n";
 						listenSockPtr->acceptConnection(m_poller);
 					}
 					else

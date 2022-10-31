@@ -6,11 +6,12 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 21:44:20 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/31 17:26:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestParser.hpp"
+#include "FileUtils.hpp"
 #include "HTTP.hpp"
 #include "WebServ.hpp"
 #include <string>
@@ -26,12 +27,6 @@ namespace ft
 			"GET",
 			"POST",
 			"DELETE"
-		};
-
-		const char*	RequestParser::m_field_name[] =
-		{
-			"host",
-			"connection"
 		};
 
 		const char*	RequestParser::m_http = "HTTP/";
@@ -73,7 +68,8 @@ namespace ft
 		};
 
 		RequestParser::RequestParser()
-			: m_size(), m_current_state(), m_info()
+			: m_header_size(0), m_index(0),
+			  m_current_state(P_START_REQUEST_LINE), m_info()
 		{}
 
 		RequestParser::~RequestParser()
@@ -84,7 +80,7 @@ namespace ft
 
 		RequestParser::State	RequestParser::parse(const std::string& buffer)
 		{
-			char	ch;
+			unsigned char	ch;
 
 			for (std::string::const_iterator it = buffer.begin(); it != buffer.end(); it++)
 			{
@@ -130,7 +126,7 @@ namespace ft
 						break;
 
 					case P_PARSE_REQ_LINE:
-						if (m_index >= MaxRequestLineSize)
+						if (m_info.req_line.size() >= MaxRequestLineSize)
 							return (_errorState(UriTooLong));
 						if (ch == ' ')
 							_changeState(P_HTTP), m_index = 0;
@@ -150,7 +146,7 @@ namespace ft
 					case P_HTTP_MAJOR_VER:
 						if (!std::isdigit(ch))
 							return (_errorState(BadRequest));
-						m_info.ver_major = ch - '0';
+						m_info.ver_major = utils::charToIntegral<uint8_t>(ch);
 						if (m_info.ver_major != MajorVersionSupported)
 							return (_errorState(VersionNotSupported));
 						_changeState(P_HTTP_DOT);
@@ -165,12 +161,72 @@ namespace ft
 					case P_HTTP_MINOR_VER:
 						if (!std::isdigit(ch))
 							return (_errorState(BadRequest));
-						m_info.ver_minor = ch - '0';
-						_changeState(P_END);
+						m_info.ver_minor = utils::charToIntegral<uint8_t>(ch);
+						_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
 						break;
 
-					case P_END:
-						_transitionState(P_CRLF, P_DONE);
+					case P_HEADER_FIELD_NAME:
+					{
+						unsigned char	transformed_ch = m_token[ch];
+
+						m_info.header_fields.push_back(HeaderField());
+						if (!transformed_ch) // ch is not a token char
+						{
+							switch (ch)
+							{
+								case ':':
+									m_headerf_it = it;
+									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
+									break;
+								// These cases means that request contains no header fields at all.
+								case '\r':
+								case '\n':
+									_transitionState(P_CRLF, P_DONE); // terminate the header parsing.
+									break;
+								default:
+									return (_errorState(BadRequest));
+							}
+						}
+						else
+						{
+							if (_backField().first.size() >= MaxHeaderFieldSize)
+								return (_errorState(BadRequest));
+							_backField().first.push_back(transformed_ch);
+						}
+
+						break;
+					}
+
+					case P_HEADER_FIELD_VALUE:
+					{
+						if (m_headerf_it != it && _previousState() == P_OWS)
+							_backField().second.append(m_headerf_it, it);
+
+						if (!_isVChar(ch))
+						{
+							switch (ch)
+							{
+								case '\r':
+								case '\n':
+									_transitionState(P_CRLF, P_DONE);
+									break;
+
+								case ' ':
+								case '\t':
+									m_headerf_it = it; // save the iterator on the first OWS encountered.
+									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
+									break;
+							}
+						}
+						else
+						{
+							if (_backField().second.size() >= MaxHeaderFieldSize)
+								return (_errorState(BadRequest));
+							_backField().second.push_back(ch);
+						}
+
+						break;
+					}
 
 					case P_CRLF:
 						if (ch == '\r')
@@ -183,25 +239,16 @@ namespace ft
 						}
 						break;
 
+					case P_OWS:
+						if (!_isOWS(ch))
+							_changeState(m_next_state);
+						break;
+
 					default:
 						break;
 				};
 			}
 			return (m_current_state);
 		}
-
-		inline void	RequestParser::_transitionState(RequestParser::State new_state,
-				RequestParser::State next_state)
-		{
-			m_current_state = new_state;
-			m_next_state = next_state;
-		}
-
-		inline void	RequestParser::_changeState(State s)
-		{
-			m_current_state = s;
-		}
 	}
 }
-
-

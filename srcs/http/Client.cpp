@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 21:46:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/10/31 11:05:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,7 +147,7 @@ namespace ft
 				http::ResponseHeader	respHeader(m_parser.getMajorVersion(), m_parser.getMinorVersion(), statusInfo.phrase);
 
 				respHeader.addField("Server", "webserv/0.1");
-				respHeader.addField("Content-Type", "text/html");
+				respHeader.addField("Content-Type", "application/octet-stream");
 				respHeader.addField("Connection", "closed");
 
 				m_state = SENDING_RESPONSE_BODY;
