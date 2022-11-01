@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 18:41:41 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 18:47:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,12 +198,12 @@ namespace ft
 								case '\r':
 								case '\n':
 									if (_backField().first.empty())
-										_transitionState(P_CRLF, P_DONE, &RequestParser::_popBackField);
+										_transitionState(P_CRLF, P_DONE, &RequestParser::_popBackField), it--;
 									else
 									{
 										// useless field. trash it.
 										_popBackField(it);
-										_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
+										_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField), it--;
 									}
 									break;
 
@@ -228,7 +228,7 @@ namespace ft
 							{
 								case '\r':
 								case '\n':
-									_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
+									_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField), it--;
 									break;
 
 								case ' ':
