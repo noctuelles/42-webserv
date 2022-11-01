@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 16:33:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 18:41:41 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ namespace ft
 			"P_HEADER_FIELD_VALUE_OWS",
 			"P_CRLF",
 			"P_OWS",
+			"P_WS",
 			"P_END",
 			"P_DONE",
 			"P_DONE_ERR"
@@ -86,7 +87,7 @@ namespace ft
 
 		RequestParser::RequestParser()
 			: m_header_size(0), m_index(0),
-			  m_current_state(P_START_REQUEST_LINE), m_callback_fnct(NULL), m_info()
+			  m_current_state(P_START_REQUEST_LINE), m_callback_fnct(NULL), m_ws_buffer(), m_info()
 		{}
 
 		RequestParser::~RequestParser()
@@ -182,33 +183,32 @@ namespace ft
 					{
 						unsigned char	transformed_ch = m_token[ch];
 
-						if (!transformed_ch) // ch is not a token char
+						if (!transformed_ch) // ch is not a token char.
 						{
 							switch (ch)
 							{
 								case ':':
-									// You can't have an empty field name.
+									// Empty field name, bad request.
 									if (_backField().first.empty())
 										return (_errorState(BadRequest));
+
 									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
 									break;
 
 								case '\r':
 								case '\n':
 									if (_backField().first.empty())
-										_transitionState(P_CRLF, P_DONE, &RequestParser::_popBackField); // terminate the header parsing.
+										_transitionState(P_CRLF, P_DONE, &RequestParser::_popBackField);
+									else
+									{
+										// useless field. trash it.
+										_popBackField(it);
+										_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
+									}
 									break;
 
-								case ' ':
-								case '\t':
-									if (!_backField().first.empty()) // cannot have OWS between ':' and field name.
+								default: // WS is not allowed in field_name (trailing and leading).
 										return (_errorState(BadRequest));
-									if (m_info.header_fields.size() == 1) // cannot have OWS on the first header field.
-										return (_errorState(BadRequest));
-									break;
-
-								default:
-									return (_errorState(BadRequest));
 							}
 						}
 						else
@@ -233,9 +233,10 @@ namespace ft
 
 								case ' ':
 								case '\t':
-									m_headerf_it = it; // save the iterator on the first OWS encountered.
-									_transitionState(P_OWS, P_HEADER_FIELD_VALUE, &RequestParser::_appendOWS);
+									m_ws_buffer.push_back(ch);
+									_transitionState(P_WS, P_HEADER_FIELD_VALUE);
 									break;
+
 								default:
 									;
 							}
@@ -260,10 +261,23 @@ namespace ft
 						}
 						break;
 
-					case P_OWS:
-						if (!_isOWS(ch))
+					case P_WS:
+						if (!_isWS(ch))
 						{
-							if (this->m_callback_fnct) (this->*m_callback_fnct)(it);
+							if (!_isCRLF(ch))
+								_backField().second.append(m_ws_buffer.begin(), m_ws_buffer.end());
+							m_ws_buffer.clear();
+							it--;
+							_changeState(m_next_state);
+						}
+						else
+							m_ws_buffer.push_back(ch);
+
+						break;
+
+					case P_OWS:
+						if (!_isWS(ch))
+						{
 							it--; // avoid eating char.
 							_changeState(m_next_state);
 						}

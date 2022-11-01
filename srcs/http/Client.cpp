@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 16:36:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 17:33:52 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@
 namespace ft
 {
 	std::string				Client::m_buffer;
-	std::vector<uint8_t>	Client::m_recv_buffer(8);
+	std::vector<uint8_t>	Client::m_recv_buffer(MaxBufferSize);
 
 	Client::Client(int fd, ListeningSocket* sock)
 		: InternetSocket(fd),

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 16:28:15 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 18:25:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ namespace ft
 					P_HEADER_FIELD_VALUE_OWS,
 					P_CRLF,
 					P_OWS,
+					P_WS,
 					P_END,
 					P_DONE,
 					P_DONE_ERR
@@ -153,13 +154,12 @@ namespace ft
 				State			m_next_state;
 				callBackFnct	m_callback_fnct;
 
-				std::string::const_iterator	m_headerf_it;
-
+				std::string	m_ws_buffer;
 				ParseInfo	m_info;
 
 				inline bool			_isVChar(unsigned char ch)		{return (ch > ' ' && ch < 0x7F);		}
 				inline bool			_isTknChar(unsigned char ch)	{return (m_token[ch] != 0);				}
-				inline bool			_isOWS(unsigned char ch)		{return (ch == ' ' || ch == '\t');		}
+				inline bool			_isWS(unsigned char ch)		{return (ch == ' ' || ch == '\t');		}
 				inline bool			_isCRLF(unsigned char ch)		{return (ch == '\r' || ch == '\n');		}
 				inline HeaderField&	_backField()					{return (m_info.header_fields.back());	}
 				inline bool			_emptyBackHeader() {return (_backField().first.empty() && _backField().second.empty());}
@@ -198,12 +198,6 @@ namespace ft
 				{
 					(void) it;
 					m_info.header_fields.push_back(HeaderField());
-				}
-
-				void	_appendOWS(const std::string::const_iterator& it)
-				{
-							if (!_isCRLF(*it))
-								_backField().second.append(m_headerf_it, it);
 				}
 
 				void	_popBackField(const std::string::const_iterator& it)

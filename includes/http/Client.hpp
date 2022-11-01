@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/31 11:01:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 18:40:31 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ namespace ft
 			const std::list<Client>::iterator&			getIterator() const;
 			ListeningSocket*							getBindedSocket();
 
-			static const size_t							MaxBufferSize = 9600;
+			static const size_t							MaxBufferSize = 1;
 
 		private:
 
