@@ -6,7 +6,7 @@
 #    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/29 18:01:34 by plouvel           #+#    #+#              #
-#    Updated: 2022/11/01 12:16:46 by plouvel          ###   ########.fr        #
+#    Updated: 2022/11/01 16:02:54 by plouvel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,8 +27,16 @@ SRCS_DIR		= srcs
 OBJS_DIR		= objs
 INC_DIR			= includes
 
-SOURCES			= http/RequestParser.cpp        \
-				  main.cpp \
+SOURCES			= http/RequestParser.cpp		\
+				  http/ResponseHeader.cpp		\
+				  http/HTTP.cpp					\
+				  http/Client.cpp				\
+				  io/socket/ListeningSocket.cpp	\
+				  io/EPoll.cpp					\
+				  io/FileDescriptor.cpp			\
+				  io/FileUtils.cpp				\
+				  WebServ.cpp					\
+				  main.cpp
 
 OBJS/OBJECTS	= $(addprefix $(OBJS_DIR)/, $(SOURCES:.cpp=.o))
 OBJS/DEPS		= $(patsubst	%.o,    %.d,		$(OBJS/OBJECTS))
@@ -44,7 +52,7 @@ INCLUDE_FLAGS	= -I $(INC_DIR) \
 CPPFLAGS		= $(INCLUDE_FLAGS)
 
 ## Add -Werror before correction
-CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -pedantic #-Werror 
+CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 #-Werror 
 LDFLAGS			=
 LDLIBS			=
 

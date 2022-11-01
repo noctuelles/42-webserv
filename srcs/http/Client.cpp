@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 15:41:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 16:36:35 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,14 @@
 #include <iostream>
 #include <sstream>
 
+#ifndef NDEBUG
+# include "DebugColors.h"
+#endif
+
 namespace ft
 {
 	std::string				Client::m_buffer;
-	std::vector<uint8_t>	Client::m_recv_buffer(MaxBufferSize);
+	std::vector<uint8_t>	Client::m_recv_buffer(8);
 
 	Client::Client(int fd, ListeningSocket* sock)
 		: InternetSocket(fd),
@@ -80,13 +84,19 @@ namespace ft
 		{
 			case FETCHING_REQUEST_BODY:
 			case FETCHING_REQUEST_HEADER:
-				m_recv_bytes = recv(m_fd, m_recv_buffer.data(), m_recv_buffer.size(), 0);
+				m_recv_bytes = recv(*this, m_recv_buffer.data(), m_recv_buffer.size(), 0);
 				if (m_recv_bytes < 0)
 					; // This is an error !
 				else if (m_recv_bytes == 0)
 					; // Client Disconnect
+#ifndef NDEBUG
 				else
-					std::cout << "Received data :\n" << m_recv_buffer.data() << '\n';
+				{
+					std::cout << "\t## " << UYEL << "Raw Data from the socket" << CRST << " ##\n";
+					write(STDOUT_FILENO, m_recv_buffer.data(), m_recv_bytes);
+					std::cout << "\n\t## " << UYEL << "End Raw Data" << CRST << " ##\n";
+				}
+#endif
 			default:
 				return ;
 		}
@@ -101,8 +111,12 @@ namespace ft
 			case FETCHING_REQUEST_HEADER:
 				m_buffer.assign(m_recv_buffer.begin(), m_recv_buffer.end());
 				m_buffer.resize(m_recv_bytes);
+				ret = m_parser.parse(m_buffer);
 
-				switch ((ret = m_parser.parse(m_buffer)))
+#ifndef NDEBUG
+				m_parser.report();
+#endif
+				switch (ret)
 				{
 					case http::RequestParser::P_DONE:
 						m_state = SENDING_RESPONSE_HEADER;
@@ -127,9 +141,6 @@ namespace ft
 					default:
 						break;
 				}
-#ifndef NDEBUG
-				std::cout << "Parser State : " << http::RequestParser::StateTable[ret] << '\n';
-#endif
 				break;
 			case FETCHING_REQUEST_BODY:
 				break;

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 15:36:49 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 16:28:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,9 +110,13 @@ namespace ft
 				RequestParser();
 				~RequestParser();
 
+#ifndef NDEBUG
+				void	report();
+#endif
+
 				inline Method	getMethod()						const {return (m_info.method);   }
-				inline uint8_t	getMajorVersion()				const {return (m_info.ver_major);}
-				inline uint8_t	getMinorVersion()				const {return (m_info.ver_minor);}
+				inline int	getMajorVersion()				const {return (m_info.ver_major);}
+				inline int	getMinorVersion()				const {return (m_info.ver_minor);}
 				inline StatusCode	getErrorCode()				const {return (m_info.err_code); }
 				inline const std::string&	getRequestLine()	const {return (m_info.req_line); }
 				inline std::vector<HeaderField>&	getHeaderFields() {return (m_info.header_fields);}
@@ -133,8 +137,8 @@ namespace ft
 					}
 
 					Method		method;
-					uint8_t		ver_major;
-					uint8_t		ver_minor;
+					int			ver_major;
+					int			ver_minor;
 					StatusCode	err_code;
 					std::string	req_line;
 

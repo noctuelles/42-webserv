@@ -6,17 +6,17 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 15:32:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 15:57:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_HPP
 # define HTTP_HPP
 
-#include <exception>
 # include <utility>
 # include <string>
 # include <map>
+# include <vector>
 
 # define HTTP_ERRPAGE(X) (ft::http::StatusInfo(\
 				X, \
@@ -38,6 +38,8 @@ namespace ft
 	namespace http
 	{
 		typedef std::pair<std::string, std::string>			HeaderField;
+		typedef std::map<std::string, std::string>			HeaderFieldMap;
+		typedef std::vector<HeaderField>					HeaderFieldVector;
 
 		/* Supported status code. Vim users, press 'gx' to open links (with the cursor under the link obviously). */
 

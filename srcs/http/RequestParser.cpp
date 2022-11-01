@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 15:38:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 16:33:13 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,11 @@
 #include <string>
 #include <iostream>
 #include <cctype>
+
+#ifndef NDEBUG
+# include "DebugColors.h"
+# include <iomanip>
+#endif
 
 namespace ft
 {
@@ -154,7 +159,7 @@ namespace ft
 					case P_HTTP_MAJOR_VER:
 						if (!std::isdigit(ch))
 							return (_errorState(BadRequest));
-						m_info.ver_major = utils::charToIntegral<uint8_t>(ch);
+						m_info.ver_major = utils::charToIntegral<int>(ch);
 						if (m_info.ver_major != MajorVersionSupported)
 							return (_errorState(VersionNotSupported));
 						_changeState(P_HTTP_DOT);
@@ -169,7 +174,7 @@ namespace ft
 					case P_HTTP_MINOR_VER:
 						if (!std::isdigit(ch))
 							return (_errorState(BadRequest));
-						m_info.ver_minor = utils::charToIntegral<uint8_t>(ch);
+						m_info.ver_minor = utils::charToIntegral<int>(ch);
 						_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
 						break;
 
@@ -274,5 +279,21 @@ namespace ft
 			}
 			return (m_current_state);
 		}
+
+#ifndef NDEBUG
+		void	RequestParser::report()
+		{
+			using namespace std;
+			cout << "\t## " << UYEL << "Parsing report" << CRST << " ##\n\n";
+			cout << RED << "Method" << CRST << ": " << GRN << MethodTable[getMethod()] << '\n';
+			cout << RED << "Internal state" << CRST << ": " << UCYN << StateTable[m_current_state] << '\n';
+			cout << RED << "HTTP Version" << CRST << ": " << GRN <<  getMajorVersion() << '.' << getMinorVersion() << CRST << "\n\n";
+			cout << "\t## " << UYEL << "Parsed header" << CRST << " ##\n";
+			for (HeaderFieldVector::const_iterator i = getHeaderFields().begin(); i != getHeaderFields().end(); i++)
+				std::cout << GRN << i->first << CRST << ": " << BLU << i->second << CRST << "\\n\n";
+			cout << "\t## " << UYEL << "End of parsing report" << CRST << " ##\n\n";
+		}
+#endif
+
 	}
 }
