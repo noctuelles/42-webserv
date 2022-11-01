@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/31 17:03:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 15:32:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ namespace ft
 		};
 
 		extern const char*	CRLF;
-
+		extern const char*	MethodTable[];
 	}
 }
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/31 18:31:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 15:38:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,23 @@ namespace ft
 {
 	namespace http
 	{
-		const char*	RequestParser::m_method[] =
+		const char*	RequestParser::StateTable[] = 
 		{
-			"GET",
-			"POST",
-			"DELETE"
+			"P_START_REQUEST_LINE",
+			"P_PARSE_METHOD",
+			"P_PARSE_REQ_LINE",
+			"P_HTTP",
+			"P_HTTP_MAJOR_VER",
+			"P_HTTP_DOT",
+			"P_HTTP_MINOR_VER",
+			"P_HEADER_FIELD_NAME",
+			"P_HEADER_FIELD_VALUE",
+			"P_HEADER_FIELD_VALUE_OWS",
+			"P_CRLF",
+			"P_OWS",
+			"P_END",
+			"P_DONE",
+			"P_DONE_ERR"
 		};
 
 		const char*	RequestParser::m_http = "HTTP/";
@@ -42,7 +54,7 @@ namespace ft
 		/*  24 can   25 em    26 sub   27 esc   28 fs    29 gs    30 rs    31 us  */
 				0,       0,       0,       0,       0,       0,       0,       0,
 		/*  32 sp    33  !    34  "    35  #    36  $    37  %    38  &    39  '  */
-			   ' ',     '!',      0,      '#',     '$',     '%',     '&',    '\'',
+			  0,     '!',      0,      '#',     '$',     '%',     '&',    '\'',
 		/*  40  (    41  )    42  *    43  +    44  ,    45  -    46  .    47  /  */
 				0,       0,      '*',     '+',      0,      '-',     '.',      0,
 		/*  48  0    49  1    50  2    51  3    52  4    53  5    54  6    55  7  */
@@ -69,7 +81,7 @@ namespace ft
 
 		RequestParser::RequestParser()
 			: m_header_size(0), m_index(0),
-			  m_current_state(P_START_REQUEST_LINE), m_info()
+			  m_current_state(P_START_REQUEST_LINE), m_callback_fnct(NULL), m_info()
 		{}
 
 		RequestParser::~RequestParser()
@@ -113,14 +125,10 @@ namespace ft
 
 					case P_PARSE_METHOD:
 						// Check if the method is implemented.
-						if (ch == m_method[m_info.method][m_index])
+						if (ch == MethodTable[m_info.method][m_index])
 							m_index++;
-						else if (m_method[m_info.method][m_index] == '\0')
-						{
-							if (ch != ' ')
-								return (_errorState(BadRequest));
-							_changeState(P_PARSE_REQ_LINE), m_index = 0;
-						}
+						else if (ch == ' ' && MethodTable[m_info.method][m_index] == '\0')
+							_transitionState(P_OWS, P_PARSE_REQ_LINE);
 						else
 							return (_errorState(NotImplemented));
 						break;
@@ -162,8 +170,7 @@ namespace ft
 						if (!std::isdigit(ch))
 							return (_errorState(BadRequest));
 						m_info.ver_minor = utils::charToIntegral<uint8_t>(ch);
-						m_info.header_fields.push_back(HeaderField());
-						_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
+						_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
 						break;
 
 					case P_HEADER_FIELD_NAME:
@@ -175,13 +182,26 @@ namespace ft
 							switch (ch)
 							{
 								case ':':
+									// You can't have an empty field name.
+									if (_backField().first.empty())
+										return (_errorState(BadRequest));
 									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
 									break;
-								// These cases means that request contains no header fields at all.
+
 								case '\r':
 								case '\n':
-									_transitionState(P_CRLF, P_DONE); // terminate the header parsing.
+									if (_backField().first.empty())
+										_transitionState(P_CRLF, P_DONE, &RequestParser::_popBackField); // terminate the header parsing.
 									break;
+
+								case ' ':
+								case '\t':
+									if (!_backField().first.empty()) // cannot have OWS between ':' and field name.
+										return (_errorState(BadRequest));
+									if (m_info.header_fields.size() == 1) // cannot have OWS on the first header field.
+										return (_errorState(BadRequest));
+									break;
+
 								default:
 									return (_errorState(BadRequest));
 							}
@@ -192,7 +212,6 @@ namespace ft
 								return (_errorState(BadRequest));
 							_backField().first.push_back(transformed_ch);
 						}
-
 						break;
 					}
 
@@ -204,14 +223,13 @@ namespace ft
 							{
 								case '\r':
 								case '\n':
-									m_info.header_fields.push_back(HeaderField());
-									_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
+									_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
 									break;
 
 								case ' ':
 								case '\t':
 									m_headerf_it = it; // save the iterator on the first OWS encountered.
-									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
+									_transitionState(P_OWS, P_HEADER_FIELD_VALUE, &RequestParser::_appendOWS);
 									break;
 								default:
 									;
@@ -228,12 +246,11 @@ namespace ft
 					}
 
 					case P_CRLF:
-						if (ch == '\r')
-							;
-						else
+						if (ch != '\r')
 						{
 							if (ch != '\n')
 								return (_errorState(BadRequest));
+							if (this->m_callback_fnct) (this->*m_callback_fnct)(it);
 							_changeState(m_next_state);
 						}
 						break;
@@ -241,11 +258,14 @@ namespace ft
 					case P_OWS:
 						if (!_isOWS(ch))
 						{
-							if (_previousState() == P_HEADER_FIELD_VALUE && !_isCRLF(ch))
-								_backField().second.append(m_headerf_it, it);
-							it--;
+							if (this->m_callback_fnct) (this->*m_callback_fnct)(it);
+							it--; // avoid eating char.
 							_changeState(m_next_state);
 						}
+						break;
+
+					case P_DONE:
+						return (P_DONE);
 						break;
 
 					default:

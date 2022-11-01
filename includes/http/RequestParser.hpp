@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/31 18:23:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 15:36:49 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,13 +73,15 @@ namespace ft
 				static const size_t	MaxHeaderSize      = 1024 * 80; // 80kb header
 				static const size_t	MaxRequestLineSize = 1024 * 8;  // 8kb uri
 				static const size_t	MaxHeaderFieldSize = 1024;
-				static const size_t	MaxHeaderFieldNbr  = 2000;
+				static const size_t	DefaultAllocatedHeaderField = 1024;
 
 				static const uint8_t	MajorVersionSupported = 1;
 
 				/* ################################# State ################################## */
 
 				// Note: P_CRLF and P_OWS are so called "transition state".
+				static const char*	StateTable[]; //debugging purpose.
+
 				enum State
 				{
 					P_START_REQUEST_LINE,
@@ -113,10 +115,13 @@ namespace ft
 				inline uint8_t	getMinorVersion()				const {return (m_info.ver_minor);}
 				inline StatusCode	getErrorCode()				const {return (m_info.err_code); }
 				inline const std::string&	getRequestLine()	const {return (m_info.req_line); }
+				inline std::vector<HeaderField>&	getHeaderFields() {return (m_info.header_fields);}
 
 				State		parse(const std::string& buffer);
 
 			private:
+
+				typedef void	(RequestParser::*callBackFnct)(const std::string::const_iterator&);
 
 				struct ParseInfo
 				{
@@ -124,7 +129,7 @@ namespace ft
 						: method(), ver_major(), ver_minor(), err_code(), req_line(), header_fields()
 					{
 						req_line.reserve(MaxRequestLineSize);
-						header_fields.reserve(300);
+						header_fields.reserve(DefaultAllocatedHeaderField);
 					}
 
 					Method		method;
@@ -139,20 +144,21 @@ namespace ft
 				size_t		m_header_size;
 				size_t		m_index;
 
-				State		m_previous_state;
-				State		m_current_state;
-				State		m_next_state;
+				State			m_previous_state;
+				State			m_current_state;
+				State			m_next_state;
+				callBackFnct	m_callback_fnct;
 
 				std::string::const_iterator	m_headerf_it;
 
 				ParseInfo	m_info;
-
 
 				inline bool			_isVChar(unsigned char ch)		{return (ch > ' ' && ch < 0x7F);		}
 				inline bool			_isTknChar(unsigned char ch)	{return (m_token[ch] != 0);				}
 				inline bool			_isOWS(unsigned char ch)		{return (ch == ' ' || ch == '\t');		}
 				inline bool			_isCRLF(unsigned char ch)		{return (ch == '\r' || ch == '\n');		}
 				inline HeaderField&	_backField()					{return (m_info.header_fields.back());	}
+				inline bool			_emptyBackHeader() {return (_backField().first.empty() && _backField().second.empty());}
 
 
 				inline State	_errorState(StatusCode err_code)
@@ -161,10 +167,11 @@ namespace ft
 					return (P_DONE_ERR);
 				};
 
-				inline void			_transitionState(State new_state, State next_state)
+				inline void			_transitionState(State new_state, State next_state, callBackFnct fnct = NULL)
 				{
 					_changeState(new_state);
 					m_next_state = next_state;
+					m_callback_fnct = fnct;
 				}
 
 				inline void			_changeState(State s)
@@ -183,10 +190,27 @@ namespace ft
 					return (m_next_state);
 				}
 
+				void	_pushBackField(const std::string::const_iterator& it)
+				{
+					(void) it;
+					m_info.header_fields.push_back(HeaderField());
+				}
+
+				void	_appendOWS(const std::string::const_iterator& it)
+				{
+							if (!_isCRLF(*it))
+								_backField().second.append(m_headerf_it, it);
+				}
+
+				void	_popBackField(const std::string::const_iterator& it)
+				{
+					(void) it;
+					m_info.header_fields.pop_back();
+				}
+
 				/* Static variables */ 
 
 				static const char*	m_http;
-				static const char*	m_method[];
 				static const char	m_token[256];
 		};
 	}

@@ -6,7 +6,7 @@
 #    By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/29 18:01:34 by plouvel           #+#    #+#              #
-#    Updated: 2022/10/31 17:30:30 by plouvel          ###   ########.fr        #
+#    Updated: 2022/11/01 12:16:46 by plouvel          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,7 +49,7 @@ LDFLAGS			=
 LDLIBS			=
 
 ## Our beloved address sanitizer
-#ASAN_FLAG		=  -fsanitize=address
+ASAN_FLAG		=  -fsanitize=address
 CXXFLAGS		+=	$(ASAN_FLAG)
 LDFLAGS			+=	$(ASAN_FLAG)
 

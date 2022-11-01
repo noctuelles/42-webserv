@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/31 11:05:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/01 15:41:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,13 +94,15 @@ namespace ft
 
 	Client::State	Client::proceed()
 	{
+		http::RequestParser::State	ret;
+
 		switch (m_state)
 		{
 			case FETCHING_REQUEST_HEADER:
 				m_buffer.assign(m_recv_buffer.begin(), m_recv_buffer.end());
 				m_buffer.resize(m_recv_bytes);
 
-				switch (m_parser.parse(m_buffer))
+				switch ((ret = m_parser.parse(m_buffer)))
 				{
 					case http::RequestParser::P_DONE:
 						m_state = SENDING_RESPONSE_HEADER;
@@ -125,7 +127,9 @@ namespace ft
 					default:
 						break;
 				}
-
+#ifndef NDEBUG
+				std::cout << "Parser State : " << http::RequestParser::StateTable[ret] << '\n';
+#endif
 				break;
 			case FETCHING_REQUEST_BODY:
 				break;
