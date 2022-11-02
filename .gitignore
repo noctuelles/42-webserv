@@ -10,3 +10,8 @@ webserv
 build
 tags
 compile_commands.json
+compile_commands.json
+*.srctrlbm
+*.srctrldb
+*.srctrlprj
+.cache
