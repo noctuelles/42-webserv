@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 16:39:03 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 21:38:20 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,15 +18,12 @@
 # include <vector>
 # include <list>
 # include <fstream>
+# include "WebServ.hpp"
 # include "SocketTypes.hpp"
 # include "RequestParser.hpp"
-# include "HTTP.hpp"
 
 namespace ft
 {
-	class ListeningSocket;
-	class WebServ;
-
 	class Client : public InternetSocket
 	{
 
@@ -44,9 +41,11 @@ namespace ft
 			 * SENDING_RESPONSE_BODY  : sending data to the client.
 			 */
 
+			// State are negative to avoid overlapping with file descriptors.
+			// See WebServ::run()
 			enum	State
 			{
-				FETCHING_REQUEST_HEADER,
+				FETCHING_REQUEST_HEADER = -10,
 				FETCHING_REQUEST_BODY,
 				SENDING_RESPONSE_HEADER,
 				SENDING_RESPONSE_BODY,
@@ -54,17 +53,13 @@ namespace ft
 				DONE
 			};
 
-			Client(int fd);
-			Client(int fd, const struct sockaddr_in& sockaddr, socklen_t slen);
+			Client(int fd, const WebServ::StatusInfoVector& stat_info);
 			Client(const Client& other);
 			~Client();
-
 			Client&	operator=(const Client& rhs);
 
 			virtual int	recv();
 			virtual int	send();
-
-			void	disconnect();
 
 		private:
 
@@ -72,14 +67,15 @@ namespace ft
 			static std::vector<uint8_t>	m_recv_buffer, m_send_buffer;       // treating all
 			ssize_t						m_recv_bytes , m_sent_bytes;
 
-			http::RequestParser			m_parser;
+			http::RequestParser					m_parser;
 
 			State						m_state;
 
 			http::StatusInfo			m_status_info;
 			http::StatusCode			m_status_code;
 
-			std::basic_ifstream<char>		m_file_handle;
+			std::basic_ifstream<char>			m_file_handle;
+			const WebServ::StatusInfoVector&	m_stat_info;
 	};
 }
 

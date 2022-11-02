@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 16:38:25 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 21:54:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,6 @@ namespace ft
 					: FileDescriptor(fd), m_sockaddr(sockaddr), m_len(len)
 				{}
 
-				// Allowing copy-construction with this RAII class, but :
-				// The SimpleSocket "other" transfer his ressource to the current instance and will not be
-				// released during destruction.
 				SimpleSocket(const SimpleSocket& other)
 					: FileDescriptor(other), m_sockaddr(other.m_sockaddr), m_len(other.m_len)
 				{}
@@ -66,7 +63,7 @@ namespace ft
 				virtual ~SimpleSocket()
 				{}
 
-				const T&	getSockAddr()
+				const T&	getSockAddr() const
 				{
 					return (m_sockaddr);
 				}
@@ -74,16 +71,6 @@ namespace ft
 				socklen_t	getSockLen() const
 				{
 					return (m_len);
-				}
-
-				void	setSockAddr(const T& sockaddr)
-				{
-					m_sockaddr = sockaddr;
-				}
-
-				void	setSockLen(socklen_t socklen)
-				{
-					m_len = socklen;
 				}
 
 				void	setSockOpt(int optname, void *optval, socklen_t optlen) const

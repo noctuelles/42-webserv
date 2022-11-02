@@ -6,14 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 16:50:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 22:11:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
 #include "FileUtils.hpp"
 #include "HTTP.hpp"
-#include "UniquePtr.hpp"
+#include "Client.hpp"
 #include <exception>
 #include <string>
 #include <utility>
@@ -41,25 +41,30 @@ namespace ft
 
 	void	WebServ::addListener(in_port_t port)
 	{
-		m_socks.push_back(unique_ptr<InternetSocket>(new ListeningSocket(INADDR_ANY, port)));
-		static_cast<ListeningSocket*>(m_socks.back().get())->listen(5);
-		m_poller.add(m_socks.back()->getFd(), EPOLLIN, m_socks.back().get());
+		ListeningSocket*	ptr = new ListeningSocket(INADDR_ANY, port);
+		ptr->listen(MaxPendingConnection);
+		m_poller.add(*ptr, EPOLLIN, ptr);
+		m_socks.push_back(ptr);
 	}
 
 	void	WebServ::addClient(int fd)
 	{
-		m_socks.push_back(unique_ptr<InternetSocket>(new Client(fd)));
-		m_poller.add(m_socks.back()->getFd(), EPOLLIN, m_socks.back().get());
+		Client*	ptr = new Client(fd, m_status_table);
+		m_poller.add(*ptr, EPOLLIN, ptr);
+		m_socks.push_back(ptr);
 	}
 
 	void	WebServ::removeSocket(int fd)
 	{
-		for (std::vector<unique_ptr<InternetSocket> >::iterator i = m_socks.begin(); i != m_socks.end(); i++)
+		for (InSockVector::iterator i = m_socks.begin(); i != m_socks.end(); i++)
 		{
-			if (i->get()->getFd() == fd)
+			InternetSocket*	ptr = *i;
+
+			if (ptr->getFd() == fd)
 			{
+				delete ptr;
 				m_socks.erase(i);
-				return ;
+				return ; // because fd's are unique.
 			}
 		}
 	}
@@ -76,11 +81,6 @@ namespace ft
 		}
 	}
 
-	const http::StatusInfo&	WebServ::getStatusCodeInfo(http::StatusCode statusCode) const
-	{
-		return (m_status_table[statusCode]);
-	}
-
 	void	WebServ::run()
 	{
 		while (true)
@@ -88,37 +88,47 @@ namespace ft
 			m_poller.waitForEvents(EPoll::NOTIMEOUT);
 			for (EPoll::iterator it = m_poller.begin(); it != m_poller.end(); it++)
 			{
-				std::cout << "prout\n";
-				// Note: dynamic cast incur runtime costs.
-				InternetSocket*		inSockPtr       = static_cast<InternetSocket*>(it->data.ptr);
+				InternetSocket*		inSockPtr = static_cast<InternetSocket*>(it->data.ptr);
 
 				if (it->events & EPOLLERR || it->events & EPOLLHUP)
-				{
-					removeSocket(*inSockPtr); continue;
-				}
+				{	removeSocket(*inSockPtr); continue; }
 				if (it->events & EPOLLIN)
 				{
 					int ret;
 
 					switch ((ret = inSockPtr->recv()))
 					{
+						case Client::SENDING_RESPONSE_HEADER:
 						case Client::SENDING_RESPONSE_BODY:
 							m_poller.modify(*inSockPtr, EPOLLOUT, inSockPtr);
 							break;
 						case Client::DISCONNECT:
+							std::cout << "Client (" << inet_ntoa(inSockPtr->getSockAddr().sin_addr) << ":" << htons(inSockPtr->getSockAddr().sin_port) << ") " << "disconnected.\n";
 							removeSocket(*inSockPtr);
+							break;
+						case Client::FETCHING_REQUEST_BODY:
+						case Client::FETCHING_REQUEST_HEADER:
 							break;
 						default:
 							addClient(ret);
 					}
 				}
-				if (it->events & EPOLLOUT) // Only client are registered on EPOLLOUT. Can safely downcast.
+				else if (it->events & EPOLLOUT)
 				{
+					switch (inSockPtr->send())
+					{
+						case Client::DISCONNECT:
+							removeSocket(*inSockPtr);
+							break;
+					}
 				}
 			}
 		}
 	}
 
 	WebServ::~WebServ()
-	{}
+	{
+		for (InSockVector::iterator it = m_socks.begin(); it != m_socks.end(); it++)
+			delete *it;
+	}
 }

@@ -6,12 +6,15 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 15:57:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 20:43:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_HPP
 # define HTTP_HPP
+
+
+# include "SocketTypes.hpp"
 
 # include <utility>
 # include <string>

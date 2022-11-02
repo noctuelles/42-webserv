@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/02 15:48:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 15:58:20 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 18:45:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 /**
@@ -87,6 +87,7 @@ namespace ft
 			px(ptr.px)
 		{
 			const_cast<unique_ptr&>(ptr).px = NULL; // const-cast to force ownership transfer!
+													// ouch, mutable and no const cast please.
 		}
 		/// @brief Assignment operator using the copy-and-swap idiom (copy constructor and swap method)
 		unique_ptr& operator=(unique_ptr ptr) throw() // never throws

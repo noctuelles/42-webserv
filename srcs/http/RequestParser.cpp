@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 11:10:49 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 19:28:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,7 +228,7 @@ namespace ft
 							{
 								case '\r':
 								case '\n':
-									_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField), it--;
+									_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
 									break;
 
 								case ' ':
@@ -267,7 +267,7 @@ namespace ft
 							if (!_isCRLF(ch))
 								_backField().second.append(m_ws_buffer.begin(), m_ws_buffer.end());
 							m_ws_buffer.clear();
-							it--;
+							it--; recv_bytes++;
 							_changeState(m_next_state);
 						}
 						else
@@ -278,7 +278,7 @@ namespace ft
 					case P_OWS:
 						if (!_isWS(ch))
 						{
-							it--; // avoid eating char.
+							it--; recv_bytes++; // avoid eating char.
 							_changeState(m_next_state);
 						}
 						break;
