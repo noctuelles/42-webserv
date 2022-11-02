@@ -1,3 +1,8 @@
 obsj/
 webserv
 .ycm_extra_conf.py
+compile_commands.json
+*.srctrlbm
+*.srctrldb
+*.srctrlprj
+.cache
