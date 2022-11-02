@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 18:25:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 11:11:57 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,11 +122,11 @@ namespace ft
 				inline const std::string&	getRequestLine()	const {return (m_info.req_line); }
 				inline std::vector<HeaderField>&	getHeaderFields() {return (m_info.header_fields);}
 
-				State		parse(const std::string& buffer);
+				State		parse(const std::vector<uint8_t>& buffer, size_t recv_bytes);
 
 			private:
 
-				typedef void	(RequestParser::*callBackFnct)(const std::string::const_iterator&);
+				typedef void	(RequestParser::*callBackFnct)(const std::vector<uint8_t>::const_iterator&);
 
 				struct ParseInfo
 				{
@@ -194,13 +194,13 @@ namespace ft
 					return (m_next_state);
 				}
 
-				void	_pushBackField(const std::string::const_iterator& it)
+				void	_pushBackField(const std::vector<uint8_t>::const_iterator& it)
 				{
 					(void) it;
 					m_info.header_fields.push_back(HeaderField());
 				}
 
-				void	_popBackField(const std::string::const_iterator& it)
+				void	_popBackField(const std::vector<uint8_t>::const_iterator& it)
 				{
 					(void) it;
 					m_info.header_fields.pop_back();

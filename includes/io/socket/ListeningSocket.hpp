@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:53:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 19:40:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 16:36:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,20 @@
 # include "SocketTypes.hpp"
 # include "EPoll.hpp"
 # include "Client.hpp"
-# include <vector>
-# include <list>
+# include <set>
 
 namespace ft
 {
+	class WebServ;
+
 	class ListeningSocket : public InternetSocket // see SocketTypes.hpp
 	{
 		public:
+
+			enum State
+			{
+				ADD_TO_POLLER
+			};
 
 			ListeningSocket();
 			ListeningSocket(in_addr_t addr, in_port_t port);
@@ -33,13 +39,10 @@ namespace ft
 			~ListeningSocket();
 
 			void	bind(in_addr_t addr, in_port_t port);
-			void	listen(int backlog);
-			void	acceptConnection(EPoll& epollInstance);
-			void	removeConnection(Client* clientPtr);
+			void	listen(int backlog) const;
 
-		private:
-
-			std::list<Client>	m_con;
+			virtual int	recv();
+			virtual int	send();
 
 	};
 }

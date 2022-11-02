@@ -6,12 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/29 19:40:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 16:36:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ListeningSocket.hpp"
 #include "EPoll.hpp"
+#include "WebServ.hpp"
 #include <stdexcept>
 #include <sys/socket.h>
 #include <string.h>
@@ -22,14 +23,22 @@
 namespace ft
 {
 	ListeningSocket::ListeningSocket()
-		: InternetSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP), m_con()
+		: InternetSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
 	{
 		setReusableMode(true);
 		setBlockingMode(false);
 	}
 
+	ListeningSocket::ListeningSocket(in_addr_t addr, in_port_t port)
+		: InternetSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
+	{
+		setReusableMode(true);
+		setBlockingMode(false);
+		bind(addr, port);
+	}
+
 	ListeningSocket::ListeningSocket(const ListeningSocket& other)
-		: InternetSocket(other), m_con(other.m_con)
+		: InternetSocket(other)
 	{}
 
 	ListeningSocket&	ListeningSocket::operator=(const ListeningSocket& rhs)
@@ -37,16 +46,7 @@ namespace ft
 		if (this == &rhs)
 			return (*this);
 		InternetSocket::operator=(rhs);
-		m_con = rhs.m_con;
 		return (*this);
-	}
-
-	ListeningSocket::ListeningSocket(in_addr_t addr, in_port_t port)
-		: InternetSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP), m_con()
-	{
-		setReusableMode(true);
-		setBlockingMode(false);
-		bind(addr, port);
 	}
 
 	void	ListeningSocket::bind(in_addr_t addr, in_port_t port)
@@ -61,39 +61,23 @@ namespace ft
 			throw (std::runtime_error("bind"));
 	}
 
-	void	ListeningSocket::listen(int backlog)
+	void	ListeningSocket::listen(int backlog) const
 	{
 		if (::listen(m_fd, backlog) != 0)
 			throw (std::runtime_error("listen"));
 	}
 
-	void	ListeningSocket::acceptConnection(EPoll& epollInstance)
+	int	ListeningSocket::recv()
 	{
-		struct sockaddr_in	sa;
-		socklen_t			slen = sizeof(struct sockaddr_in);
 		int					sa_fd;
 
-		while ((sa_fd = ::accept(m_fd, reinterpret_cast<struct sockaddr*>(&sa), &slen)) > 0)
-		{
-			m_con.push_back(Client(sa_fd, sa, slen, this));
-
-			Client& inserted = m_con.back();
-			inserted.setIterator((--m_con.end()));
-			epollInstance.add(sa_fd, EPOLLIN | EPOLLRDHUP, &inserted);
-		}
+		sa_fd = ::accept(m_fd, NULL, NULL);
 		if (sa_fd < 0)
-		{
-			if (!(errno == EAGAIN || errno == EWOULDBLOCK))
-				throw (std::runtime_error("accept"));
-		}
+			throw (std::runtime_error("accept"));
+		return (sa_fd);
 	}
 
-	void	ListeningSocket::removeConnection(Client* clientPtr)
-	{
-		/* Automatically close the file descriptor and removing the file descriptor
-		 * from the interest list. */
-		m_con.erase(clientPtr->getIterator());
-	}
+	int	ListeningSocket::send() {return (0);}
 
 	ListeningSocket::~ListeningSocket()
 	{}

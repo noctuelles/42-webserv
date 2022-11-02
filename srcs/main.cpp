@@ -9,7 +9,6 @@ int main()
 	WebServ	serv;
 
 	serv.addListener(8080);
-	serv.initListener();
 	serv.run();
 
 	return (0);

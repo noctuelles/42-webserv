@@ -6,25 +6,27 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/31 11:24:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 16:50:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
 #include "FileUtils.hpp"
-#include "ResponseHeader.hpp"
 #include "HTTP.hpp"
+#include "UniquePtr.hpp"
 #include <exception>
-#include <vector>
+#include <string>
+#include <utility>
 #include <iostream>
 
 namespace ft
 {
+	const std::string	WebServ::Version("webserv/0.1");
+
 	WebServ::WebServ()
 		: m_poller(),
 		m_socks(),
-		m_status_table(),
-		m_listener_init(false)
+		m_status_table()
 	{
 		m_status_table.resize(http::MaxStatusCode);
 
@@ -39,21 +41,27 @@ namespace ft
 
 	void	WebServ::addListener(in_port_t port)
 	{
-		m_socks.push_back(ListeningSocket(INADDR_ANY, port));
+		m_socks.push_back(unique_ptr<InternetSocket>(new ListeningSocket(INADDR_ANY, port)));
+		static_cast<ListeningSocket*>(m_socks.back().get())->listen(5);
+		m_poller.add(m_socks.back()->getFd(), EPOLLIN, m_socks.back().get());
 	}
 
-	void	WebServ::initListener()
+	void	WebServ::addClient(int fd)
 	{
-		std::for_each(m_socks.begin(), m_socks.end(), ListeningSocketInit(m_poller));
-		m_listener_init = true;
+		m_socks.push_back(unique_ptr<InternetSocket>(new Client(fd)));
+		m_poller.add(m_socks.back()->getFd(), EPOLLIN, m_socks.back().get());
 	}
 
-	void	WebServ::removeListener(int fd)
+	void	WebServ::removeSocket(int fd)
 	{
-		std::vector<ListeningSocket>::iterator it = std::find_if(m_socks.begin(), m_socks.end(), SocketComp(fd));
-		if (it == m_socks.end())
-			return ;
-		m_socks.erase(it);
+		for (std::vector<unique_ptr<InternetSocket> >::iterator i = m_socks.begin(); i != m_socks.end(); i++)
+		{
+			if (i->get()->getFd() == fd)
+			{
+				m_socks.erase(i);
+				return ;
+			}
+		}
 	}
 
 	void	WebServ::setStatusCodePage(http::StatusCode statuscode, const char* filename)
@@ -80,43 +88,32 @@ namespace ft
 			m_poller.waitForEvents(EPoll::NOTIMEOUT);
 			for (EPoll::iterator it = m_poller.begin(); it != m_poller.end(); it++)
 			{
+				std::cout << "prout\n";
 				// Note: dynamic cast incur runtime costs.
 				InternetSocket*		inSockPtr       = static_cast<InternetSocket*>(it->data.ptr);
-				ListeningSocket*	listenSockPtr   = dynamic_cast<ListeningSocket*>(inSockPtr);
-				Client*				clientPtr       = dynamic_cast<Client*>(inSockPtr);
 
-				// Check if error condition happened on the associated file descriptor watched by epoll.
 				if (it->events & EPOLLERR || it->events & EPOLLHUP)
 				{
-					if (listenSockPtr)
-						removeListener(listenSockPtr->getFd());
-					else
-						clientPtr->getBindedSocket()->removeConnection(clientPtr);
+					removeSocket(*inSockPtr); continue;
 				}
 				if (it->events & EPOLLIN)
 				{
-					if (listenSockPtr)
+					int ret;
+
+					switch ((ret = inSockPtr->recv()))
 					{
-						listenSockPtr->acceptConnection(m_poller);
-					}
-					else
-					{
-						clientPtr->receive();
-						switch (clientPtr->proceed())
-						{
-							case Client::SENDING_RESPONSE_ERROR_HEADER:
-							case Client::SENDING_RESPONSE_HEADER:
-								m_poller.modify(*clientPtr, EPOLLOUT, clientPtr);
-								break;
-							default:
-								;
-						}
+						case Client::SENDING_RESPONSE_BODY:
+							m_poller.modify(*inSockPtr, EPOLLOUT, inSockPtr);
+							break;
+						case Client::DISCONNECT:
+							removeSocket(*inSockPtr);
+							break;
+						default:
+							addClient(ret);
 					}
 				}
-				if (it->events & EPOLLOUT) // Only client are registered on EPOLLOUT
+				if (it->events & EPOLLOUT) // Only client are registered on EPOLLOUT. Can safely downcast.
 				{
-					if (clientPtr->send(*this) == Client::DONE)
-						clientPtr->getBindedSocket()->removeConnection(clientPtr);
 				}
 			}
 		}
