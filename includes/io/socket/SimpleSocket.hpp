@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:49:34 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 16:38:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 
 namespace ft
 {
+	class WebServ;
+
 	template <class T>
 		class SimpleSocket : public FileDescriptor
 		{
@@ -115,6 +117,9 @@ namespace ft
 				{
 					return !(static_cast<bool>(getFdFlags() & O_NONBLOCK));
 				}
+
+				virtual int	recv() = 0;
+				virtual int	send() = 0;
 
 			protected:
 

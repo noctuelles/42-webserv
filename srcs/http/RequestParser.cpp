@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 18:47:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 11:10:49 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,11 +96,11 @@ namespace ft
 		/* Using a simple state machine to parse the request.
 		 * That is: no memory allocation, no system call... */
 
-		RequestParser::State	RequestParser::parse(const std::string& buffer)
+		RequestParser::State	RequestParser::parse(const std::vector<uint8_t>& buffer, size_t recv_bytes)
 		{
 			unsigned char	ch;
 
-			for (std::string::const_iterator it = buffer.begin(); it != buffer.end(); it++)
+			for (std::vector<uint8_t>::const_iterator it = buffer.begin(); recv_bytes--; it++)
 			{
 				ch = *it;
 				switch (m_current_state)
@@ -198,12 +198,12 @@ namespace ft
 								case '\r':
 								case '\n':
 									if (_backField().first.empty())
-										_transitionState(P_CRLF, P_DONE, &RequestParser::_popBackField), it--;
+										_transitionState(P_CRLF, P_DONE, &RequestParser::_popBackField);
 									else
 									{
 										// useless field. trash it.
 										_popBackField(it);
-										_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField), it--;
+										_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
 									}
 									break;
 

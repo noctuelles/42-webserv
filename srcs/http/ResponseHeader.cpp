@@ -6,29 +6,27 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 18:02:49 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 21:20:49 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 13:33:46 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ResponseHeader.hpp"
+#include "FileUtils.hpp"
 #include <sstream>
 #include <utility>
+#include <ctime>
 #include <assert.h>
 
 namespace ft
 {
 	namespace http
 	{
-		ResponseHeader::ResponseHeader(uint8_t major_ver, uint8_t minor_ver, const std::string& phrase)
-			: m_status_line("HTTP/M.m"), m_header_field(), m_cache_change(true), m_cache()
+		ResponseHeader::ResponseHeader(const std::string& phrase)
+			: m_http_version("HTTP/1.1"), m_reason_phrase(phrase),
+			  m_header_field(), m_cache()
 		{
 			m_cache.reserve(DefaultCacheSize);
-			m_status_line[5] = major_ver + '0';
-			m_status_line[7] = minor_ver + '0';
-			m_status_line
-				.append(" ")
-				.append(phrase)
-				.append(CRLF);
+			addField("Date");
 		}
 
 		ResponseHeader::ResponseHeader(const ResponseHeader& other)
@@ -43,19 +41,16 @@ namespace ft
 		{
 			if (this == &rhs)
 				return (*this);
-			m_status_line = rhs.m_status_line;
+			m_http_version = rhs.m_http_version;
+			m_reason_phrase = rhs.m_reason_phrase;
 			m_header_field = rhs.m_header_field;
 			m_cache = rhs.m_cache;
-			m_cache_change = rhs.m_cache_change;
-			if (m_cache_change)
-				_buildCache();
 			return (*this);
 		}
 
 		void	ResponseHeader::addField(const char* name, const std::string& str)
 		{
-			if (m_header_field.insert(std::make_pair(name, str)).second)
-				m_cache_change = true;
+			m_header_field.insert(std::make_pair(name, str));
 		}
 
 		void	ResponseHeader::modifyField(const char *name, const std::string& str)
@@ -66,8 +61,7 @@ namespace ft
 
 		void	ResponseHeader::removeField(const char* name)
 		{
-			if (m_header_field.erase(name))
-				m_cache_change = true;
+			m_header_field.erase(name);
 		}
 
 		std::string&	ResponseHeader::searchField(const char* name)
@@ -80,22 +74,22 @@ namespace ft
 			return (m_header_field.at(name));
 		}
 
-		const std::string&	ResponseHeader::toString() const
+		const std::string&	ResponseHeader::toString()
 		{
-			if (m_cache_change)
-				_buildCache();
+			_buildCache();
 			return (m_cache);
 		}
 
-		size_t	ResponseHeader::lenght() const
+		size_t	ResponseHeader::size() const
 		{
-			return (toString().length());
+			return (m_cache.size());
 		}
 
-		void	ResponseHeader::_buildCache() const
+		void	ResponseHeader::_buildCache()
 		{
+			_updateDate();
 			m_cache.clear();
-			m_cache.append(m_status_line);
+			m_cache = m_http_version + ' ' + m_reason_phrase;
 			for (HeaderFieldMap::const_iterator it = m_header_field.begin(); it != m_header_field.end(); it++)
 			{
 				m_cache
@@ -105,7 +99,17 @@ namespace ft
 					.append(CRLF);
 			}
 			m_cache.append(CRLF);
-			m_cache_change = false;
+		}
+
+		void	ResponseHeader::_updateDate()
+		{
+			char		buffer[1024];
+			time_t		time = std::time(NULL);
+			struct tm*	gmt_time = std::gmtime(&time);
+
+			// Format : https://www.rfc-editor.org/rfc/rfc822
+			strftime(buffer, 1024, "%a, %d %b %Y %H:%M:%S %Z", gmt_time);
+			modifyField("Date", buffer);
 		}
 	}
 }

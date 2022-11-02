@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 18:40:31 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 16:39:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,9 @@ namespace ft
 
 		public:
 
+			static const size_t		MaxRecvBufferSize = 1024 * 8;
+			static const size_t		MaxSendBufferSize = 1024 * 8;
+
 			/* CONNECTION_ESTABLISHED: ba
 			 *
 			 *
@@ -45,52 +48,38 @@ namespace ft
 			{
 				FETCHING_REQUEST_HEADER,
 				FETCHING_REQUEST_BODY,
-
-				SENDING_RESPONSE_ERROR_HEADER,
-				SENDING_RESPONSE_ERROR_BODY,
-
 				SENDING_RESPONSE_HEADER,
 				SENDING_RESPONSE_BODY,
-
+				DISCONNECT,
 				DONE
 			};
 
-			Client(int fd, ListeningSocket* sock);
-			Client(int fd, const struct sockaddr_in& sockaddr, socklen_t slen, ListeningSocket* sock);
+			Client(int fd);
+			Client(int fd, const struct sockaddr_in& sockaddr, socklen_t slen);
 			Client(const Client& other);
 			~Client();
 
 			Client&	operator=(const Client& rhs);
 
-			void	receive();
-			State	send(const WebServ& servInstance);
+			virtual int	recv();
+			virtual int	send();
 
-			State	proceed();
-
-			void										setIterator(const std::list<Client>::iterator& it);
-			const std::list<Client>::iterator&			getIterator() const;
-			ListeningSocket*							getBindedSocket();
-
-			static const size_t							MaxBufferSize = 1;
+			void	disconnect();
 
 		private:
 
 			// Static buffer shared among all instances.
-			static std::vector<uint8_t>	m_recv_buffer;       // treating all
+			static std::vector<uint8_t>	m_recv_buffer, m_send_buffer;       // treating all
+			ssize_t						m_recv_bytes , m_sent_bytes;
 
-			static std::string			m_buffer;
-
-			ssize_t						m_recv_bytes;
 			http::RequestParser			m_parser;
 
-			std::list<Client>::iterator	m_iterator;
 			State						m_state;
-			ListeningSocket*			m_socket;
 
+			http::StatusInfo			m_status_info;
 			http::StatusCode			m_status_code;
 
-			static std::vector<uint8_t>		m_file_buffer;
-			std::basic_ifstream<char>	m_file_handle;
+			std::basic_ifstream<char>		m_file_handle;
 	};
 }
 

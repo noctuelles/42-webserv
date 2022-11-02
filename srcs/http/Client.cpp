@@ -6,14 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 17:33:52 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/02 16:39:23 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 #include "HTTP.hpp"
 #include "RequestParser.hpp"
-#include "ResponseHeader.hpp"
 #include "WebServ.hpp"
 #include <ios>
 #include <sstream>
@@ -29,29 +28,27 @@
 
 namespace ft
 {
-	std::string				Client::m_buffer;
-	std::vector<uint8_t>	Client::m_recv_buffer(MaxBufferSize);
+	std::vector<uint8_t>	Client::m_recv_buffer(MaxRecvBufferSize);
+	std::vector<uint8_t>	Client::m_send_buffer(MaxSendBufferSize);
 
-	Client::Client(int fd, ListeningSocket* sock)
+	Client::Client(int fd)
 		: InternetSocket(fd),
 		m_recv_bytes(),
+		m_sent_bytes(),
 		m_parser(),
-		m_iterator(),
 		m_state(FETCHING_REQUEST_HEADER),
-		m_socket(sock),
 		m_status_code(http::OK),
 		m_file_handle()
 	{
 		setBlockingMode(false);
 	}
 
-	Client::Client(int fd, const struct sockaddr_in& sockaddr, socklen_t slen, ListeningSocket* sock)
+	Client::Client(int fd, const struct sockaddr_in& sockaddr, socklen_t slen)
 		: InternetSocket(fd, sockaddr, slen),
 		m_recv_bytes(),
+		m_sent_bytes(),
 		m_parser(),
-		m_iterator(),
 		m_state(FETCHING_REQUEST_HEADER),
-		m_socket(sock),
 		m_status_code(http::OK),
 		m_file_handle()
 	{
@@ -62,9 +59,7 @@ namespace ft
 		: InternetSocket(other),
 		  m_recv_bytes(other.m_recv_bytes),
 		  m_parser(other.m_parser),
-		  m_iterator(other.m_iterator),
 		  m_state(other.m_state),
-		  m_socket(other.m_socket),
 		m_status_code(other.m_status_code)
 	{}
 
@@ -73,130 +68,49 @@ namespace ft
 		if (this == &rhs)
 			return (*this);
 		InternetSocket::operator=(rhs);
-		m_iterator = rhs.m_iterator;
-		m_socket = rhs.m_socket;
+		// to be completed
 		return (*this);
 	}
 
-	void	Client::receive()
+	int	Client::recv()
 	{
-		switch (m_state)
-		{
-			case FETCHING_REQUEST_BODY:
-			case FETCHING_REQUEST_HEADER:
-				m_recv_bytes = recv(*this, m_recv_buffer.data(), m_recv_buffer.size(), 0);
-				if (m_recv_bytes < 0)
-					; // This is an error !
-				else if (m_recv_bytes == 0)
-					; // Client Disconnect
+		m_recv_bytes = ::recv(*this, m_recv_buffer.data(), m_recv_buffer.size(), 0); // noexcept
+		if (m_recv_bytes <= 0)
+			return (DISCONNECT);
 #ifndef NDEBUG
-				else
-				{
-					std::cout << "\t## " << UYEL << "Raw Data from the socket" << CRST << " ##\n";
-					write(STDOUT_FILENO, m_recv_buffer.data(), m_recv_bytes);
-					std::cout << "\n\t## " << UYEL << "End Raw Data" << CRST << " ##\n";
-				}
-#endif
-			default:
-				return ;
+		else
+		{
+			std::cout << "\t## " << UYEL << "Raw Data from the socket" << CRST << " ##\n";
+			write(STDOUT_FILENO, m_recv_buffer.data(), m_recv_bytes);
+			std::cout << "\n\t## " << UYEL << "End Raw Data" << CRST << " ##\n";
 		}
-	}
-
-	Client::State	Client::proceed()
-	{
-		http::RequestParser::State	ret;
-
+#endif
+		// When done, the socket should be registered to EPOLLOUT.
 		switch (m_state)
 		{
 			case FETCHING_REQUEST_HEADER:
-				m_buffer.assign(m_recv_buffer.begin(), m_recv_buffer.end());
-				m_buffer.resize(m_recv_bytes);
-				ret = m_parser.parse(m_buffer);
-
-#ifndef NDEBUG
-				m_parser.report();
-#endif
-				switch (ret)
+			{
+				switch (m_parser.parse(m_recv_buffer, m_recv_bytes)) // parse could throw exception.
 				{
+#ifndef NDEBUG
+					m_parser.report();
+#endif
 					case http::RequestParser::P_DONE:
-						m_state = SENDING_RESPONSE_HEADER;
-						if (m_parser.getMethod() == http::Get)
-						{
-							m_file_handle.open(m_parser.getRequestLine().substr(1).c_str());
-							if (m_file_handle.is_open() == false)
-							{
-								std::cerr << "Cannot open file " << m_parser.getRequestLine() << '\n';
-								m_state = SENDING_RESPONSE_ERROR_HEADER;
-								m_status_code = http::NotFound;
-							}
-						}
-
+						// Parsing is done.
 						break;
 
 					case http::RequestParser::P_DONE_ERR:
-						m_state = SENDING_RESPONSE_ERROR_HEADER;
-						m_status_code = m_parser.getErrorCode();
+						// An error occured during parsing.
 						break;
 
 					default:
-						break;
+						// The parser is still.. parsing.
+						;
 				}
 				break;
+			}
 			case FETCHING_REQUEST_BODY:
-				break;
-
-			default:
-				break ;
-		}
-		return (m_state);
-	}
-
-	Client::State	Client::send(const WebServ& servInstance)
-	{
-		const http::StatusInfo	statusInfo = servInstance.getStatusCodeInfo(m_status_code);
-
-		switch (m_state)
-		{
-			case SENDING_RESPONSE_HEADER:
-			{
-				http::ResponseHeader	respHeader(m_parser.getMajorVersion(), m_parser.getMinorVersion(), statusInfo.phrase);
-
-				respHeader.addField("Server", "webserv/0.1");
-				respHeader.addField("Content-Type", "application/octet-stream");
-				respHeader.addField("Connection", "closed");
-
-				m_state = SENDING_RESPONSE_BODY;
-				::send(*this, respHeader.toString().c_str(), respHeader.toString().size(), 0);
-				break;
-			}
-			case SENDING_RESPONSE_BODY:
-			{
-				char buffer[MaxBufferSize];
-
-				std::streamsize i = m_file_handle.read(buffer, MaxBufferSize).gcount();
-
-				::send(*this, buffer, i, 0);
-				if (i < (long) MaxBufferSize)
-					m_state = DONE;
-				break;
-			}
-
-			case SENDING_RESPONSE_ERROR_HEADER:
-			{
-				http::ResponseHeader	respHeader(m_parser.getMajorVersion(), m_parser.getMinorVersion(), statusInfo.phrase);
-
-				respHeader.addField("Server", "webserv/0.1");
-				respHeader.addField("Content-Type", "text/html");
-				respHeader.addField("Content-Lenght", utils::integralToString(statusInfo.page.first));
-				respHeader.addField("Connection", "closed");
-
-				m_state = SENDING_RESPONSE_ERROR_BODY;
-				::send(*this, respHeader.toString().c_str(), respHeader.toString().size(), 0);
-				break;
-			}
-			case SENDING_RESPONSE_ERROR_BODY:
-				m_state = DONE;
-				::send(*this, statusInfo.page.second.c_str(), statusInfo.page.second.size(), 0);
+				// To do: chunked request. No parsing is involved otherwise.
 				break;
 			default:
 				;
@@ -204,19 +118,9 @@ namespace ft
 		return (m_state);
 	}
 
-	ListeningSocket*	Client::getBindedSocket()
+	int	Client::send()
 	{
-		return (m_socket);
-	}
-
-	void	Client::setIterator(const std::list<Client>::iterator& it)
-	{
-		m_iterator = it;
-	}
-
-	const std::list<Client>::iterator&	Client::getIterator() const
-	{
-		return (m_iterator);
+		return (m_state);
 	}
 
 	Client::~Client()
