@@ -27,29 +27,18 @@ SRCS_DIR		= srcs
 OBJS_DIR		= objs
 INC_DIR			= includes
 
-SOURCES			= http/RequestParser.cpp		\
-				  http/ResponseHeader.cpp		\
-				  http/HTTP.cpp					\
-				  http/Client.cpp				\
-				  io/socket/ListeningSocket.cpp	\
-				  io/EPoll.cpp					\
-				  io/FileDescriptor.cpp			\
-				  io/FileUtils.cpp				\
-				  WebServ.cpp					\
-				  main.cpp
+ALL_INC_DIRS	= $(INC_DIR) $(wildcard $(INC_DIR)/*/.) $(wildcard $(INC_DIR)/*/*/.) #trailing dot ensures that we'll get directories only, nice glibc glob() trick when you are unsure
 
-OBJS/OBJECTS	= $(addprefix $(OBJS_DIR)/, $(SOURCES:.cpp=.o))
-OBJS/DEPS		= $(patsubst	%.o,    %.d,		$(OBJS/OBJECTS))
+PATH/SOURCES	= $(wildcard $(SRCS_DIR)/*.cpp) $(wildcard $(SRCS_DIR)/*/*.cpp) $(wildcard $(SRCS_DIR)/*/*/*.cpp) #etc.
+
+PATH/OBJECTS	= $(patsubst	$(SRCS_DIR)/%.cpp,	$(OBJS_DIR)/%.o,	$(PATH/SOURCES) )
+PATH/DEPS		= $(patsubst	%.o,	%.d,	$(PATH/OBJECTS) )
 
 #DEBUG			= -DDEBUG
 
-## C (and c++) preprocessor flags
-INCLUDE_FLAGS	= -I $(INC_DIR) \
-				  -I $(INC_DIR)/http \
-				  -I $(INC_DIR)/io \
-				  -I $(INC_DIR)/io/socket
-
-CPPFLAGS		= $(INCLUDE_FLAGS)
+## Preprocessor flags
+INCLUDE_FLAGS	+= $(addprefix -I, $(ALL_INC_DIRS) )
+CPPFLAGS		+= $(INCLUDE_FLAGS) -MMD #output .d dependencies rules to be included
 
 ## Add -Werror before correction
 CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 #-Werror 
@@ -70,28 +59,13 @@ RM				= rm -rf
 all:			$(NAME)
 
 # Reminder : LDFLAGS (-L) always come before oject files !
-$(NAME):		$(OBJS/OBJECTS)
+$(NAME):		$(PATH/OBJECTS)
 				@echo -e '\e[032mLinking...\e[0m'
 				${CXX} -o $@ ${LDFLAGS} $^ ${LDLIBS}
 
-$(OBJS_DIR)/%.o:		$(SRCS_DIR)/%.cpp Makefile | $(OBJS_DIR) $(OBJS_DIR)/http $(OBJS_DIR)/io $(OBJS_DIR)/io/socket
-				${CXX} ${DEBUG} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
-
-$(dir $@):
-	@mkdir -p $@
-
-$(OBJS_DIR):
-				@mkdir $@ 
-
-$(OBJS_DIR)/http:
-				@mkdir $@ 
-
-$(OBJS_DIR)/io:
-				@mkdir $@ 
-
-$(OBJS_DIR)/io/socket:
-				@mkdir $@ 
-
+$(OBJS_DIR)/%.o:		$(SRCS_DIR)/%.cpp Makefile
+						@mkdir -p $(dir $@)
+						${CXX} ${DEBUG} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
 clean:
 				$(RM) $(OBJS_DIR)
 
