@@ -6,3 +6,5 @@ compile_commands.json
 *.srctrldb
 *.srctrlprj
 .cache
+.xmake
+.tup
