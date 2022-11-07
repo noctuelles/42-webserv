@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 11:53:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:47:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/05 00:54:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ namespace ft
 						throw (std::runtime_error("epoll_ctl"));
 				}
 
-			void	waitForEvents(int timeout);
+			bool	waitForEvents(int timeout);
 			size_t	getEventsNbr() const;
 
 			iterator		begin();

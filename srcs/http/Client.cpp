@@ -6,14 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 22:09:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 18:33:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "WebServ.hpp"
 #include "HTTP.hpp"
 #include "RequestParser.hpp"
-#include "WebServ.hpp"
 #include <ios>
 #include <sstream>
 #include <string>
@@ -31,18 +31,18 @@ namespace ft
 	std::vector<uint8_t>	Client::m_recv_buffer(MaxRecvBufferSize);
 	std::vector<uint8_t>	Client::m_send_buffer(MaxSendBufferSize);
 
-	Client::Client(int fd, const WebServ::StatusInfoVector& stat_info)
+	Client::Client(int fd, const std::vector<http::StatusInfo>& stat_info)
 		: InternetSocket(fd),
 		m_recv_bytes(0),
 		m_sent_bytes(0),
 		m_parser(),
+		m_last_activity(time(NULL)),
 		m_state(FETCHING_REQUEST_HEADER),
 		m_status_code(http::OK),
 		m_file_handle(),
 		m_stat_info(stat_info)
 	{
 		setBlockingMode(false);
-		std::cout << fd << '\n';
 		this->m_len = sizeof(struct sockaddr_in);
 		if (getsockname(fd, reinterpret_cast<struct sockaddr*>(&this->m_sockaddr), &m_len) < 0)
 			throw (std::runtime_error("getsockname"));
@@ -68,6 +68,7 @@ namespace ft
 
 	int	Client::recv()
 	{
+		m_last_activity = time(NULL);
 		m_recv_bytes = ::recv(*this, m_recv_buffer.data(), m_recv_buffer.size(), 0); // noexcept
 		std::cout << "\t## " << UYEL << "Readed " << m_recv_bytes << " bytes" << CRST << " ##\n";
 
@@ -98,6 +99,7 @@ namespace ft
 						break;
 
 					case http::RequestParser::P_DONE_ERR:
+						std::cout << "woups, this is wrong.\n";
 						// An error occured during parsing.
 						break;
 
@@ -116,7 +118,13 @@ namespace ft
 
 	int	Client::send()
 	{
+		m_last_activity = time(NULL);
 		return (m_state);
+	}
+
+	bool	Client::isTimeout()
+	{
+		return (time(NULL) - m_last_activity >= WebServ::ConnectionTimeout);
 	}
 
 	Client::~Client()

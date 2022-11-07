@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:53:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 21:27:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/05 01:06:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ namespace ft
 
 			virtual int	recv();
 			virtual int	send();
+			virtual bool	isTimeout();
 
 	};
 }

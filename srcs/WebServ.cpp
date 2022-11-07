@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 22:11:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 18:31:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,12 @@
 #include "FileUtils.hpp"
 #include "HTTP.hpp"
 #include "Client.hpp"
+#include "UniquePtr.hpp"
+#include <algorithm>
 #include <exception>
+#include <functional>
 #include <string>
+#include <memory>
 #include <utility>
 #include <iostream>
 
@@ -42,31 +46,30 @@ namespace ft
 	void	WebServ::addListener(in_port_t port)
 	{
 		ListeningSocket*	ptr = new ListeningSocket(INADDR_ANY, port);
-		ptr->listen(MaxPendingConnection);
-		m_poller.add(*ptr, EPOLLIN, ptr);
+
 		m_socks.push_back(ptr);
+		ptr->listen(MaxPendingConnection); // CAN THROW
+		m_poller.add(*ptr, EPOLLIN, ptr); // CAN THROW
 	}
 
-	void	WebServ::addClient(int fd)
+	inline void	WebServ::_addClient(int fd)
 	{
 		Client*	ptr = new Client(fd, m_status_table);
-		m_poller.add(*ptr, EPOLLIN, ptr);
+
 		m_socks.push_back(ptr);
+		m_poller.add(*ptr, EPOLLIN, ptr);
 	}
 
-	void	WebServ::removeSocket(int fd)
+	inline void	WebServ::_removeSocket(InternetSocket* ptr)
 	{
-		for (InSockVector::iterator i = m_socks.begin(); i != m_socks.end(); i++)
-		{
-			InternetSocket*	ptr = *i;
+		delete ptr;
+		m_socks.erase(std::find(m_socks.begin(), m_socks.end(), ptr));
+	}
 
-			if (ptr->getFd() == fd)
-			{
-				delete ptr;
-				m_socks.erase(i);
-				return ; // because fd's are unique.
-			}
-		}
+	inline void	WebServ::_removeTimeoutSocket()
+	{
+		std::for_each(m_socks.begin(), m_socks.end(), DeleteAndNullifyTimeoutSocket());
+		m_socks.erase(std::remove(m_socks.begin(), m_socks.end(), static_cast<InternetSocket*>(0)), m_socks.end());
 	}
 
 	void	WebServ::setStatusCodePage(http::StatusCode statuscode, const char* filename)
@@ -83,15 +86,17 @@ namespace ft
 
 	void	WebServ::run()
 	{
+		assert(!m_socks.empty());
 		while (true)
 		{
-			m_poller.waitForEvents(EPoll::NOTIMEOUT);
+			if (!m_poller.waitForEvents(TimeoutCheckOccurence))
+				_removeTimeoutSocket();
 			for (EPoll::iterator it = m_poller.begin(); it != m_poller.end(); it++)
 			{
 				InternetSocket*		inSockPtr = static_cast<InternetSocket*>(it->data.ptr);
 
 				if (it->events & EPOLLERR || it->events & EPOLLHUP)
-				{	removeSocket(*inSockPtr); continue; }
+				{ _removeSocket(inSockPtr); continue; }
 				if (it->events & EPOLLIN)
 				{
 					int ret;
@@ -104,13 +109,13 @@ namespace ft
 							break;
 						case Client::DISCONNECT:
 							std::cout << "Client (" << inet_ntoa(inSockPtr->getSockAddr().sin_addr) << ":" << htons(inSockPtr->getSockAddr().sin_port) << ") " << "disconnected.\n";
-							removeSocket(*inSockPtr);
+							_removeSocket(inSockPtr);
 							break;
 						case Client::FETCHING_REQUEST_BODY:
 						case Client::FETCHING_REQUEST_HEADER:
 							break;
 						default:
-							addClient(ret);
+							_addClient(ret);
 					}
 				}
 				else if (it->events & EPOLLOUT)
@@ -118,7 +123,7 @@ namespace ft
 					switch (inSockPtr->send())
 					{
 						case Client::DISCONNECT:
-							removeSocket(*inSockPtr);
+							_removeSocket(inSockPtr);
 							break;
 					}
 				}
@@ -128,7 +133,6 @@ namespace ft
 
 	WebServ::~WebServ()
 	{
-		for (InSockVector::iterator it = m_socks.begin(); it != m_socks.end(); it++)
-			delete *it;
+		std::for_each(m_socks.begin(), m_socks.end(), DeleteObj());
 	}
 }

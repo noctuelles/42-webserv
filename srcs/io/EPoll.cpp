@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 12:38:42 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:47:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/05 00:55:02 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ namespace ft
 		m_registred_fds--;
 	}
 
-	void	EPoll::waitForEvents(int timeout)
+	bool EPoll::waitForEvents(int timeout)
 	{
 		int	rc;
 
@@ -42,6 +42,7 @@ namespace ft
 		if (rc < 0)
 			throw (std::runtime_error("epoll_wait"));
 		m_returned_events_size = static_cast<size_t>(rc);
+		return (m_returned_events_size > 0);
 	}
 
 	size_t	EPoll::getEventsNbr() const

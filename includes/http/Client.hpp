@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 21:38:20 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 18:14:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include <vector>
 # include <list>
 # include <fstream>
-# include "WebServ.hpp"
+#include "HTTP.hpp"
 # include "SocketTypes.hpp"
 # include "RequestParser.hpp"
 
@@ -53,13 +53,14 @@ namespace ft
 				DONE
 			};
 
-			Client(int fd, const WebServ::StatusInfoVector& stat_info);
+			Client(int fd, const std::vector<http::StatusInfo>& stat_info);
 			Client(const Client& other);
 			~Client();
 			Client&	operator=(const Client& rhs);
 
 			virtual int	recv();
 			virtual int	send();
+			virtual bool	isTimeout();
 
 		private:
 
@@ -67,7 +68,8 @@ namespace ft
 			static std::vector<uint8_t>	m_recv_buffer, m_send_buffer;       // treating all
 			ssize_t						m_recv_bytes , m_sent_bytes;
 
-			http::RequestParser					m_parser;
+			http::RequestParser			m_parser;
+			time_t						m_last_activity;
 
 			State						m_state;
 
@@ -75,7 +77,7 @@ namespace ft
 			http::StatusCode			m_status_code;
 
 			std::basic_ifstream<char>			m_file_handle;
-			const WebServ::StatusInfoVector&	m_stat_info;
+			const std::vector<http::StatusInfo>&	m_stat_info;
 	};
 }
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/02 15:48:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 18:45:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 15:40:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 /**
@@ -63,6 +63,11 @@ namespace ft
 		/// The type of the managed object, aliased as member type
 		typedef T element_type;
 
+		operator T*()
+		{
+			return (px);
+		}
+
 		/// @brief Default constructor
 		unique_ptr(void) throw() : // never throws
 			px(NULL)
@@ -87,7 +92,6 @@ namespace ft
 			px(ptr.px)
 		{
 			const_cast<unique_ptr&>(ptr).px = NULL; // const-cast to force ownership transfer!
-													// ouch, mutable and no const cast please.
 		}
 		/// @brief Assignment operator using the copy-and-swap idiom (copy constructor and swap method)
 		unique_ptr& operator=(unique_ptr ptr) throw() // never throws

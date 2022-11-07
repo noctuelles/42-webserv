@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 16:36:25 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/05 01:07:31 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,11 @@ namespace ft
 	}
 
 	int	ListeningSocket::send() {return (0);}
+
+	bool	ListeningSocket::isTimeout()
+	{
+		return (false);
+	}
 
 	ListeningSocket::~ListeningSocket()
 	{}
