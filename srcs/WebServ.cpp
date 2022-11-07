@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:42:15 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 18:43:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,26 +50,6 @@ namespace ft
 		m_socks.push_back(ptr);
 		ptr->listen(MaxPendingConnection); // CAN THROW
 		m_poller.add(*ptr, EPOLLIN, ptr); // CAN THROW
-	}
-
-	inline void	WebServ::_addClient(int fd)
-	{
-		ClientSocket*	ptr = new ClientSocket(fd, m_status_table);
-
-		m_socks.push_back(ptr);
-		m_poller.add(*ptr, EPOLLIN, ptr);
-	}
-
-	inline void	WebServ::_removeSocket(InternetSocket* ptr)
-	{
-		delete ptr;
-		m_socks.erase(std::find(m_socks.begin(), m_socks.end(), ptr));
-	}
-
-	inline void	WebServ::_removeTimeoutSocket()
-	{
-		std::for_each(m_socks.begin(), m_socks.end(), DeleteAndNullifyTimeoutSocket());
-		m_socks.erase(std::remove(m_socks.begin(), m_socks.end(), static_cast<InternetSocket*>(0)), m_socks.end());
 	}
 
 	void	WebServ::setStatusCodePage(http::StatusCode statuscode, const char* filename)
@@ -134,5 +114,25 @@ namespace ft
 	WebServ::~WebServ()
 	{
 		std::for_each(m_socks.begin(), m_socks.end(), DeleteObj());
+	}
+
+	inline void	WebServ::_addClient(int fd)
+	{
+		ClientSocket*	ptr = new ClientSocket(fd, m_status_table);
+
+		m_socks.push_back(ptr);
+		m_poller.add(*ptr, EPOLLIN, ptr);
+	}
+
+	inline void	WebServ::_removeSocket(InternetSocket* ptr)
+	{
+		delete ptr;
+		m_socks.erase(std::find(m_socks.begin(), m_socks.end(), ptr));
+	}
+
+	inline void	WebServ::_removeTimeoutSocket()
+	{
+		std::for_each(m_socks.begin(), m_socks.end(), DeleteAndNullifyTimeoutSocket());
+		m_socks.erase(std::remove(m_socks.begin(), m_socks.end(), static_cast<InternetSocket*>(0)), m_socks.end());
 	}
 }
