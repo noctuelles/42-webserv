@@ -6,26 +6,25 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:32:44 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 18:41:57 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_CLASS_HPP
 # define WEBSERV_CLASS_HPP
 
-#include <functional>
+# include <functional>
 # include <vector>
 # include <algorithm>
 # include <assert.h>
 
 # include "HTTP.hpp"
-# include "ListeningSocket.hpp"
 # include "EPoll.hpp"
-# include "Client.hpp"
 # include "FileUtils.hpp"
 
 namespace ft
 {
+
 	class WebServ
 	{
 		public:

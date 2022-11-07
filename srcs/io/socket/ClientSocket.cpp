@@ -6,11 +6,11 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:33:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 18:39:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Client.hpp"
+#include "ClientSocket.hpp"
 #include "WebServ.hpp"
 #include "HTTP.hpp"
 #include "RequestParser.hpp"
@@ -28,10 +28,10 @@
 
 namespace ft
 {
-	std::vector<uint8_t>	Client::m_recv_buffer(MaxRecvBufferSize);
-	std::vector<uint8_t>	Client::m_send_buffer(MaxSendBufferSize);
+	std::vector<uint8_t>	ClientSocket::m_recv_buffer(MaxRecvBufferSize);
+	std::vector<uint8_t>	ClientSocket::m_send_buffer(MaxSendBufferSize);
 
-	Client::Client(int fd, const std::vector<http::StatusInfo>& stat_info)
+	ClientSocket::ClientSocket(int fd, const std::vector<http::StatusInfo>& stat_info)
 		: InternetSocket(fd),
 		m_recv_bytes(0),
 		m_sent_bytes(0),
@@ -48,7 +48,7 @@ namespace ft
 			throw (std::runtime_error("getsockname"));
 	}
 
-	Client::Client(const Client& other)
+	ClientSocket::ClientSocket(const ClientSocket& other)
 		: InternetSocket(other),
 		  m_recv_bytes(other.m_recv_bytes),
 		  m_parser(other.m_parser),
@@ -57,7 +57,7 @@ namespace ft
 		  m_stat_info(other.m_stat_info)
 	{}
 
-	Client&	Client::operator=(const Client& rhs)
+	ClientSocket&	ClientSocket::operator=(const ClientSocket& rhs)
 	{
 		if (this == &rhs)
 			return (*this);
@@ -66,7 +66,7 @@ namespace ft
 		return (*this);
 	}
 
-	int	Client::recv()
+	int	ClientSocket::recv()
 	{
 		m_last_activity = time(NULL);
 		m_recv_bytes = ::recv(*this, m_recv_buffer.data(), m_recv_buffer.size(), 0); // noexcept
@@ -116,17 +116,17 @@ namespace ft
 		return (m_state);
 	}
 
-	int	Client::send()
+	int	ClientSocket::send()
 	{
 		m_last_activity = time(NULL);
 		return (m_state);
 	}
 
-	bool	Client::isTimeout()
+	bool	ClientSocket::isTimeout()
 	{
 		return (time(NULL) - m_last_activity >= WebServ::ConnectionTimeout);
 	}
 
-	Client::~Client()
+	ClientSocket::~ClientSocket()
 	{}
 }

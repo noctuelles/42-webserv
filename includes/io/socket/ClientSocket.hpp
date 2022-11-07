@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
+/*   ClientSocket.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:14:25 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 18:38:44 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 namespace ft
 {
-	class Client : public InternetSocket
+	class ClientSocket : public InternetSocket
 	{
 
 		public:
@@ -53,10 +53,10 @@ namespace ft
 				DONE
 			};
 
-			Client(int fd, const std::vector<http::StatusInfo>& stat_info);
-			Client(const Client& other);
-			~Client();
-			Client&	operator=(const Client& rhs);
+			ClientSocket(int fd, const std::vector<http::StatusInfo>& stat_info);
+			ClientSocket(const ClientSocket& other);
+			~ClientSocket();
+			ClientSocket&	operator=(const ClientSocket& rhs);
 
 			virtual int	recv();
 			virtual int	send();

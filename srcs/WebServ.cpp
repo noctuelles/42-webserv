@@ -6,15 +6,15 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:31:22 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/07 18:42:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
+#include "ClientSocket.hpp"
+#include "ListeningSocket.hpp"
 #include "FileUtils.hpp"
 #include "HTTP.hpp"
-#include "Client.hpp"
-#include "UniquePtr.hpp"
 #include <algorithm>
 #include <exception>
 #include <functional>
@@ -54,7 +54,7 @@ namespace ft
 
 	inline void	WebServ::_addClient(int fd)
 	{
-		Client*	ptr = new Client(fd, m_status_table);
+		ClientSocket*	ptr = new ClientSocket(fd, m_status_table);
 
 		m_socks.push_back(ptr);
 		m_poller.add(*ptr, EPOLLIN, ptr);
@@ -103,16 +103,16 @@ namespace ft
 
 					switch ((ret = inSockPtr->recv()))
 					{
-						case Client::SENDING_RESPONSE_HEADER:
-						case Client::SENDING_RESPONSE_BODY:
+						case ClientSocket::SENDING_RESPONSE_HEADER:
+						case ClientSocket::SENDING_RESPONSE_BODY:
 							m_poller.modify(*inSockPtr, EPOLLOUT, inSockPtr);
 							break;
-						case Client::DISCONNECT:
+						case ClientSocket::DISCONNECT:
 							std::cout << "Client (" << inet_ntoa(inSockPtr->getSockAddr().sin_addr) << ":" << htons(inSockPtr->getSockAddr().sin_port) << ") " << "disconnected.\n";
 							_removeSocket(inSockPtr);
 							break;
-						case Client::FETCHING_REQUEST_BODY:
-						case Client::FETCHING_REQUEST_HEADER:
+						case ClientSocket::FETCHING_REQUEST_BODY:
+						case ClientSocket::FETCHING_REQUEST_HEADER:
 							break;
 						default:
 							_addClient(ret);
@@ -122,7 +122,7 @@ namespace ft
 				{
 					switch (inSockPtr->send())
 					{
-						case Client::DISCONNECT:
+						case ClientSocket::DISCONNECT:
 							_removeSocket(inSockPtr);
 							break;
 					}
