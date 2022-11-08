@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 13:09:29 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 14:15:23 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ namespace ft
 			void	_methodGet();
 
 			// Static buffer shared among all instances.
-			static std::vector<uint8_t>	m_recv_buffer, m_send_buffer;       // treating all
+			static std::vector<uint8_t>	m_recv_buffer, m_send_buffer;
 			methodFnct					m_method_fnct[http::NbrAvailableMethod];
 			ssize_t						m_recv_bytes , m_sent_bytes;
 

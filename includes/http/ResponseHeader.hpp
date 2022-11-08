@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/27 14:20:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 13:29:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 14:13:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,6 @@ namespace ft
 				mutable bool						m_build_cache;
 
 				void		_buildCache() const;
-				void	_appendHeaderField(HeaderFieldMap::value_type& val);
 		};
 	}
 }

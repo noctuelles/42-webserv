@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 18:02:49 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 13:40:33 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 14:13:57 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,19 +101,17 @@ namespace ft
 			m_cache.clear();
 			m_cache = m_http_version + ' ' + m_reason_phrase;
 			HeaderFieldMap::value_type sd = *m_header_field.begin();
+			for (HeaderFieldMap::const_iterator it = m_header_field.begin(); it != m_header_field.end(); it++)
+			{
+				m_cache
+					.append(it->first)
+					.append(": ")
+					.append(it->second)
+					.append(CRLF);
+			}
 
-			std::for_each(m_header_field.begin(), m_header_field.end(), std::bind2nd(std::mem_fun(&ResponseHeader::_appendHeaderField), ));
 			m_cache.append(CRLF);
 			m_build_cache = false;
-		}
-
-		void	ResponseHeader::_appendHeaderField(HeaderFieldMap::value_type& val)
-		{
-				m_cache
-					.append(val.first)
-					.append(": ")
-					.append(val.second)
-					.append(CRLF);
 		}
 	}
 }

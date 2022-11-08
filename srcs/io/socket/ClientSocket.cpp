@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 13:08:40 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 14:16:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,7 @@ namespace ft
 			case SENDING_RESPONSE_BODY:
 				if (m_status_code != http::OK)
 				{
-					::send(this->getFd(), m_stat_info[m_status_code].page.second, m_stat_info[m_status_code].page.first, 0);
+					::send(*this, m_stat_info[m_status_code].page.second.c_str(), m_stat_info[m_status_code].page.first, 0);
 					m_state = DISCONNECT;
 				}
 				else
