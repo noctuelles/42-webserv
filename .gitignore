@@ -1,7 +1,6 @@
 obsj/
 webserv
 .ycm_extra_conf.py
-compile_commands.json
 *.srctrlbm
 *.srctrldb
 *.srctrlprj
@@ -10,3 +9,4 @@ compile_commands.json
 .tup
 build
 tags
+compile_commands.json
