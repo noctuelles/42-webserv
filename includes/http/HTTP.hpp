@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 20:43:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 13:12:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ namespace ft
 {
 	namespace http
 	{
+
 		typedef std::pair<std::string, std::string>			HeaderField;
 		typedef std::map<std::string, std::string>			HeaderFieldMap;
 		typedef std::vector<HeaderField>					HeaderFieldVector;
@@ -69,7 +70,7 @@ namespace ft
 			Get,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-get */
 			Post,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-post */
 			Delete,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-delete */
-			AvailableMethod						/* Not used, only a placeholder. */
+			NbrAvailableMethod						/* Not used, only a placeholder. */
 		} Method;
 
 		struct StatusInfo
@@ -90,12 +91,52 @@ namespace ft
 		};
 
 		// Multipurpose Internet Mail Extensions
-		struct MIME
+		class MIME
 		{
+			public:
+
+				static MIME	TextHtml() {return MIME("text/html");}
+
+			private:
+
+				MIME(const std::string& s);
+
+				std::string str;
+		};
+
+		class Field
+		{
+			public:
+
+				operator	std::string()
+				{
+					return (m_str);
+				}
+
+				static inline Field	Server()			{return Field("Server");}
+				static inline Field	Date()				{return Field("Date");}
+				static inline Field	ContentLenght()		{return Field("Content-Lenght");}
+				static inline Field	ContentType()		{return Field("Content-Type");}
+				static inline Field	Connection()		{return Field("Connection");}
+
+				const std::string&	str() const
+				{
+					return (m_str);
+				}
+
+			private:
+
+				Field();
+				Field(const std::string& field)
+					: m_str(field)
+				{}
+
+				std::string	m_str;
 		};
 
 		extern const char*	CRLF;
 		extern const char*	MethodTable[];
+		extern const char*	RFC822_DateFormat;
 	}
 }
 

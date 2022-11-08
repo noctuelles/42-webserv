@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/27 14:20:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 13:31:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 13:29:26 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,29 +31,32 @@ namespace ft
 
 				void			changeReasonPhrase(const std::string& phrase);
 
-				void			addField(const char* name, const std::string& value = "");
-				void			removeField(const char *name);
-				void			modifyField(const char *name, const std::string& value);
+				void			addField(const Field& field, const std::string& value = "");
+				void			removeField(const Field& field);
+				void			modifyField(const Field& field, const std::string& value);
 
-				std::string&		searchField(const char* name);
-				const std::string&	searchField(const char* name) const;
+				std::string&		searchField(const Field& field);
+				const std::string&	searchField(const Field& field) const;
 
-				const std::string&	toString();
+				const char*			toCString() const;
+				const std::string&	toString() const;
+
 				size_t				size() const;
-
 
 			private:
 
+
 				static const size_t	DefaultCacheSize = 2048;
-
-				std::string							m_http_version;
-				std::string							m_reason_phrase;
-
 				HeaderFieldMap				m_header_field;
-				std::string					m_cache;
 
-				void	_buildCache();
-				void	_updateDate();
+				std::string					m_http_version;
+				std::string					m_reason_phrase;
+
+				mutable std::string					m_cache;
+				mutable bool						m_build_cache;
+
+				void		_buildCache() const;
+				void	_appendHeaderField(HeaderFieldMap::value_type& val);
 		};
 	}
 }

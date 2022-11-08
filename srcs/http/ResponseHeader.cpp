@@ -6,15 +6,18 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 18:02:49 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/02 13:33:46 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 13:40:33 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ResponseHeader.hpp"
+#include "HTTP.hpp"
 #include "FileUtils.hpp"
 #include <sstream>
+#include <string>
 #include <utility>
 #include <ctime>
+#include <algorithm>
 #include <assert.h>
 
 namespace ft
@@ -22,11 +25,9 @@ namespace ft
 	namespace http
 	{
 		ResponseHeader::ResponseHeader(const std::string& phrase)
-			: m_http_version("HTTP/1.1"), m_reason_phrase(phrase),
-			  m_header_field(), m_cache()
+			: m_header_field(), m_http_version("HTTP/1.1"), m_reason_phrase(phrase), m_cache(), m_build_cache(true)
 		{
 			m_cache.reserve(DefaultCacheSize);
-			addField("Date");
 		}
 
 		ResponseHeader::ResponseHeader(const ResponseHeader& other)
@@ -48,36 +49,46 @@ namespace ft
 			return (*this);
 		}
 
-		void	ResponseHeader::addField(const char* name, const std::string& str)
+		void	ResponseHeader::addField(const Field& field, const std::string& str)
 		{
-			m_header_field.insert(std::make_pair(name, str));
+			if (m_header_field.insert(std::make_pair(field.str(), str)).second)
+				m_build_cache = true;
 		}
 
-		void	ResponseHeader::modifyField(const char *name, const std::string& str)
+		void	ResponseHeader::modifyField(const Field& field, const std::string& str)
 		{
-			std::string& strRef = searchField(name);
+			std::string& strRef = searchField(field);
 			strRef = str;
+			m_build_cache = true;
 		}
 
-		void	ResponseHeader::removeField(const char* name)
+		void	ResponseHeader::removeField(const Field& field)
 		{
-			m_header_field.erase(name);
+			m_header_field.erase(field.str());
 		}
 
-		std::string&	ResponseHeader::searchField(const char* name)
+		std::string&	ResponseHeader::searchField(const Field& field)
 		{
-			return (m_header_field.at(name));
+			return (m_header_field.at(field.str()));
 		}
 
-		const std::string&	ResponseHeader::searchField(const char* name) const
+		const std::string&	ResponseHeader::searchField(const Field& field) const
 		{
-			return (m_header_field.at(name));
+			return (m_header_field.at(field.str()));
 		}
 
-		const std::string&	ResponseHeader::toString()
+		const std::string&	ResponseHeader::toString() const
 		{
-			_buildCache();
+			if (m_build_cache)
+				_buildCache();
 			return (m_cache);
+		}
+
+		const char*	ResponseHeader::toCString() const
+		{
+			if (m_build_cache)
+				_buildCache();
+			return (m_cache.c_str());
 		}
 
 		size_t	ResponseHeader::size() const
@@ -85,31 +96,24 @@ namespace ft
 			return (m_cache.size());
 		}
 
-		void	ResponseHeader::_buildCache()
+		void	ResponseHeader::_buildCache() const
 		{
-			_updateDate();
 			m_cache.clear();
 			m_cache = m_http_version + ' ' + m_reason_phrase;
-			for (HeaderFieldMap::const_iterator it = m_header_field.begin(); it != m_header_field.end(); it++)
-			{
-				m_cache
-					.append(it->first)
-					.append(": ")
-					.append(it->second)
-					.append(CRLF);
-			}
+			HeaderFieldMap::value_type sd = *m_header_field.begin();
+
+			std::for_each(m_header_field.begin(), m_header_field.end(), std::bind2nd(std::mem_fun(&ResponseHeader::_appendHeaderField), ));
 			m_cache.append(CRLF);
+			m_build_cache = false;
 		}
 
-		void	ResponseHeader::_updateDate()
+		void	ResponseHeader::_appendHeaderField(HeaderFieldMap::value_type& val)
 		{
-			char		buffer[1024];
-			time_t		time = std::time(NULL);
-			struct tm*	gmt_time = std::gmtime(&time);
-
-			// Format : https://www.rfc-editor.org/rfc/rfc822
-			strftime(buffer, 1024, "%a, %d %b %Y %H:%M:%S %Z", gmt_time);
-			modifyField("Date", buffer);
+				m_cache
+					.append(val.first)
+					.append(": ")
+					.append(val.second)
+					.append(CRLF);
 		}
 	}
 }

@@ -1,33 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTP.cpp                                           :+:      :+:    :+:   */
+/*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/10/26 18:43:06 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 11:16:08 by plouvel          ###   ########.fr       */
+/*   Created: 2022/11/08 11:10:47 by plouvel           #+#    #+#             */
+/*   Updated: 2022/11/08 11:25:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HTTP.hpp"
-#include <utility>
+#ifndef UTILS_HPP
+# define UTILS_HPP
 
-
+# include <string>
 
 namespace ft
 {
-	namespace http
+	namespace utils
 	{
-		const char*	CRLF = "\r\n";
+		extern size_t	DateBufferSize;
 
-		const char*	MethodTable[] =
-		{
-			"GET",
-			"POST",
-			"DELETE"
-		};
-
-		const char*	RFC822_DateFormat = "%a, %d %b %Y %H:%M:%S %z";
+		// Return an RFC 822-compliant date format.
+		std::string	getRFC822FormattedDate();
 	}
 }
+
+#endif

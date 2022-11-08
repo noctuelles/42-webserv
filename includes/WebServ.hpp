@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:41:57 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 10:36:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,7 @@ namespace ft
 			const char*	getHTTPVersion() const;
 
 			void	addListener(in_port_t port);
-
-			void		run();
+			void	run();
 
 		private:
 
@@ -83,10 +82,7 @@ namespace ft
 
 			// We can't use auto_ptr as a container element type.
 			InSockVector			m_socks;
-
-			StatusInfoVector	m_status_table;
-
-			bool	m_listener_init;
+			StatusInfoVector		m_status_table;
 	};
 }
 

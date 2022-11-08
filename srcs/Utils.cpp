@@ -1,33 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTP.cpp                                           :+:      :+:    :+:   */
+/*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/10/26 18:43:06 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 11:16:08 by plouvel          ###   ########.fr       */
+/*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
+/*   Updated: 2022/11/08 11:24:45 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Utils.hpp"
 #include "HTTP.hpp"
-#include <utility>
-
-
+#include <ctime>
 
 namespace ft
 {
-	namespace http
+	namespace utils
 	{
-		const char*	CRLF = "\r\n";
+		size_t	DateBufferSize = 1024;
 
-		const char*	MethodTable[] =
+		std::string	getRFC822FormattedDate()
 		{
-			"GET",
-			"POST",
-			"DELETE"
-		};
+			char		buffer[DateBufferSize];
+			size_t		length;
+			time_t		time;
 
-		const char*	RFC822_DateFormat = "%a, %d %b %Y %H:%M:%S %z";
+			time = std::time(NULL); // this call can't fail.
+			length = std::strftime(buffer, DateBufferSize, http::RFC822_DateFormat, std::gmtime(&time));
+			return (std::string(buffer, length));
+		}
 	}
 }

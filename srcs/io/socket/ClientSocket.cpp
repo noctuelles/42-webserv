@@ -1,16 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.cpp                                         :+:      :+:    :+:   */
+/*   ClientSocket.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:39:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 13:08:40 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientSocket.hpp"
+#include "ResponseHeader.hpp"
+#include "Utils.hpp"
 #include "WebServ.hpp"
 #include "HTTP.hpp"
 #include "RequestParser.hpp"
@@ -87,7 +89,12 @@ namespace ft
 		{
 			case FETCHING_REQUEST_HEADER:
 			{
-				int ret = m_parser.parse(m_recv_buffer, static_cast<size_t>(m_recv_bytes));
+				int ret = 0;
+
+				try
+				{ ret = m_parser.parse(m_recv_buffer, static_cast<size_t>(m_recv_bytes)); }
+				catch (const std::bad_alloc& e)
+				{ return (DISCONNECT); }
 
 #ifndef NDEBUG
 				m_parser.report();
@@ -95,12 +102,14 @@ namespace ft
 				switch (ret) // parse could throw exception.
 				{
 					case http::RequestParser::P_DONE:
-						// Parsing is done.
+						(this->*m_method_fnct[m_parser.getMethod()])();
 						break;
 
 					case http::RequestParser::P_DONE_ERR:
+						m_state = SENDING_RESPONSE_HEADER;
+						m_status_code = m_parser.getErrorCode();
+
 						std::cout << "woups, this is wrong.\n";
-						// An error occured during parsing.
 						break;
 
 					default: break;
@@ -119,6 +128,38 @@ namespace ft
 	int	ClientSocket::send()
 	{
 		m_last_activity = time(NULL);
+		switch (m_state)
+		{
+			case SENDING_RESPONSE_HEADER:
+			{
+				http::ResponseHeader	respHeader(m_stat_info[m_status_code].phrase);
+
+				// These two headers are mandatory in every HTTP/1.1 request.
+				respHeader.addField(http::Field::Server(), WebServ::Version);
+				respHeader.addField(http::Field::Date(), utils::getRFC822FormattedDate());
+
+				// Here are detail...
+
+				if (::send(*this, respHeader.toCString(), respHeader.size(), 0) < 0)
+					m_state = DISCONNECT;
+				else
+					m_state = SENDING_RESPONSE_BODY;
+			}
+				break;
+			case SENDING_RESPONSE_BODY:
+				if (m_status_code != http::OK)
+				{
+					::send(this->getFd(), m_stat_info[m_status_code].page.second, m_stat_info[m_status_code].page.first, 0);
+					m_state = DISCONNECT;
+				}
+				else
+				{
+					// Sending with get !
+				}
+				break;
+			default:
+				;
+		}
 		return (m_state);
 	}
 
@@ -129,4 +170,13 @@ namespace ft
 
 	ClientSocket::~ClientSocket()
 	{}
+
+	void	_methodGet()
+	{
+
+	}
+
+	void	_buildResponseHeaderGet()
+	{
+	}
 }

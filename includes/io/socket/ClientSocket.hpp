@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:38:44 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 13:09:29 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,19 +64,22 @@ namespace ft
 
 		private:
 
+			typedef void (ClientSocket::*methodFnct)();
+
+			void	_methodGet();
+
 			// Static buffer shared among all instances.
 			static std::vector<uint8_t>	m_recv_buffer, m_send_buffer;       // treating all
+			methodFnct					m_method_fnct[http::NbrAvailableMethod];
 			ssize_t						m_recv_bytes , m_sent_bytes;
 
 			http::RequestParser			m_parser;
 			time_t						m_last_activity;
 
 			State						m_state;
-
-			http::StatusInfo			m_status_info;
 			http::StatusCode			m_status_code;
 
-			std::basic_ifstream<char>			m_file_handle;
+			std::basic_ifstream<char>				m_file_handle;
 			const std::vector<http::StatusInfo>&	m_stat_info;
 	};
 }
