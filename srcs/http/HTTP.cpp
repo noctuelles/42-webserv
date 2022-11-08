@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:43:06 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 11:16:08 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 14:20:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,6 @@ namespace ft
 			"DELETE"
 		};
 
-		const char*	RFC822_DateFormat = "%a, %d %b %Y %H:%M:%S %z";
+		const char*	RFC822_DateFormat = "%a, %d %b %Y %H:%M:%S %Z";
 	}
 }

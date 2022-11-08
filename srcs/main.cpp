@@ -1,4 +1,6 @@
 #include "RequestParser.hpp"
+#include "ResponseHeader.hpp"
+#include "Utils.hpp"
 #include "WebServ.hpp"
 #include <exception>
 #include <iostream>

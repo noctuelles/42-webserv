@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 18:02:49 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 14:13:57 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 14:20:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ namespace ft
 		void	ResponseHeader::_buildCache() const
 		{
 			m_cache.clear();
-			m_cache = m_http_version + ' ' + m_reason_phrase;
+			m_cache = m_http_version + ' ' + m_reason_phrase + CRLF;
 			HeaderFieldMap::value_type sd = *m_header_field.begin();
 			for (HeaderFieldMap::const_iterator it = m_header_field.begin(); it != m_header_field.end(); it++)
 			{
@@ -109,7 +109,6 @@ namespace ft
 					.append(it->second)
 					.append(CRLF);
 			}
-
 			m_cache.append(CRLF);
 			m_build_cache = false;
 		}
