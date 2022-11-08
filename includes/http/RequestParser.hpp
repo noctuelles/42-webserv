@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 13:11:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 15:53:08 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 # include <utility>
 # include <cctype>
 # include <vector>
-
 # include <stdint.h>
+
 # include "HTTP.hpp"
 
 namespace ft
@@ -68,18 +68,12 @@ namespace ft
 		{
 			public:
 
-				/* ######################## Request parser settings ######################### */
-
-				static const size_t	MaxHeaderSize      = 1024 * 80; // 80kb header
-				static const size_t	MaxRequestLineSize = 1024 * 8;  // 8kb uri
-				static const size_t	MaxHeaderFieldSize = 1024;
-				static const size_t	DefaultAllocatedHeaderField = 1024;
-
-				static const uint8_t	MajorVersionSupported = 1;
-
-				/* ################################# State ################################## */
-
-				// Note: P_CRLF and P_OWS are so called "transition state".
+				static const size_t	MaxHeaderSize					= 1024 * 80; // 80kb header
+				static const size_t	MaxRequestLineSize				= 1024 * 8;  // 8kb uri
+				static const size_t	MaxHeaderFieldSize				= 1024;
+				static const size_t	DefaultAllocatedHeaderField		= 1024;
+				static const int	MajorVersionSupported			= 1;
+				static const int	MinorVersionSupported			= 1;
 				static const char*	StateTable[]; //debugging purpose.
 
 				enum State
@@ -102,31 +96,27 @@ namespace ft
 					P_DONE_ERR
 				};
 
-				enum Field
-				{
-					f_host,
-					f_connection
-				};
-
 				RequestParser();
 				~RequestParser();
 
+				State		parse(const std::vector<uint8_t>& buffer, size_t recv_bytes);
 #ifndef NDEBUG
 				void	report();
 #endif
 
 				inline Method	getMethod()						const {return (m_info.method);   }
-				inline int	getMajorVersion()				const {return (m_info.ver_major);}
-				inline int	getMinorVersion()				const {return (m_info.ver_minor);}
+				inline int	getMajorVersion()					const {return (m_info.ver_major);}
+				inline int	getMinorVersion()					const {return (m_info.ver_minor);}
 				inline StatusCode	getErrorCode()				const {return (m_info.err_code); }
 				inline const std::string&	getRequestLine()	const {return (m_info.req_line); }
 				inline std::vector<HeaderField>&	getHeaderFields() {return (m_info.header_fields);}
 
-				State		parse(const std::vector<uint8_t>& buffer, size_t recv_bytes);
-
 			private:
 
 				typedef void	(RequestParser::*callBackFnct)(const std::vector<uint8_t>::const_iterator&);
+
+				static const char*	m_http;
+				static const char	m_token[256];
 
 				struct ParseInfo
 				{
@@ -146,20 +136,18 @@ namespace ft
 					std::vector<HeaderField>	header_fields;
 				};
 
-				size_t		m_header_size;
-				size_t		m_index;
-
+				size_t			m_header_size;
+				size_t			m_index;
 				State			m_previous_state;
 				State			m_current_state;
 				State			m_next_state;
 				callBackFnct	m_callback_fnct;
-
-				std::string	m_ws_buffer;
-				ParseInfo	m_info;
+				std::string		m_ws_buffer;
+				ParseInfo		m_info;
 
 				inline bool			_isVChar(unsigned char ch)		{return (ch > ' ' && ch < 0x7F);		}
 				inline bool			_isTknChar(unsigned char ch)	{return (m_token[ch] != 0);				}
-				inline bool			_isWS(unsigned char ch)		{return (ch == ' ' || ch == '\t');		}
+				inline bool			_isWS(unsigned char ch)			{return (ch == ' ' || ch == '\t');		}
 				inline bool			_isCRLF(unsigned char ch)		{return (ch == '\r' || ch == '\n');		}
 				inline HeaderField&	_backField()					{return (m_info.header_fields.back());	}
 				inline bool			_emptyBackHeader() {return (_backField().first.empty() && _backField().second.empty());}
@@ -205,11 +193,6 @@ namespace ft
 					(void) it;
 					m_info.header_fields.pop_back();
 				}
-
-				/* Static variables */ 
-
-				static const char*	m_http;
-				static const char	m_token[256];
 		};
 	}
 }

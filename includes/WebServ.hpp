@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 10:36:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 15:45:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,19 +40,13 @@ namespace ft
 			WebServ();
 			~WebServ();
 
-			void		setStatusCodePage(http::StatusCode, const char* filename);
-			const char*	getHTTPVersion() const;
-
+			void	setStatusCodePage(http::StatusCode, const char* filename);
 			void	addListener(in_port_t port);
 			void	run();
 
 		private:
 
 			static const int	TimeoutCheckOccurence = 1000;
-
-			inline void	_addClient(int fd);
-			inline void	_removeSocket(InternetSocket* ptr);
-			inline void	_removeTimeoutSocket();
 
 			struct DeleteAndNullifyTimeoutSocket : std::unary_function<InternetSocket*&, void>
 			{
@@ -75,14 +69,16 @@ namespace ft
 					}
 			};
 
+			EPoll				m_poller;
+			InSockVector		m_socks;
+			StatusInfoVector	m_status_table;
+
 			WebServ(const WebServ& other);
 			WebServ&	operator=(const WebServ& rhs);
 
-			EPoll								m_poller;
-
-			// We can't use auto_ptr as a container element type.
-			InSockVector			m_socks;
-			StatusInfoVector		m_status_table;
+			inline void	_addClient(int fd);
+			inline void	_removeSocket(InternetSocket* ptr);
+			inline void	_removeTimeoutSocket();
 	};
 }
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 14:15:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 15:41:55 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,15 +32,6 @@ namespace ft
 			static const size_t		MaxRecvBufferSize = 1024 * 8;
 			static const size_t		MaxSendBufferSize = 1024 * 8;
 
-			/* CONNECTION_ESTABLISHED: ba
-			 *
-			 *
-			 * READY_FOR_RESPONSE_BODY: ready to perform operation on the underlying file in a GET or DELETE method.
-			 *                          usually, this involve opening the file or deleting it.
-			 *
-			 * SENDING_RESPONSE_BODY  : sending data to the client.
-			 */
-
 			// State are negative to avoid overlapping with file descriptors.
 			// See WebServ::run()
 			enum	State
@@ -53,34 +44,42 @@ namespace ft
 				DONE
 			};
 
+			/* CONNECTION_ESTABLISHED: ba
+			 *
+			 *
+			 * READY_FOR_RESPONSE_BODY: ready to perform operation on the underlying file in a GET or DELETE method.
+			 *                          usually, this involve opening the file or deleting it.
+			 *
+			 * SENDING_RESPONSE_BODY  : sending data to the client.
+			 */
+
 			ClientSocket(int fd, const std::vector<http::StatusInfo>& stat_info);
 			ClientSocket(const ClientSocket& other);
 			~ClientSocket();
 			ClientSocket&	operator=(const ClientSocket& rhs);
 
-			virtual int	recv();
-			virtual int	send();
-			virtual bool	isTimeout();
+			int		recv();
+			int		send();
+			bool	isTimeout();
 
 		private:
 
 			typedef void (ClientSocket::*methodFnct)();
 
-			void	_methodGet();
-
-			// Static buffer shared among all instances.
 			static std::vector<uint8_t>	m_recv_buffer, m_send_buffer;
-			methodFnct					m_method_fnct[http::NbrAvailableMethod];
-			ssize_t						m_recv_bytes , m_sent_bytes;
 
-			http::RequestParser			m_parser;
-			time_t						m_last_activity;
-
-			State						m_state;
-			http::StatusCode			m_status_code;
-
+			methodFnct								m_method_fnct[http::NbrAvailableMethod];
+			ssize_t									m_recv_bytes , m_sent_bytes;
+			http::RequestParser						m_parser;
+			time_t									m_last_activity;
+			State									m_state;
+			http::StatusCode						m_status_code;
 			std::basic_ifstream<char>				m_file_handle;
 			const std::vector<http::StatusInfo>&	m_stat_info;
+
+			void	_methodGet();
+			void	_methodPost();
+			void	_methodDelete();
 	};
 }
 

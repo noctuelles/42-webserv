@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 14:16:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/08 15:43:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,11 +172,6 @@ namespace ft
 	{}
 
 	void	_methodGet()
-	{
-
-	}
-
-	void	_buildResponseHeaderGet()
 	{
 	}
 }
