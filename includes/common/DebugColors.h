@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/01 16:01:46 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/01 16:02:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 12:56:40 by tpouget          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@
 #define BHWHT "\x1b[1;97m"
 
 //Reset
-#define reset "\x1b[0m"
+#define RESET "\x1b[0m"
 #define CRST "\x1b[0m"
 #define COLOR_RESET "\x1b[0m"
 

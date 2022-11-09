@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 13:14:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 12:49:56 by tpouget          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,11 @@ namespace ft
 {
 	const std::string	WebServ::Version("webserv/0.1");
 
-	WebServ::WebServ()
+	WebServ::WebServ(const char *config_filename)
 		: m_poller(),
 		m_socks(),
-		m_status_table()
+		m_status_table(),
+		m_virtserv_info(config_filename)
 	{
 		m_status_table.resize(http::MaxStatusCode);
 

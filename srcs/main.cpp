@@ -9,9 +9,15 @@
 
 using namespace ft;
 
-int main()
+int main(int ac, char **av)
 {
-	WebServ	serv;
+	if (ac > 2)
+	{
+		std::cout << "Too many args. Usage: ./webserv /path/to/config/file\n";
+		return -1;
+	}
+
+	WebServ	serv(av[1]);
 
 	try {
 		serv.addListener(8080);

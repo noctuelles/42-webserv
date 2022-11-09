@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 15:45:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 12:51:11 by tpouget          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include "HTTP.hpp"
 # include "EPoll.hpp"
 # include "FileUtils.hpp"
+# include "VirtServInfo.hpp"
 
 namespace ft
 {
@@ -37,7 +38,7 @@ namespace ft
 			static const time_t			ConnectionTimeout		= 60; // in seconds.
 			static const std::string	Version;
 
-			WebServ();
+			WebServ(const char *config_filename);
 			~WebServ();
 
 			void	setStatusCodePage(http::StatusCode, const char* filename);
@@ -72,6 +73,7 @@ namespace ft
 			EPoll				m_poller;
 			InSockVector		m_socks;
 			StatusInfoVector	m_status_table;
+			VirtServInfo		m_virtserv_info;
 
 			WebServ(const WebServ& other);
 			WebServ&	operator=(const WebServ& rhs);
