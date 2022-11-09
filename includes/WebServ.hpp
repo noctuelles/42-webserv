@@ -41,9 +41,12 @@ namespace ft
 			WebServ(const char *config_filename);
 			~WebServ();
 
-			void	setStatusCodePage(http::StatusCode, const char* filename);
 			void	addListener(in_port_t port);
 			void	run();
+
+			const VirtServInfo&		getVirtServInfo() const { return m_virtserv_info; }
+
+			void	setStatusCodePage(http::StatusCode, const char* filename);
 
 		private:
 

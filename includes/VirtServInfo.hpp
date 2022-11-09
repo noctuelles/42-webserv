@@ -34,8 +34,8 @@ class VirtServInfo
 
 	iterator	begin()	{	return m_virtserv_map.begin();	}
 	iterator	end()	{	return m_virtserv_map.end();	}
-
-	const vector<VirtServ*>	operator[](const sockaddr_in& key) { return m_virtserv_map[key]; }
+	
+	const vector<VirtServ*>&	operator[](const sockaddr_in& key) const { return (m_virtserv_map.find(key))->second; }
 
   private:
 	typedef struct token_dispatch

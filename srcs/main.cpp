@@ -1,12 +1,18 @@
+#include <cstring>
+#include <errno.h>
+#include <exception>
+#include <iostream>
+
 #include "FileUtils.hpp"
 #include "RequestParser.hpp"
 #include "ResponseHeader.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
-#include <exception>
-#include <iostream>
-#include <errno.h>
-#include <cstring>
+
+namespace ft
+{
+	WebServ *env_g;
+}
 
 using namespace ft;
 
@@ -19,9 +25,9 @@ int main(int ac, char **av)
 	}
 
 	WebServ	serv(av[1]);
+	env_g = &serv;
 
 	try {
-		serv.addListener(8080);
 		serv.run();
 	}
 	catch(const std::exception& e)
@@ -29,5 +35,5 @@ int main(int ac, char **av)
 		std::cerr << e.what() << ": " << strerror(errno) << '\n';
 	}
 
-	return (0);
+	return 0;
 }

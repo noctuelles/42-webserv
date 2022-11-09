@@ -21,6 +21,7 @@
 #include "HTTP.hpp"
 # include "SocketTypes.hpp"
 # include "RequestParser.hpp"
+#include "VirtServ.hpp"
 
 namespace ft
 {
@@ -53,9 +54,6 @@ namespace ft
 			 */
 
 			ClientSocket(int fd, const std::vector<http::StatusInfo>& stat_info);
-			ClientSocket(const ClientSocket& other);
-			~ClientSocket();
-			ClientSocket&	operator=(const ClientSocket& rhs);
 
 			int		recv();
 			int		send();
@@ -65,7 +63,11 @@ namespace ft
 
 			typedef void (ClientSocket::*methodFnct)();
 
-			static std::vector<uint8_t>	m_recv_buffer, m_send_buffer;
+			static std::vector<uint8_t>	m_recv_buffer;
+			static std::vector<uint8_t> m_send_buffer;
+
+			ClientSocket(const ClientSocket& other);
+			ClientSocket&	operator=(const ClientSocket& rhs);
 
 			methodFnct								m_method_fnct[http::NbrAvailableMethod];
 			ssize_t									m_recv_bytes , m_sent_bytes;
@@ -74,6 +76,7 @@ namespace ft
 			State									m_state;
 			http::StatusCode						m_status_code;
 			const std::vector<http::StatusInfo>&	m_stat_info;
+			VirtServ*								m_conn_info;
 
 			http::HeaderFieldMap					m_header_fields;
 

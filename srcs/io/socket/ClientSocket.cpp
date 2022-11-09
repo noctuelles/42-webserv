@@ -16,8 +16,11 @@
 #include "WebServ.hpp"
 #include "HTTP.hpp"
 #include "RequestParser.hpp"
+#include "env_g.hpp"
+
 #include <ios>
 #include <sstream>
+#include <netinet/in.h>
 #include <new>
 #include <stdexcept>
 #include <string>
@@ -45,31 +48,13 @@ namespace ft
 		m_state(FETCHING_REQUEST_HEADER),
 		m_status_code(http::OK),
 		m_stat_info(stat_info),
+		m_conn_info(),
 		m_header_fields()
 	{
 		setBlockingMode(false);
 		this->m_len = sizeof(struct sockaddr_in);
 		if (getsockname(fd, reinterpret_cast<struct sockaddr*>(&m_sockaddr), &m_len) < 0)
 			throw (std::runtime_error("getsockname"));
-	}
-
-	ClientSocket::ClientSocket(const ClientSocket& other)
-		: InternetSocket(other),
-		  m_recv_bytes(other.m_recv_bytes),
-		  m_parser(other.m_parser),
-		  m_state(other.m_state),
-		  m_status_code(other.m_status_code),
-		  m_stat_info(other.m_stat_info),
-		  m_header_fields(other.m_header_fields)
-	{}
-
-	ClientSocket&	ClientSocket::operator=(const ClientSocket& rhs)
-	{
-		if (this == &rhs)
-			return (*this);
-		InternetSocket::operator=(rhs);
-		// to be completed
-		return (*this);
 	}
 
 	int	ClientSocket::recv()
@@ -108,12 +93,57 @@ namespace ft
 					case http::RequestParser::P_DONE:
 						try
 						{
+							// Maybe this can move into parsing ? Would it be hard to parse field directly into a map ?
 							if (std::count_if(m_parser.getHeaderFields().begin(), m_parser.getHeaderFields().end(), http::IsHostField()) != 1)
 								throw (std::logic_error("invalid number of host field"));
 							m_header_fields.insert(m_parser.getHeaderFields().begin(), m_parser.getHeaderFields().end());
+							//
+							const std::string& host_val = m_header_fields[http::Field::Host().toLower()];
 
-							const std::string& val = m_header_fields[http::Field::Host().toLower()];
-							(void) val;
+							// Get the list of virtual servers that `listen` to that host:port
+							{
+								const std::vector<VirtServ*>& vservers = env_g->getVirtServInfo()[m_sockaddr];
+								std::vector<VirtServ*>::const_iterator first = vservers.begin();
+								std::vector<VirtServ*>::const_iterator it = first;
+								std::vector<VirtServ*>::const_iterator end = vservers.end();
+								for(; it != end; ++it)
+								{
+									if (host_val == (*it)->m_server_name)
+									{
+										m_conn_info = *first; // Lucky us
+										break;
+									}
+								}
+								if ( it == first ) // Not even one candidate for that host:port. Let's try our luck further down
+									;
+								else if ( it == end ) // Matching vserver name not found. Default to first candidate
+								{
+									m_conn_info = *first;
+									break;
+								}
+							}
+							// Get the list of virtual servers that `listen` to 0.0.0.0:port
+							{
+								sockaddr_in sockaddr = m_sockaddr;
+								sockaddr.sin_addr.s_addr = 0;
+								const std::vector<VirtServ*>& vservers = env_g->getVirtServInfo()[sockaddr];
+								std::vector<VirtServ*>::const_iterator first = vservers.begin();
+								std::vector<VirtServ*>::const_iterator it = first;
+								std::vector<VirtServ*>::const_iterator end = vservers.end();
+								for(; it != end; ++it)
+									if (host_val == (*it)->m_server_name)
+										break;
+								if ( it == first ) // Not even one candidate for 0.0.0.0:port. This is a lost cause.
+								{
+									m_state = DISCONNECT;
+									break;
+								}
+								else if ( it == end ) // Matching vserver name not found. Default to first candidate
+								{
+									m_conn_info = *first;
+									break;
+								}
+							}
 						}
 						catch (const std::bad_alloc& e)
 						{
@@ -192,9 +222,6 @@ namespace ft
 	{
 		return (time(NULL) - m_last_activity >= WebServ::ConnectionTimeout);
 	}
-
-	ClientSocket::~ClientSocket()
-	{}
 
 	void	_methodGet()
 	{
