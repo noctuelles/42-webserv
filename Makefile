@@ -3,6 +3,7 @@
 ##################
 DEFAULT_CONFIG	= config
 DEBUG			= -DDEBUG
+
 ## Our beloved address sanitizer
 ASAN_FLAG		=  -fsanitize=address
 

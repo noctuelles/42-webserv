@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 12:49:56 by tpouget          ###   ########.fr       */
+/*   Updated: 2022/11/09 15:53:47 by tpouget          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,15 @@ namespace ft
 		m_status_table[http::UriTooLong]			= HTTP_ERRPAGE("414 Uri Too Long");
 		m_status_table[http::NotImplemented]		= HTTP_ERRPAGE("501 Not Implemented");
 		m_status_table[http::VersionNotSupported]	= HTTP_ERRPAGE("505 HTTP Version Not Supported");
+
+		// Init listening_sockets and add them to watchlist
+		VirtServInfo::iterator it  = m_virtserv_info.begin();
+		VirtServInfo::iterator end = m_virtserv_info.end();
+		for (; it != end; ++it)
+		{
+			m_socks.push_back(new ListeningSocket(it->first));
+			m_poller.add(m_socks.back()->getFd(), EPOLLIN, m_socks.back());
+		}
 	}
 
 	void	WebServ::addListener(in_port_t port)

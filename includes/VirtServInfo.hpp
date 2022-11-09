@@ -19,14 +19,23 @@
 
 namespace ft
 {
+	using std::vector;
+	using std::map;
+
 class VirtServInfo
 {
   public:
+	typedef std::map< sockaddr_in, std::vector<VirtServ*> >::iterator	iterator;
+
 	std::vector< VirtServ >								m_virtserv_vec;
 	std::map< sockaddr_in, std::vector< VirtServ* > >	m_virtserv_map;
 
-  public:
 	/* Ctor */ VirtServInfo(const char* config);
+
+	iterator	begin()	{	return m_virtserv_map.begin();	}
+	iterator	end()	{	return m_virtserv_map.end();	}
+
+	const vector<VirtServ*>	operator[](const sockaddr_in& key) { return m_virtserv_map[key]; }
 
   private:
 	typedef struct token_dispatch
