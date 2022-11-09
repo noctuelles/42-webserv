@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 13:03:01 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 16:14:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include "RequestParser.hpp"
 #include <ios>
 #include <sstream>
+#include <new>
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
@@ -48,7 +49,7 @@ namespace ft
 	{
 		setBlockingMode(false);
 		this->m_len = sizeof(struct sockaddr_in);
-		if (getsockname(fd, reinterpret_cast<struct sockaddr*>(&this->m_sockaddr), &m_len) < 0)
+		if (getsockname(fd, reinterpret_cast<struct sockaddr*>(&m_sockaddr), &m_len) < 0)
 			throw (std::runtime_error("getsockname"));
 	}
 
@@ -105,14 +106,20 @@ namespace ft
 				switch (ret) // parse could throw exception.
 				{
 					case http::RequestParser::P_DONE:
-						m_header_fields.insert(m_parser.getHeaderFields().begin(), m_parser.getHeaderFields().end());
-
 						try
 						{
-							const std::string& val = m_header_fields.at(http::Field::Host().toLower());
+							if (std::count_if(m_parser.getHeaderFields().begin(), m_parser.getHeaderFields().end(), http::IsHostField()) != 1)
+								throw (std::logic_error("invalid number of host field"));
+							m_header_fields.insert(m_parser.getHeaderFields().begin(), m_parser.getHeaderFields().end());
+
+							const std::string& val = m_header_fields[http::Field::Host().toLower()];
 							(void) val;
 						}
-						catch (const std::out_of_range& e)
+						catch (const std::bad_alloc& e)
+						{
+							return (DISCONNECT);
+						}
+						catch (const std::logic_error& e)
 						{
 							m_state = SENDING_RESPONSE_HEADER;
 							m_status_code = http::BadRequest;

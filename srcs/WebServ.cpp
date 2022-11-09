@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 15:53:47 by tpouget          ###   ########.fr       */
+/*   Updated: 2022/11/09 16:19:39 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,7 @@ namespace ft
 						case ClientSocket::FETCHING_REQUEST_HEADER:
 							break;
 						default:
+							std::cout << "Listening (" << inet_ntoa(inSockPtr->getSockAddr().sin_addr) << ":" << htons(inSockPtr->getSockAddr().sin_port) << ") " << "disconnected.\n";
 							_addClient(ret);
 					}
 				}

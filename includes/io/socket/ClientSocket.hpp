@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 11:33:15 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 15:53:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ namespace ft
 
 			http::HeaderFieldMap					m_header_fields;
 
+			void	_matchServer();
 			void	_methodGet();
 			void	_methodPost();
 			void	_methodDelete();

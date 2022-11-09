@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 16:02:28 by tpouget          ###   ########.fr       */
+/*   Updated: 2022/11/09 16:20:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ namespace ft
 		setReusableMode(true);
 		setBlockingMode(false);
 		bind(addr, port);
+		listen(WebServ::MaxPendingConnection);
 	}
 
 	ListeningSocket::ListeningSocket(sockaddr_in sockaddr)
@@ -97,8 +98,11 @@ namespace ft
 	int	ListeningSocket::recv()
 	{
 		int					sa_fd;
+		struct sockaddr_in	test;
+		socklen_t			s = sizeof(struct sockaddr_in);
 
-		sa_fd = ::accept(m_fd, NULL, NULL);
+		sa_fd = ::accept(m_fd, reinterpret_cast<struct sockaddr*>(&test), &s);
+		::getpeername(sa_fd, reinterpret_cast<struct sockaddr*>(&test), &s);
 		if (sa_fd < 0)
 			throw (std::runtime_error("accept"));
 		return (sa_fd);

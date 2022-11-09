@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 12:04:22 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 16:03:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,12 +129,12 @@ namespace ft
 				static inline Field	Connection()		{return Field("Connection");}
 				static inline Field	Host()				{return Field("Host");}
 
-				const std::string&	str() const
+				inline const std::string&	str() const
 				{
 					return (m_str);
 				}
 
-				const std::string	toLower()
+				inline const std::string	toLower()
 				{
 					std::string	cp = m_str;
 					cp[0] = std::tolower(cp[0]);
@@ -167,6 +167,16 @@ namespace ft
 					: val(std::make_pair(code, str)) {}
 
 				std::pair<unsigned int, std::string>	val;
+		};
+
+		struct IsHostField
+		{
+			inline bool	operator()(const HeaderFieldMap::value_type& val)
+			{
+				if (val.first.compare(Field::Host().toLower()) == 0)
+					return (true);
+				return (false);
+			}
 		};
 
 		extern const char*	CRLF;

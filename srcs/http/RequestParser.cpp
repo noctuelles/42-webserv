@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 11:58:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 13:36:46 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 #include <string>
 #include <iostream>
 #include <cctype>
+
+#include "Utils.hpp"
 
 #ifndef NDEBUG
 # include "DebugColors.h"
