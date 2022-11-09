@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 15:41:55 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 11:33:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,7 @@ namespace ft
 				FETCHING_REQUEST_BODY,
 				SENDING_RESPONSE_HEADER,
 				SENDING_RESPONSE_BODY,
-				DISCONNECT,
-				DONE
+				DISCONNECT
 			};
 
 			/* CONNECTION_ESTABLISHED: ba
@@ -74,8 +73,9 @@ namespace ft
 			time_t									m_last_activity;
 			State									m_state;
 			http::StatusCode						m_status_code;
-			std::basic_ifstream<char>				m_file_handle;
 			const std::vector<http::StatusInfo>&	m_stat_info;
+
+			http::HeaderFieldMap					m_header_fields;
 
 			void	_methodGet();
 			void	_methodPost();

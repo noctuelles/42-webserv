@@ -6,13 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 11:24:45 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 12:59:27 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Utils.hpp"
 #include "HTTP.hpp"
 #include <ctime>
+#include <stdexcept>
 
 namespace ft
 {
@@ -20,7 +21,7 @@ namespace ft
 	{
 		size_t	DateBufferSize = 1024;
 
-		std::string	getRFC822FormattedDate()
+		std::string	getRFC822NowDate()
 		{
 			char		buffer[DateBufferSize];
 			size_t		length;
@@ -28,6 +29,17 @@ namespace ft
 
 			time = std::time(NULL); // this call can't fail.
 			length = std::strftime(buffer, DateBufferSize, http::RFC822_DateFormat, std::gmtime(&time));
+			return (std::string(buffer, length));
+		}
+
+		std::string	formatTimeToRFC822(struct tm* ptrTm)
+		{
+			char		buffer[DateBufferSize];
+			size_t		length;
+
+			length = std::strftime(buffer, DateBufferSize, http::RFC822_DateFormat, ptrTm);
+			if (length == 0)
+				throw (std::logic_error("std::strftime"));
 			return (std::string(buffer, length));
 		}
 	}

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 15:43:43 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 13:03:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include "RequestParser.hpp"
 #include <ios>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <unistd.h>
 #include <vector>
@@ -35,14 +36,15 @@ namespace ft
 
 	ClientSocket::ClientSocket(int fd, const std::vector<http::StatusInfo>& stat_info)
 		: InternetSocket(fd),
+		m_method_fnct(),
 		m_recv_bytes(0),
 		m_sent_bytes(0),
 		m_parser(),
 		m_last_activity(time(NULL)),
 		m_state(FETCHING_REQUEST_HEADER),
 		m_status_code(http::OK),
-		m_file_handle(),
-		m_stat_info(stat_info)
+		m_stat_info(stat_info),
+		m_header_fields()
 	{
 		setBlockingMode(false);
 		this->m_len = sizeof(struct sockaddr_in);
@@ -56,7 +58,8 @@ namespace ft
 		  m_parser(other.m_parser),
 		  m_state(other.m_state),
 		  m_status_code(other.m_status_code),
-		  m_stat_info(other.m_stat_info)
+		  m_stat_info(other.m_stat_info),
+		  m_header_fields(other.m_header_fields)
 	{}
 
 	ClientSocket&	ClientSocket::operator=(const ClientSocket& rhs)
@@ -102,14 +105,25 @@ namespace ft
 				switch (ret) // parse could throw exception.
 				{
 					case http::RequestParser::P_DONE:
-						(this->*m_method_fnct[m_parser.getMethod()])();
+						m_header_fields.insert(m_parser.getHeaderFields().begin(), m_parser.getHeaderFields().end());
+
+						try
+						{
+							const std::string& val = m_header_fields.at(http::Field::Host().toLower());
+							(void) val;
+						}
+						catch (const std::out_of_range& e)
+						{
+							m_state = SENDING_RESPONSE_HEADER;
+							m_status_code = http::BadRequest;
+							break;
+						}
+
 						break;
 
 					case http::RequestParser::P_DONE_ERR:
 						m_state = SENDING_RESPONSE_HEADER;
 						m_status_code = m_parser.getErrorCode();
-
-						std::cout << "woups, this is wrong.\n";
 						break;
 
 					default: break;
@@ -134,13 +148,17 @@ namespace ft
 			{
 				http::ResponseHeader	respHeader(m_stat_info[m_status_code].phrase);
 
-				// These two headers are mandatory in every HTTP/1.1 request.
 				respHeader.addField(http::Field::Server(), WebServ::Version);
-				respHeader.addField(http::Field::Date(), utils::getRFC822FormattedDate());
+				respHeader.addField(http::Field::Date(), utils::getRFC822NowDate());
 
-				// Here are detail...
+				if (m_status_code != http::OK)
+				{
+					respHeader.addField(http::Field::ContentType(), http::MIME::TextHtml());
+					respHeader.addField(http::Field::ContentLenght(), utils::integralToString(m_stat_info[m_status_code].page.first));
+					respHeader.addField(http::Field::Connection(), "closed");
+				}
 
-				if (::send(*this, respHeader.toCString(), respHeader.size(), 0) < 0)
+				if (::send(this->getFd(), respHeader.toCString(), respHeader.size(), 0) < 0)
 					m_state = DISCONNECT;
 				else
 					m_state = SENDING_RESPONSE_BODY;

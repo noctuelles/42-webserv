@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 18:02:49 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 14:20:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 11:45:13 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ namespace ft
 
 		size_t	ResponseHeader::size() const
 		{
-			return (m_cache.size());
+			return (toString().size());
 		}
 
 		void	ResponseHeader::_buildCache() const

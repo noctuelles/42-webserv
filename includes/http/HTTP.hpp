@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 13:12:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/09 12:04:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,12 @@
 
 # include "SocketTypes.hpp"
 
+#include <cctype>
 # include <utility>
 # include <string>
 # include <map>
 # include <vector>
+# include <algorithm>
 
 # define HTTP_ERRPAGE(X) (ft::http::StatusInfo(\
 				X, \
@@ -95,11 +97,18 @@ namespace ft
 		{
 			public:
 
+				operator	std::string()
+				{
+					return (str);
+				}
+
 				static MIME	TextHtml() {return MIME("text/html");}
 
 			private:
 
-				MIME(const std::string& s);
+				MIME();
+				MIME(const std::string& s)
+					: str(s) {}
 
 				std::string str;
 		};
@@ -118,10 +127,18 @@ namespace ft
 				static inline Field	ContentLenght()		{return Field("Content-Lenght");}
 				static inline Field	ContentType()		{return Field("Content-Type");}
 				static inline Field	Connection()		{return Field("Connection");}
+				static inline Field	Host()				{return Field("Host");}
 
 				const std::string&	str() const
 				{
 					return (m_str);
+				}
+
+				const std::string	toLower()
+				{
+					std::string	cp = m_str;
+					cp[0] = std::tolower(cp[0]);
+					return (cp);
 				}
 
 			private:
@@ -132,6 +149,24 @@ namespace ft
 				{}
 
 				std::string	m_str;
+		};
+
+		class StatusCodes
+		{
+			operator unsigned int()
+			{
+				return (val.first);
+			}
+
+			static inline StatusCodes	NotFound() {return StatusCodes(404, "Not Found"); }
+
+			private:
+
+				StatusCodes();
+				StatusCodes(unsigned int code, const std::string& str)
+					: val(std::make_pair(code, str)) {}
+
+				std::pair<unsigned int, std::string>	val;
 		};
 
 		extern const char*	CRLF;
