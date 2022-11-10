@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 15:53:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/10 14:32:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # include "SocketTypes.hpp"
 # include "RequestParser.hpp"
 #include "VirtServ.hpp"
+#include "VirtServInfo.hpp"
 
 namespace ft
 {
@@ -63,6 +64,24 @@ namespace ft
 
 			typedef void (ClientSocket::*methodFnct)();
 
+			class FindMatchingServerName : public std::unary_function<std::vector<VirtServ*>::value_type, bool>
+			{
+				public:
+
+					FindMatchingServerName(const std::string& hostField)
+						: m_host_field(hostField) {}
+
+					inline bool	operator()(const std::vector<VirtServ*>::value_type ptr)
+					{
+						return (m_host_field == ptr->m_server_name);
+					}
+
+				private:
+
+					const std::string&	m_host_field;
+			};
+
+
 			static std::vector<uint8_t>	m_recv_buffer;
 			static std::vector<uint8_t> m_send_buffer;
 
@@ -76,9 +95,11 @@ namespace ft
 			State									m_state;
 			http::StatusCode						m_status_code;
 			const std::vector<http::StatusInfo>&	m_stat_info;
-			VirtServ*								m_conn_info;
+			const VirtServ*							m_conn_info;
 
 			http::HeaderFieldMap					m_header_fields;
+
+			const std::vector<VirtServ*>&	_getBoundedVirtServs();
 
 			void	_matchServer();
 			void	_methodGet();

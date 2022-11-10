@@ -7,6 +7,7 @@
 #include <iterator>
 #include <map>
 #include <netinet/in.h>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -25,17 +26,25 @@ namespace ft
 class VirtServInfo
 {
   public:
-	typedef std::map< sockaddr_in, std::vector<VirtServ*> >::iterator	iterator;
 
-	std::vector< VirtServ >								m_virtserv_vec;
-	std::map< sockaddr_in, std::vector< VirtServ* > >	m_virtserv_map;
+	typedef vector<VirtServ>								VirtServVector;
+	typedef vector<VirtServ*>								VirtServPtrVector;
+
+	typedef std::map<sockaddr_in, VirtServPtrVector >		VirtServMap;
+	typedef VirtServMap::iterator							iterator;
+
+	std::vector<VirtServ>								m_virtserv_vec;
+	VirtServMap											m_virtserv_map;
 
 	/* Ctor */ VirtServInfo(const char* config);
 
 	iterator	begin()	{	return m_virtserv_map.begin();	}
 	iterator	end()	{	return m_virtserv_map.end();	}
 	
-	const vector<VirtServ*>&	operator[](const sockaddr_in& key) const { return (m_virtserv_map.find(key))->second; }
+	const vector<VirtServ*>&	operator[](const VirtServMap::key_type& key) const
+	{
+		return (m_virtserv_map.at(key));
+	}
 
   private:
 	typedef struct token_dispatch

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 16:03:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/10 13:07:13 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include "SocketTypes.hpp"
 
 #include <cctype>
+#include <functional>
 # include <utility>
 # include <string>
 # include <map>
@@ -136,12 +137,19 @@ namespace ft
 
 				inline const std::string	toLower()
 				{
-					std::string	cp = m_str;
-					cp[0] = std::tolower(cp[0]);
-					return (cp);
+					std::transform(m_str.begin(), m_str.end(), m_str.begin(), LowerCase());
+					return (m_str);
 				}
 
 			private:
+
+				struct LowerCase : std::unary_function<char, char>
+				{
+					inline char	operator()(char c)
+					{
+						return (std::tolower(c));
+					}
+				};
 
 				Field();
 				Field(const std::string& field)
