@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/10 14:32:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:16:35 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,11 +64,11 @@ namespace ft
 
 			typedef void (ClientSocket::*methodFnct)();
 
-			class FindMatchingServerName : public std::unary_function<std::vector<VirtServ*>::value_type, bool>
+			class MatchingServerName : public std::unary_function<const std::vector<VirtServ*>::value_type, bool>
 			{
 				public:
 
-					FindMatchingServerName(const std::string& hostField)
+					MatchingServerName(const std::string& hostField)
 						: m_host_field(hostField) {}
 
 					inline bool	operator()(const std::vector<VirtServ*>::value_type ptr)

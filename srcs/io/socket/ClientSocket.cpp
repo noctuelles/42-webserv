@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/10 14:33:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/10 17:16:23 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ namespace ft
 							const std::string&				host_val	= m_header_fields[http::Field::Host().toLower()];
 							const std::vector<VirtServ*>&	virtServs	= _getBoundedVirtServs();
 
-							const std::vector<VirtServ*>::const_iterator it = std::find_if(virtServs.begin(), virtServs.end(), FindMatchingServerName(host_val));
+							const std::vector<VirtServ*>::const_iterator it = std::find_if(virtServs.begin(), virtServs.end(), MatchingServerName(host_val));
 							if (it == virtServs.end())
 								m_conn_info = *virtServs.begin();
 							else

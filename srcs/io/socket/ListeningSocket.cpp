@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 16:20:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/10 16:06:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ namespace ft
 	ListeningSocket::ListeningSocket(sockaddr_in sockaddr)
 		: InternetSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
 	{
+		m_sockaddr = sockaddr;
 		setReusableMode(true);
 		setBlockingMode(false);
 		bind(sockaddr);
@@ -74,8 +75,6 @@ namespace ft
 
 	void	ListeningSocket::bind(sockaddr_in sockaddr)
 	{
-		m_sockaddr = sockaddr;
-		//               |This is an input argument    |
 		if (::bind(m_fd, (struct sockaddr*) &m_sockaddr, sizeof(m_sockaddr)) < 0)
 		{
 			if (errno != EADDRINUSE)
@@ -98,11 +97,8 @@ namespace ft
 	int	ListeningSocket::recv()
 	{
 		int					sa_fd;
-		struct sockaddr_in	test;
-		socklen_t			s = sizeof(struct sockaddr_in);
 
-		sa_fd = ::accept(m_fd, reinterpret_cast<struct sockaddr*>(&test), &s);
-		::getpeername(sa_fd, reinterpret_cast<struct sockaddr*>(&test), &s);
+		sa_fd = ::accept(m_fd, NULL, NULL);
 		if (sa_fd < 0)
 			throw (std::runtime_error("accept"));
 		return (sa_fd);

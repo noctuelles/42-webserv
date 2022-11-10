@@ -1,18 +1,11 @@
-server{
+server {
 	server_name		hello;
-	listen      	8000;
+	listen      	8081;
 	index	      	hello.html;
 }
 
-server{
-	server_name 	bye;
-	listen      	8080;
-	index	      	hello.html;
-}
-
-server{
-	server_name		good;
-	listen      	8000;
-	listen      	127.0.0.1:8080;
-	index	      	good.html;
+server {
+	server_name		localhost:8081;
+	listen      	8081;
+	index			test.html;
 }

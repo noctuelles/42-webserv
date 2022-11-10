@@ -178,6 +178,7 @@ void VirtServInfo::_parseServerBlock(istream_iterator<string>& it)
 	check_delim(it, '}', "server", AFTER);
 }
 
+// Note PAUL: un port peut etre 0 <-> 65565. A port is coded on 16 bits.
 static int xatoi(const string& str)
 {
 	string::const_iterator it = str.begin();
@@ -218,7 +219,8 @@ void VirtServInfo::_parseListen(istream_iterator<string>& it)
 	sockaddr.sin_addr.s_addr = inet_addr(host.c_str());
 	if ( sockaddr.sin_addr.s_addr == INADDR_NONE )
 		throw std::runtime_error("Config file error: listen directive does not have a valid ip address");
-	sockaddr.sin_port = xatoi(port.c_str());
+	// I'm happy now.
+	sockaddr.sin_port = htons(xatoi(port.c_str()));
 
 	m_virtserv_vec.back().m_sockaddr_vec.push_back(sockaddr);
 	check_delim(it, ';', "listen", AFTER);
@@ -228,6 +230,7 @@ void VirtServInfo::_parseServerName(istream_iterator<string>& it)
 {
 	++it;
 	m_virtserv_vec.back().m_server_name = *it;
+	m_virtserv_vec.back().m_server_name.erase(m_virtserv_vec.back().m_server_name.end() - 1);
 	check_delim(it, ';', "server_name", AFTER);
 }
 
@@ -235,6 +238,7 @@ void VirtServInfo::_parseRoot(istream_iterator<string>& it)
 {
 	++it;
 	m_virtserv_vec.back().m_root = *it;
+	m_virtserv_vec.back().m_root.erase(m_virtserv_vec.back().m_root.end() - 1);
 	check_delim(it, ';', "root", AFTER);
 }
 
@@ -242,6 +246,7 @@ void VirtServInfo::_parseIndex(istream_iterator<string>& it)
 {
 	++it;
 	m_virtserv_vec.back().m_index = *it;
+	m_virtserv_vec.back().m_index.erase(m_virtserv_vec.back().m_index.end() - 1);
 	check_delim(it, ';', "index", AFTER);
 }
 
