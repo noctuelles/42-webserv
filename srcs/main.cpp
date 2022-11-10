@@ -8,6 +8,7 @@
 #include "ResponseHeader.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
+#include "HTTPMIME.hpp"
 
 namespace ft
 {
@@ -26,6 +27,8 @@ int main(int ac, char **av)
 
 	WebServ	serv(av[1]);
 	env_g = &serv;
+
+	std::cout << http::getMimeFromFileExtension("www/mysite/bonjour.gif").toStr() << '\n';
 
 	try {
 		serv.run();

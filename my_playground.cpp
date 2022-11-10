@@ -93,6 +93,7 @@ class MIME
 
 typedef std::pair<const ci_string, const MIME>	MimePair;
 typedef std::vector<MimePair>					MimePairVector;
+typedef std::map<ci_string, const MIME>			MimeMap;
 
 MimePair	table[] = 
 {
@@ -102,6 +103,7 @@ MimePair	table[] =
 };
 
 const MimePairVector v(table, table + sizeof(table) / sizeof(table[0]));
+const MimeMap		m(table, table + sizeof(table) / sizeof(table[0]));
 
 class	CompareExtension : public std::unary_function<const MimePairVector::value_type&, bool>
 {
@@ -127,6 +129,8 @@ int main()
 	string s("/page.jPG");
 
 	// pas de foret de if !!
+	
+	std::cout << m.at(".hTML").toStr() << '\n';
 
 	string::size_type	r = s.rfind('.');
 	if (r == string::npos)

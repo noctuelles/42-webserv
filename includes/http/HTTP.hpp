@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/10 13:07:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/10 21:56:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,27 +93,6 @@ namespace ft
 			std::pair<size_t, std::string>	page;
 		};
 
-		// Multipurpose Internet Mail Extensions
-		class MIME
-		{
-			public:
-
-				operator	std::string()
-				{
-					return (str);
-				}
-
-				static MIME	TextHtml() {return MIME("text/html");}
-
-			private:
-
-				MIME();
-				MIME(const std::string& s)
-					: str(s) {}
-
-				std::string str;
-		};
-
 		class Field
 		{
 			public:
@@ -157,24 +136,6 @@ namespace ft
 				{}
 
 				std::string	m_str;
-		};
-
-		class StatusCodes
-		{
-			operator unsigned int()
-			{
-				return (val.first);
-			}
-
-			static inline StatusCodes	NotFound() {return StatusCodes(404, "Not Found"); }
-
-			private:
-
-				StatusCodes();
-				StatusCodes(unsigned int code, const std::string& str)
-					: val(std::make_pair(code, str)) {}
-
-				std::pair<unsigned int, std::string>	val;
 		};
 
 		struct IsHostField
