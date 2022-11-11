@@ -6,21 +6,25 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/10 17:16:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 15:31:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientSocket.hpp"
+#include "HTTPMIME.hpp"
 #include "ResponseHeader.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
 #include "HTTP.hpp"
+#include "HTTPMIME.hpp"
 #include "RequestParser.hpp"
 #include "env_g.hpp"
 
 #include <algorithm>
+#include <fstream>
 #include <ios>
 #include <sstream>
+#include <istream>
 #include <netinet/in.h>
 #include <new>
 #include <stdexcept>
@@ -36,12 +40,37 @@
 
 namespace ft
 {
-	std::vector<uint8_t>	ClientSocket::m_recv_buffer(MaxRecvBufferSize);
-	std::vector<uint8_t>	ClientSocket::m_send_buffer(MaxSendBufferSize);
+	/* ########################### Static member data ########################### */
+
+	std::vector<uint8_t>			ClientSocket::m_recv_buffer(MaxRecvBufferSize);
+	std::vector<uint8_t>			ClientSocket::m_send_buffer(MaxSendBufferSize);
+	std::ifstream					ClientSocket::m_file_handle;
+
+	const ClientSocket::methodInitFnct		ClientSocket::m_method_init_fnct[http::NbrAvailableMethod] = 
+	{
+		&ClientSocket::_methodInitGet,
+		&ClientSocket::_methodInitPost,
+		&ClientSocket::_methodInitDelete
+	};
+
+	const ClientSocket::methodHeaderFnct	ClientSocket::m_method_header_fnct[http::NbrAvailableMethod] = 
+	{
+		&ClientSocket::_methodHeaderGet,
+		&ClientSocket::_methodHeaderPost,
+		&ClientSocket::_methodHeaderDelete
+	};
+
+	const ClientSocket::methodSendFnct		ClientSocket::m_method_send_fnct[http::NbrAvailableMethod] = 
+	{
+		&ClientSocket::_methodSendGet,
+		&ClientSocket::_methodSendPost,
+		&ClientSocket::_methodSendDelete
+	};
+
+	/* ############################## Constructor ############################### */
 
 	ClientSocket::ClientSocket(int fd, const std::vector<http::StatusInfo>& stat_info)
 		: InternetSocket(fd),
-		m_method_fnct(),
 		m_recv_bytes(0),
 		m_sent_bytes(0),
 		m_parser(),
@@ -106,6 +135,11 @@ namespace ft
 								m_conn_info = *virtServs.begin();
 							else
 								m_conn_info = *it;
+
+							m_parser.getRequestLine().insert(0, m_conn_info->m_root);
+
+							(this->*m_method_init_fnct[m_parser.getMethod()])();
+							m_state = SENDING_RESPONSE_HEADER;
 						}
 						catch (const std::bad_alloc& e)
 						{
@@ -115,6 +149,12 @@ namespace ft
 						{
 							m_state = SENDING_RESPONSE_HEADER;
 							m_status_code = http::BadRequest;
+							break;
+						}
+						catch (const std::ios_base::failure& f)
+						{
+							m_state = SENDING_RESPONSE_HEADER;
+							m_status_code = http::NotFound;
 							break;
 						}
 
@@ -147,15 +187,19 @@ namespace ft
 			{
 				http::ResponseHeader	respHeader(m_stat_info[m_status_code].phrase);
 
+				// Every response will contain these three field.
 				respHeader.addField(http::Field::Server(), WebServ::Version);
 				respHeader.addField(http::Field::Date(), utils::getRFC822NowDate());
+				respHeader.addField(http::Field::Connection(), "closed");
 
+				// Populate the header field with the corresponding method.
 				if (m_status_code != http::OK)
 				{
 					respHeader.addField(http::Field::ContentType(), http::MIME::TextHtml());
 					respHeader.addField(http::Field::ContentLenght(), utils::integralToString(m_stat_info[m_status_code].page.first));
-					respHeader.addField(http::Field::Connection(), "closed");
 				}
+				else
+					(this->*m_method_header_fnct[m_parser.getMethod()])(respHeader);
 
 				if (::send(this->getFd(), respHeader.toCString(), respHeader.size(), 0) < 0)
 					m_state = DISCONNECT;
@@ -166,12 +210,12 @@ namespace ft
 			case SENDING_RESPONSE_BODY:
 				if (m_status_code != http::OK)
 				{
-					::send(*this, m_stat_info[m_status_code].page.second.c_str(), m_stat_info[m_status_code].page.first, 0);
+					::send(m_fd, m_stat_info[m_status_code].page.second.c_str(), m_stat_info[m_status_code].page.first, 0);
 					m_state = DISCONNECT;
 				}
 				else
 				{
-					// Sending with get !
+					(this->*m_method_send_fnct[m_parser.getMethod()])();
 				}
 				break;
 			default:
@@ -200,7 +244,5 @@ namespace ft
 		return (time(NULL) - m_last_activity >= WebServ::ConnectionTimeout);
 	}
 
-	void	_methodGet()
-	{
-	}
+
 }

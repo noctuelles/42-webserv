@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/10 17:16:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:17:13 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@
 # include <vector>
 # include <list>
 # include <fstream>
-#include "HTTP.hpp"
+# include "HTTP.hpp"
+# include "ResponseHeader.hpp"
 # include "SocketTypes.hpp"
 # include "RequestParser.hpp"
 #include "VirtServ.hpp"
@@ -32,7 +33,7 @@ namespace ft
 		public:
 
 			static const size_t		MaxRecvBufferSize = 1024 * 8;
-			static const size_t		MaxSendBufferSize = 1024 * 8;
+			static const size_t		MaxSendBufferSize = 1024;
 
 			// State are negative to avoid overlapping with file descriptors.
 			// See WebServ::run()
@@ -81,14 +82,12 @@ namespace ft
 					const std::string&	m_host_field;
 			};
 
-
-			static std::vector<uint8_t>	m_recv_buffer;
-			static std::vector<uint8_t> m_send_buffer;
-
 			ClientSocket(const ClientSocket& other);
 			ClientSocket&	operator=(const ClientSocket& rhs);
 
 			methodFnct								m_method_fnct[http::NbrAvailableMethod];
+
+			std::vector<uint8_t>					m_recv_buffer, m_send_buffer;
 			ssize_t									m_recv_bytes , m_sent_bytes;
 			http::RequestParser						m_parser;
 			time_t									m_last_activity;
@@ -101,10 +100,15 @@ namespace ft
 
 			const std::vector<VirtServ*>&	_getBoundedVirtServs();
 
-			void	_matchServer();
-			void	_methodGet();
-			void	_methodPost();
-			void	_methodDelete();
+			/* ############################ Private function ############################ */
+
+			void	_methodInitGet();
+			void	_methodInitPost();
+			void	_methodInitDelete();
+
+			void	_methodHeaderGet(http::ResponseHeader& header);
+			void	_methodHeaderPost(http::ResponseHeader& header);
+			void	_methodHeaderDelete(http::ResponseHeader& header);
 	};
 }
 

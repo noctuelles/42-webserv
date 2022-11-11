@@ -28,6 +28,7 @@ INC_DIRS		+= $(wildcard $(INC_DIR)/*/*/) #etc.
 PATH/SOURCES	+= $(wildcard $(SRCS_DIR)/*.cpp) 
 PATH/SOURCES	+= $(wildcard $(SRCS_DIR)/*/*.cpp) 
 PATH/SOURCES	+= $(wildcard $(SRCS_DIR)/*/*/*.cpp) #etc.
+PATH/SOURCES	+= $(wildcard $(SRCS_DIR)/*/*/*/*.cpp) #etc.
 
 PATH/OBJECTS	= $(patsubst	$(SRCS_DIR)/%.cpp,	$(OBJS_DIR)/%.o,	$(PATH/SOURCES) )
 PATH/DEPS		= $(patsubst	%.o,				%.d,				$(PATH/OBJECTS) )

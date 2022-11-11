@@ -6,14 +6,16 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/27 14:20:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 14:13:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 15:21:05 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef RESPONSEHEADER_HPP
+# define RESPONSEHEADER_HPP
+
 # include "HTTP.hpp"
 # include <map>
-# include <stdint.h>
-#include <string>
+# include <string>
 
 namespace ft
 {
@@ -59,3 +61,5 @@ namespace ft
 		};
 	}
 }
+
+#endif

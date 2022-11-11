@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/08 15:53:08 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 11:18:02 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ namespace ft
 				inline int	getMajorVersion()					const {return (m_info.ver_major);}
 				inline int	getMinorVersion()					const {return (m_info.ver_minor);}
 				inline StatusCode	getErrorCode()				const {return (m_info.err_code); }
-				inline const std::string&	getRequestLine()	const {return (m_info.req_line); }
+				inline std::string&	getRequestLine()	 {return (m_info.req_line); }
 				inline std::vector<HeaderField>&	getHeaderFields() {return (m_info.header_fields);}
 
 			private:

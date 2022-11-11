@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <cctype>
 #include <functional>
@@ -122,31 +123,16 @@ class	CompareExtension : public std::unary_function<const MimePairVector::value_
 		ci_string	m_str;
 };
 
+#include <cctype>
+#include <stdint.h>
+
 int main()
 {
 	using namespace std;
 
-	string s("/page.jPG");
+	vector<string>	v(40, "BONJOUR");
+	vector<const char*> v_cstr;
+	v_cstr.reserve(v.size());
 
-	// pas de foret de if !!
-	
-	std::cout << m.at(".hTML").toStr() << '\n';
 
-	string::size_type	r = s.rfind('.');
-	if (r == string::npos)
-	{
-		cout << "this is binary data\n";
-	}
-	else
-	{
-		std::string	sub(s, r);
-
-		MimePairVector::const_iterator it = std::find_if(v.begin(), v.end(), CompareExtension(ci_string(sub.begin(), sub.end())));
-		if (it != v.end())
-		{
-			std::cout << "It's " << it->first.c_str() << " " << it->second.toStr() << '\n';
-		}
-		else
-			std::cout << "It's binary data";
-	}
 }
