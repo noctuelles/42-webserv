@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 16:17:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:37:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ namespace ft
 		public:
 
 			static const size_t		MaxRecvBufferSize = 1024 * 8;
-			static const size_t		MaxSendBufferSize = 1024;
+			static const size_t		MaxSendBufferSize = 1024 * 8;
 
 			// State are negative to avoid overlapping with file descriptors.
 			// See WebServ::run()
@@ -63,7 +63,11 @@ namespace ft
 
 		private:
 
-			typedef void (ClientSocket::*methodFnct)();
+			/* ################################ Typedefs ################################ */
+
+			typedef void (ClientSocket::*methodInitFnct)();
+			typedef void (ClientSocket::*methodHeaderFnct)(http::ResponseHeader&);
+			typedef void (ClientSocket::*methodSendFnct)();
 
 			class MatchingServerName : public std::unary_function<const std::vector<VirtServ*>::value_type, bool>
 			{
@@ -85,10 +89,14 @@ namespace ft
 			ClientSocket(const ClientSocket& other);
 			ClientSocket&	operator=(const ClientSocket& rhs);
 
-			methodFnct								m_method_fnct[http::NbrAvailableMethod];
+			static const methodInitFnct					m_method_init_fnct[http::NbrAvailableMethod];
+			static const methodHeaderFnct				m_method_header_fnct[http::NbrAvailableMethod];
+			static const methodSendFnct					m_method_send_fnct[http::NbrAvailableMethod];
 
 			std::vector<uint8_t>					m_recv_buffer, m_send_buffer;
 			ssize_t									m_recv_bytes , m_sent_bytes;
+			std::ifstream							m_file_handle;
+
 			http::RequestParser						m_parser;
 			time_t									m_last_activity;
 			State									m_state;
@@ -109,6 +117,10 @@ namespace ft
 			void	_methodHeaderGet(http::ResponseHeader& header);
 			void	_methodHeaderPost(http::ResponseHeader& header);
 			void	_methodHeaderDelete(http::ResponseHeader& header);
+
+			void	_methodSendGet();
+			void	_methodSendPost();
+			void	_methodSendDelete();
 	};
 }
 

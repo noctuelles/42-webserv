@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 15:31:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:30:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,10 +42,6 @@ namespace ft
 {
 	/* ########################### Static member data ########################### */
 
-	std::vector<uint8_t>			ClientSocket::m_recv_buffer(MaxRecvBufferSize);
-	std::vector<uint8_t>			ClientSocket::m_send_buffer(MaxSendBufferSize);
-	std::ifstream					ClientSocket::m_file_handle;
-
 	const ClientSocket::methodInitFnct		ClientSocket::m_method_init_fnct[http::NbrAvailableMethod] = 
 	{
 		&ClientSocket::_methodInitGet,
@@ -71,8 +67,11 @@ namespace ft
 
 	ClientSocket::ClientSocket(int fd, const std::vector<http::StatusInfo>& stat_info)
 		: InternetSocket(fd),
+		m_recv_buffer(MaxRecvBufferSize),
+		m_send_buffer(MaxSendBufferSize),
 		m_recv_bytes(0),
 		m_sent_bytes(0),
+		m_file_handle(),
 		m_parser(),
 		m_last_activity(time(NULL)),
 		m_state(FETCHING_REQUEST_HEADER),
