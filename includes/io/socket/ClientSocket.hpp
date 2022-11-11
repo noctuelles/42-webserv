@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 17:05:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 21:16:08 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,8 +105,6 @@ namespace ft
 			http::StatusCode						m_status_code;
 			const std::vector<http::StatusInfo>&	m_stat_info;
 			const VirtServ*							m_conn_info;
-
-			http::HeaderFieldMap					m_header_fields;
 
 			const std::vector<VirtServ*>&	_getBoundedVirtServs();
 

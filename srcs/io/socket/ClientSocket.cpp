@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 17:06:20 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 21:16:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,8 +76,7 @@ namespace ft
 		m_state(FETCHING_REQUEST_HEADER),
 		m_status_code(http::OK),
 		m_stat_info(stat_info),
-		m_conn_info(),
-		m_header_fields()
+		m_conn_info()
 	{
 		setBlockingMode(false);
 		this->m_len = sizeof(struct sockaddr_in);
@@ -121,11 +120,7 @@ namespace ft
 					case http::RequestParser::P_DONE:
 						try
 						{
-							if (std::count_if(m_parser.getHeaderFields().begin(), m_parser.getHeaderFields().end(), http::IsHostField()) != 1)
-								throw (std::logic_error("invalid number of host field"));
-							m_header_fields.insert(m_parser.getHeaderFields().begin(), m_parser.getHeaderFields().end());
-
-							const std::string&				host_val	= m_header_fields[http::Field::Host().toLower()];
+							const std::string&				host_val	= m_parser.getHeaderFields()[http::Field::Host().toLower()];
 							const std::vector<VirtServ*>&	virtServs	= _getBoundedVirtServs();
 
 							const std::vector<VirtServ*>::const_iterator it = std::find_if(virtServs.begin(), virtServs.end(), MatchingServerName(host_val));

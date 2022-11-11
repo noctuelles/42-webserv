@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 13:36:46 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 21:24:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,8 +88,16 @@ namespace ft
 		};
 
 		RequestParser::RequestParser()
-			: m_header_size(0), m_index(0),
-			  m_current_state(P_START_REQUEST_LINE), m_callback_fnct(NULL), m_ws_buffer(), m_info()
+			: m_header_size(0),
+			m_index(0),
+			m_previous_state(),
+			m_current_state(P_START_REQUEST_LINE),
+			m_next_state(),
+			m_eat(true),
+			m_callback_fnct(NULL),
+			m_buffer(),
+			m_ws_buffer(),
+			m_info()
 		{}
 
 		RequestParser::~RequestParser()
@@ -100,11 +108,14 @@ namespace ft
 
 		RequestParser::State	RequestParser::parse(const std::vector<uint8_t>& buffer, size_t recv_bytes)
 		{
-			unsigned char	ch;
+			unsigned char							ch = 0;
+			std::vector<uint8_t>::const_iterator	it = buffer.begin();
 
-			for (std::vector<uint8_t>::const_iterator it = buffer.begin(); recv_bytes--; it++)
+			while (recv_bytes--)
 			{
 				ch = *it;
+				if (m_header_size++ >= MaxHeaderSize)
+					return (_errorState(BadRequest));
 				switch (m_current_state)
 				{
 					case P_START_REQUEST_LINE:
@@ -132,35 +143,36 @@ namespace ft
 						break;
 
 					case P_PARSE_METHOD:
-						// Check if the method is implemented.
-						if (ch == MethodTable[m_info.method][m_index])
-							m_index++;
-						else if (ch == ' ' && MethodTable[m_info.method][m_index] == '\0')
-							_transitionState(P_OWS, P_PARSE_REQ_LINE);
-						else
-							return (_errorState(NotImplemented));
+						if (ch != MethodTable[m_info.method][m_index])
+						{
+							if (_isWS(ch) && MethodTable[m_info.method][m_index] == '\0')
+								_transitionState(P_OWS, P_PARSE_REQ_LINE);
+							else
+								return (_errorState(NotImplemented));
+						} else m_index++;
 						break;
 
 					case P_PARSE_REQ_LINE:
 						if (m_info.req_line.size() >= MaxRequestLineSize)
 							return (_errorState(UriTooLong));
-						if (ch == ' ')
-							_changeState(P_HTTP), m_index = 0;
+						if (_isWS(ch))
+							_transitionState(P_OWS, P_HTTP), m_index = 0;
 						else
 							m_info.req_line.push_back(ch);
 						break;
 
 					case P_HTTP:
-						if (ch == m_http[m_index])
-							m_index++;
-						else
-							return (_errorState(BadRequest));
-						if (m_http[m_index] == '\0')
-							_changeState(P_HTTP_MAJOR_VER);
+						if (ch != m_http[m_index])
+						{
+							if (m_http[m_index] == '\0')
+								_dontEat(), _changeState(P_HTTP_MAJOR_VER);
+							else
+								return (_errorState(BadRequest));
+						} else m_index++;
 						break;
 
 					case P_HTTP_MAJOR_VER:
-						if (!std::isdigit(ch))
+						if (!isdigit(ch))
 							return (_errorState(BadRequest));
 						m_info.ver_major = utils::charToIntegral<int>(ch);
 						if (m_info.ver_major != MajorVersionSupported)
@@ -175,10 +187,12 @@ namespace ft
 						break;
 
 					case P_HTTP_MINOR_VER:
-						if (!std::isdigit(ch))
+						if (!isdigit(ch))
 							return (_errorState(BadRequest));
 						m_info.ver_minor = utils::charToIntegral<int>(ch);
-						_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
+						if (m_info.ver_minor != MinorVersionSupported)
+							return (_errorState(VersionNotSupported));
+						_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
 						break;
 
 					case P_HEADER_FIELD_NAME:
@@ -191,7 +205,7 @@ namespace ft
 							{
 								case ':':
 									// Empty field name, bad request.
-									if (_backField().first.empty())
+									if (m_buffer.first.empty())
 										return (_errorState(BadRequest));
 
 									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
@@ -199,25 +213,25 @@ namespace ft
 
 								case '\r':
 								case '\n':
-									if (_backField().first.empty())
-										_transitionState(P_CRLF, P_DONE, &RequestParser::_popBackField);
+									_dontEat();
+									if (m_buffer.first.empty())
+										_transitionState(P_CRLF, P_DONE);
 									else
 									{
-										// useless field. trash it.
-										_popBackField(it);
-										_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
+										m_buffer.first.clear();
+										_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
 									}
 									break;
 
 								default: // WS is not allowed in field_name (trailing and leading).
-										return (_errorState(BadRequest));
+									return (_errorState(BadRequest));
 							}
 						}
 						else
 						{
-							if (_backField().first.size() >= MaxHeaderFieldSize)
+							if (m_buffer.first.size() >= MaxHeaderFieldSize)
 								return (_errorState(BadRequest));
-							_backField().first.push_back(transformed_ch);
+							m_buffer.first.push_back(transformed_ch);
 						}
 						break;
 					}
@@ -230,12 +244,13 @@ namespace ft
 							{
 								case '\r':
 								case '\n':
-									_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_pushBackField);
+									_dontEat();
+									_transitionState(P_CRLF, P_HEADER_FIELD_NAME, &RequestParser::_insertField);
 									break;
 
 								case ' ':
 								case '\t':
-									m_ws_buffer.push_back(ch);
+									_dontEat();
 									_transitionState(P_WS, P_HEADER_FIELD_VALUE);
 									break;
 
@@ -245,9 +260,9 @@ namespace ft
 						}
 						else
 						{
-							if (_backField().second.size() >= MaxHeaderFieldSize)
+							if (m_buffer.second.size() >= MaxHeaderFieldSize)
 								return (_errorState(BadRequest));
-							_backField().second.push_back(ch);
+							m_buffer.second.push_back(ch);
 						}
 
 						break;
@@ -258,7 +273,8 @@ namespace ft
 						{
 							if (ch != '\n')
 								return (_errorState(BadRequest));
-							if (this->m_callback_fnct) (this->*m_callback_fnct)(it);
+							if (m_callback_fnct)
+								CALL_MEMBER_FN(m_callback_fnct)();
 							_changeState(m_next_state);
 						}
 						break;
@@ -267,9 +283,9 @@ namespace ft
 						if (!_isWS(ch))
 						{
 							if (!_isCRLF(ch))
-								_backField().second.append(m_ws_buffer.begin(), m_ws_buffer.end());
+								m_buffer.second.append(m_ws_buffer.begin(), m_ws_buffer.end());
 							m_ws_buffer.clear();
-							it--; recv_bytes++;
+							_dontEat();
 							_changeState(m_next_state);
 						}
 						else
@@ -280,7 +296,7 @@ namespace ft
 					case P_OWS:
 						if (!_isWS(ch))
 						{
-							it--; recv_bytes++; // avoid eating char.
+							_dontEat();
 							_changeState(m_next_state);
 						}
 						break;
@@ -292,6 +308,11 @@ namespace ft
 					default:
 						break;
 				};
+
+				if (!m_eat)
+					m_eat = true, recv_bytes++;
+				else
+					it++;
 			}
 			return (m_current_state);
 		}
@@ -305,7 +326,7 @@ namespace ft
 			cout << RED << "Internal state" << CRST << ": " << UCYN << StateTable[m_current_state] << '\n';
 			cout << RED << "HTTP Version" << CRST << ": " << GRN <<  getMajorVersion() << '.' << getMinorVersion() << CRST << "\n\n";
 			cout << "\t## " << UYEL << "Parsed header" << CRST << " ##\n";
-			for (HeaderFieldVector::const_iterator i = getHeaderFields().begin(); i != getHeaderFields().end(); i++)
+			for (HeaderFieldMap::const_iterator i = getHeaderFields().begin(); i != getHeaderFields().end(); i++)
 				std::cout << GRN << i->first << CRST << ": " << BLU << i->second << CRST << "\\n\n";
 			cout << "\t## " << UYEL << "End of parsing report" << CRST << " ##\n\n";
 		}

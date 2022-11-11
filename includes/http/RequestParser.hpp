@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 11:18:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 21:17:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,10 @@
 # include <stdint.h>
 
 # include "HTTP.hpp"
+
+using std::string;
+
+#define CALL_MEMBER_FN(ptrToMember)  ((this)->*(ptrToMember))
 
 namespace ft
 {
@@ -104,16 +108,16 @@ namespace ft
 				void	report();
 #endif
 
-				inline Method	getMethod()						const {return (m_info.method);   }
-				inline int	getMajorVersion()					const {return (m_info.ver_major);}
-				inline int	getMinorVersion()					const {return (m_info.ver_minor);}
-				inline StatusCode	getErrorCode()				const {return (m_info.err_code); }
-				inline std::string&	getRequestLine()	 {return (m_info.req_line); }
-				inline std::vector<HeaderField>&	getHeaderFields() {return (m_info.header_fields);}
+				inline Method			getMethod() const		{return (m_info.method);   }
+				inline int				getMajorVersion() const	{return (m_info.ver_major);}
+				inline int				getMinorVersion() const	{return (m_info.ver_minor);}
+				inline StatusCode		getErrorCode() const	{return (m_info.err_code); }
+				inline string&			getRequestLine()		{return (m_info.req_line); }
+				inline HeaderFieldMap&	getHeaderFields()		{return (m_info.header_fields);}
 
 			private:
 
-				typedef void	(RequestParser::*callBackFnct)(const std::vector<uint8_t>::const_iterator&);
+				typedef void	(RequestParser::*callBackFnct)();
 
 				static const char*	m_http;
 				static const char	m_token[256];
@@ -124,34 +128,38 @@ namespace ft
 						: method(), ver_major(), ver_minor(), err_code(), req_line(), header_fields()
 					{
 						req_line.reserve(MaxRequestLineSize);
-						header_fields.reserve(DefaultAllocatedHeaderField);
 					}
 
 					Method		method;
 					int			ver_major;
 					int			ver_minor;
 					StatusCode	err_code;
-					std::string	req_line;
+					string		req_line;
 
-					std::vector<HeaderField>	header_fields;
+					HeaderFieldMap	header_fields;
 				};
 
 				size_t			m_header_size;
 				size_t			m_index;
+
 				State			m_previous_state;
 				State			m_current_state;
 				State			m_next_state;
+				bool			m_eat;
+
 				callBackFnct	m_callback_fnct;
-				std::string		m_ws_buffer;
+
+				HeaderField		m_buffer;
+				string			m_ws_buffer;
+
 				ParseInfo		m_info;
 
 				inline bool			_isVChar(unsigned char ch)		{return (ch > ' ' && ch < 0x7F);		}
 				inline bool			_isTknChar(unsigned char ch)	{return (m_token[ch] != 0);				}
 				inline bool			_isWS(unsigned char ch)			{return (ch == ' ' || ch == '\t');		}
 				inline bool			_isCRLF(unsigned char ch)		{return (ch == '\r' || ch == '\n');		}
-				inline HeaderField&	_backField()					{return (m_info.header_fields.back());	}
-				inline bool			_emptyBackHeader() {return (_backField().first.empty() && _backField().second.empty());}
 
+				inline void			_dontEat()						{m_eat = false;}
 
 				inline State	_errorState(StatusCode err_code)
 				{
@@ -182,16 +190,17 @@ namespace ft
 					return (m_next_state);
 				}
 
-				void	_pushBackField(const std::vector<uint8_t>::const_iterator& it)
+				void	_insertField()
 				{
-					(void) it;
-					m_info.header_fields.push_back(HeaderField());
-				}
+					std::pair<HeaderFieldMap::iterator, bool>	ret = m_info.header_fields.insert(m_buffer);
 
-				void	_popBackField(const std::vector<uint8_t>::const_iterator& it)
-				{
-					(void) it;
-					m_info.header_fields.pop_back();
+					// If that field already exist.
+					if (!ret.second)
+					{
+						// TODO: check if host is here twice
+					}
+					m_buffer.first.clear();
+					m_buffer.second.clear();
 				}
 		};
 	}
