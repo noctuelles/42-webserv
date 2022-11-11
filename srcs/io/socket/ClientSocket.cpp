@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 16:30:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 17:06:20 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,6 @@ namespace ft
 		m_recv_buffer(MaxRecvBufferSize),
 		m_send_buffer(MaxSendBufferSize),
 		m_recv_bytes(0),
-		m_sent_bytes(0),
 		m_file_handle(),
 		m_parser(),
 		m_last_activity(time(NULL)),
@@ -140,10 +139,6 @@ namespace ft
 							(this->*m_method_init_fnct[m_parser.getMethod()])();
 							m_state = SENDING_RESPONSE_HEADER;
 						}
-						catch (const std::bad_alloc& e)
-						{
-							return (DISCONNECT);
-						}
 						catch (const std::logic_error& e)
 						{
 							m_state = SENDING_RESPONSE_HEADER;
@@ -155,6 +150,10 @@ namespace ft
 							m_state = SENDING_RESPONSE_HEADER;
 							m_status_code = http::NotFound;
 							break;
+						}
+						catch (...)
+						{
+							return (DISCONNECT);
 						}
 
 						break;
@@ -186,12 +185,11 @@ namespace ft
 			{
 				http::ResponseHeader	respHeader(m_stat_info[m_status_code].phrase);
 
-				// Every response will contain these three field.
+				// Every response will contains these three field.
 				respHeader.addField(http::Field::Server(), WebServ::Version);
 				respHeader.addField(http::Field::Date(), utils::getRFC822NowDate());
 				respHeader.addField(http::Field::Connection(), "closed");
 
-				// Populate the header field with the corresponding method.
 				if (m_status_code != http::OK)
 				{
 					respHeader.addField(http::Field::ContentType(), http::MIME::TextHtml());
@@ -213,9 +211,7 @@ namespace ft
 					m_state = DISCONNECT;
 				}
 				else
-				{
 					(this->*m_method_send_fnct[m_parser.getMethod()])();
-				}
 				break;
 			default:
 				;

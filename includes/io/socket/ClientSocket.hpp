@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 16:37:38 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 17:05:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ namespace ft
 			typedef void (ClientSocket::*methodHeaderFnct)(http::ResponseHeader&);
 			typedef void (ClientSocket::*methodSendFnct)();
 
+			/* ############################## Nested Class ############################## */
+
 			class MatchingServerName : public std::unary_function<const std::vector<VirtServ*>::value_type, bool>
 			{
 				public:
@@ -94,7 +96,7 @@ namespace ft
 			static const methodSendFnct					m_method_send_fnct[http::NbrAvailableMethod];
 
 			std::vector<uint8_t>					m_recv_buffer, m_send_buffer;
-			ssize_t									m_recv_bytes , m_sent_bytes;
+			ssize_t									m_recv_bytes;
 			std::ifstream							m_file_handle;
 
 			http::RequestParser						m_parser;
@@ -109,6 +111,17 @@ namespace ft
 			const std::vector<VirtServ*>&	_getBoundedVirtServs();
 
 			/* ############################ Private function ############################ */
+
+			/* These functions allow us to describe different behavior for each method.
+			 *
+			 * *Init* functions are called when the request parsing is done : they setup invariants for the rest of the
+			 * sending process (ex: with GET, opening a file prior to reading).
+			 *
+			 * *Header* functions are called when the invariants are sucessfully established, and we can generate a correct
+			 * response header (ex: with GET, fill Content-Type and Content-Length header fields).
+			 *
+			 * *Send* functions are called when we're sending an (optionnal) body to the client.
+			 * They describe how we should send the content. */
 
 			void	_methodInitGet();
 			void	_methodInitPost();

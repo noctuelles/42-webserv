@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 16:08:33 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 13:10:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/11 16:52:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,15 @@ namespace ft
 			if (stat(filename, &statbuf) < 0)
 				throw (std::runtime_error("stat"));
 			return (statbuf.st_size);
+		}
+
+		bool	isADirectory(const char* filename)
+		{
+			struct stat	statbuf;
+
+			if (stat(filename, &statbuf) < 0)
+				throw (std::runtime_error("stat"));
+			return (S_ISDIR(statbuf.st_mode));
 		}
 
 		std::string	getFileLastModifiedDate(const char* filename)
