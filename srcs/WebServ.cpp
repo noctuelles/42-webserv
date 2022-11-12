@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 15:25:40 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 12:39:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ namespace ft
 	{
 		m_status_table.resize(http::MaxStatusCode);
 
+		m_status_table[http::OK]					= HTTP_STATUS("200 OK");
 		m_status_table[http::BadRequest]			= HTTP_ERRPAGE("400 Bad Request");
 		m_status_table[http::Forbidden]				= HTTP_ERRPAGE("403 Forbidden");
 		m_status_table[http::NotFound]				= HTTP_ERRPAGE("404 Not Found");

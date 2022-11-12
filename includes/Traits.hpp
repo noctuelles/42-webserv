@@ -6,18 +6,19 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 14:06:45 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 15:08:24 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 12:25:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef TRAITS_HPP
 # define TRAITS_HPP
 
+# include <ostream>
 # include <string>
 
 using std::toupper;
 
-struct	ci_char_traits : public std::char_traits<char>
+struct	ci_char_traits : std::char_traits<char>
 {
 	static bool	eq(char c1, char c2)
 	{
@@ -54,5 +55,7 @@ struct	ci_char_traits : public std::char_traits<char>
 };
 
 typedef	std::basic_string<char, ci_char_traits> ci_string;
+
+std::ostream&	operator<<(std::ostream& out, const ci_string& str);
 
 #endif

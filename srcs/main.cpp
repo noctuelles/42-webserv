@@ -9,6 +9,7 @@
 #include "Utils.hpp"
 #include "WebServ.hpp"
 #include "HTTPMIME.hpp"
+#include "Traits.hpp"
 
 namespace ft
 {

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 21:16:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 12:18:50 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,7 @@ namespace ft
 					case http::RequestParser::P_DONE:
 						try
 						{
-							const std::string&				host_val	= m_parser.getHeaderFields()[http::Field::Host().toLower()];
+							const std::string&				host_val	= m_parser.getHeaderFields()[http::Field::Host()];
 							const std::vector<VirtServ*>&	virtServs	= _getBoundedVirtServs();
 
 							const std::vector<VirtServ*>::const_iterator it = std::find_if(virtServs.begin(), virtServs.end(), MatchingServerName(host_val));

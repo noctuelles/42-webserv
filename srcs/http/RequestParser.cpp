@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 21:24:03 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 12:55:49 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "FileUtils.hpp"
 #include "HTTP.hpp"
 #include "WebServ.hpp"
+#include <stdexcept>
 #include <string>
 #include <iostream>
 #include <cctype>
@@ -40,11 +41,9 @@ namespace ft
 			"P_HTTP_MINOR_VER",
 			"P_HEADER_FIELD_NAME",
 			"P_HEADER_FIELD_VALUE",
-			"P_HEADER_FIELD_VALUE_OWS",
 			"P_CRLF",
-			"P_OWS",
 			"P_WS",
-			"P_END",
+			"P_OWS",
 			"P_DONE",
 			"P_DONE_ERR"
 		};
@@ -98,7 +97,11 @@ namespace ft
 			m_buffer(),
 			m_ws_buffer(),
 			m_info()
-		{}
+		{
+			m_buffer.first.reserve(MaxHeaderFieldSize);
+			m_buffer.second.reserve(MaxHeaderFieldSize);
+			m_ws_buffer.reserve(MaxHeaderFieldSize);
+		}
 
 		RequestParser::~RequestParser()
 		{}
@@ -138,7 +141,7 @@ namespace ft
 								_changeState(P_PARSE_METHOD);
 								break;
 							default:
-								return (_errorState(BadRequest));
+								return (_errorState(NotImplemented));
 						};
 						break;
 
@@ -148,7 +151,7 @@ namespace ft
 							if (_isWS(ch) && MethodTable[m_info.method][m_index] == '\0')
 								_transitionState(P_OWS, P_PARSE_REQ_LINE);
 							else
-								return (_errorState(NotImplemented));
+								return (_errorState(BadRequest));
 						} else m_index++;
 						break;
 
@@ -274,7 +277,10 @@ namespace ft
 							if (ch != '\n')
 								return (_errorState(BadRequest));
 							if (m_callback_fnct)
-								CALL_MEMBER_FN(m_callback_fnct)();
+							{
+								if (CALL_MEMBER_FN(m_callback_fnct)() == -1)
+									return (_errorState(BadRequest));
+							}
 							_changeState(m_next_state);
 						}
 						break;
@@ -301,10 +307,6 @@ namespace ft
 						}
 						break;
 
-					case P_DONE:
-						return (P_DONE);
-						break;
-
 					default:
 						break;
 				};
@@ -313,6 +315,13 @@ namespace ft
 					m_eat = true, recv_bytes++;
 				else
 					it++;
+			}
+			if (m_current_state == P_DONE)
+			{
+				try
+				{ m_info.header_fields.at(Field::Host()); }
+				catch (const std::logic_error& e)
+				{ return (_errorState(BadRequest)); }
 			}
 			return (m_current_state);
 		}

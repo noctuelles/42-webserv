@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/10 21:56:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 12:39:35 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,11 @@
 
 
 # include "SocketTypes.hpp"
+# include "Traits.hpp"
 
-#include <cctype>
-#include <functional>
+# include <cctype>
+# include <functional>
+#include <ostream>
 # include <utility>
 # include <string>
 # include <map>
@@ -44,9 +46,9 @@ namespace ft
 	namespace http
 	{
 
-		typedef std::pair<std::string, std::string>			HeaderField;
-		typedef std::map<std::string, std::string>			HeaderFieldMap;
-		typedef std::vector<HeaderField>					HeaderFieldVector;
+		typedef std::pair<ci_string, std::string>	HeaderField;
+		typedef std::map<ci_string, std::string>	HeaderFieldMap;
+		typedef std::vector<HeaderField>			HeaderFieldVector;
 
 		/* Supported status code. Vim users, press 'gx' to open links (with the cursor under the link obviously). */
 
@@ -97,7 +99,7 @@ namespace ft
 		{
 			public:
 
-				operator	std::string()
+				operator	ci_string&()
 				{
 					return (m_str);
 				}
@@ -109,40 +111,26 @@ namespace ft
 				static inline Field	Connection()		{return Field("Connection");}
 				static inline Field	Host()				{return Field("Host");}
 
-				inline const std::string&	str() const
+				inline const ci_string&	str() const
 				{
-					return (m_str);
-				}
-
-				inline const std::string	toLower()
-				{
-					std::transform(m_str.begin(), m_str.end(), m_str.begin(), LowerCase());
 					return (m_str);
 				}
 
 			private:
 
-				struct LowerCase : std::unary_function<char, char>
-				{
-					inline char	operator()(char c)
-					{
-						return (std::tolower(c));
-					}
-				};
-
 				Field();
-				Field(const std::string& field)
+				Field(const ci_string& field)
 					: m_str(field)
 				{}
 
-				std::string	m_str;
+				ci_string	m_str;
 		};
 
 		struct IsHostField
 		{
 			inline bool	operator()(const HeaderFieldMap::value_type& val)
 			{
-				if (val.first.compare(Field::Host().toLower()) == 0)
+				if (val.first.compare(Field::Host()) == 0)
 					return (true);
 				return (false);
 			}

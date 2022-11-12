@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 21:17:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 12:55:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,11 +91,9 @@ namespace ft
 					P_HTTP_MINOR_VER,
 					P_HEADER_FIELD_NAME,
 					P_HEADER_FIELD_VALUE,
-					P_HEADER_FIELD_VALUE_OWS,
 					P_CRLF,
-					P_OWS,
 					P_WS,
-					P_END,
+					P_OWS,
 					P_DONE,
 					P_DONE_ERR
 				};
@@ -117,7 +115,7 @@ namespace ft
 
 			private:
 
-				typedef void	(RequestParser::*callBackFnct)();
+				typedef int	(RequestParser::*callBackFnct)();
 
 				static const char*	m_http;
 				static const char	m_token[256];
@@ -180,27 +178,18 @@ namespace ft
 					m_current_state = s;
 				}
 
-				inline State		_previousState() const
-				{
-					return (m_previous_state);
-				}
-
-				inline State		_nextState() const
-				{
-					return (m_next_state);
-				}
-
-				void	_insertField()
+				int	_insertField()
 				{
 					std::pair<HeaderFieldMap::iterator, bool>	ret = m_info.header_fields.insert(m_buffer);
 
-					// If that field already exist.
 					if (!ret.second)
 					{
-						// TODO: check if host is here twice
+						if (ret.first->first == Field::Host().str())
+							return (-1);
 					}
 					m_buffer.first.clear();
 					m_buffer.second.clear();
+					return (0);
 				}
 		};
 	}
