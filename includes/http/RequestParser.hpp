@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/12 12:55:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 13:13:08 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ namespace ft
 
 				enum State
 				{
-					P_START_REQUEST_LINE,
+					P_START_REQUEST_LINE = 0,
 					P_PARSE_METHOD,
 					P_PARSE_REQ_LINE,
 					P_HTTP,

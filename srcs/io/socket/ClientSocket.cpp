@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/12 12:18:50 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 13:21:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@
 #include <sstream>
 #include <istream>
 #include <netinet/in.h>
-#include <new>
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
@@ -88,36 +87,23 @@ namespace ft
 	{
 		m_last_activity = time(NULL);
 		m_recv_bytes = ::recv(*this, m_recv_buffer.data(), m_recv_buffer.size(), 0); // noexcept
-		std::cout << "\t## " << UYEL << "Readed " << m_recv_bytes << " bytes" << CRST << " ##\n";
-
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
-#ifndef NDEBUG
-		else
-		{
-			std::cout << "\t## " << UYEL << "Raw Data from the socket" << CRST << " ##\n";
-			write(STDOUT_FILENO, m_recv_buffer.data(), m_recv_bytes);
-			std::cout << "\n\t## " << UYEL << "End Raw Data" << CRST << " ##\n";
-		}
-#endif
-		// When done, the socket should be registered to EPOLLOUT.
 		switch (m_state)
 		{
 			case FETCHING_REQUEST_HEADER:
 			{
-				int ret = 0;
+				http::RequestParser::State ret;
 
 				try
 				{ ret = m_parser.parse(m_recv_buffer, static_cast<size_t>(m_recv_bytes)); }
-				catch (const std::bad_alloc& e)
+				catch (...)
 				{ return (DISCONNECT); }
 
-#ifndef NDEBUG
-				m_parser.report();
-#endif
 				switch (ret) // parse could throw exception.
 				{
 					case http::RequestParser::P_DONE:
+					{
 						try
 						{
 							const std::string&				host_val	= m_parser.getHeaderFields()[http::Field::Host()];
@@ -150,7 +136,7 @@ namespace ft
 						{
 							return (DISCONNECT);
 						}
-
+					}
 						break;
 
 					case http::RequestParser::P_DONE_ERR:
