@@ -9,6 +9,7 @@
 #include "Utils.hpp"
 #include "WebServ.hpp"
 #include "HTTPMIME.hpp"
+#include "AutoIndex.hpp"
 #include "Traits.hpp"
 
 namespace ft
@@ -20,6 +21,7 @@ using namespace ft;
 
 int main(int ac, char **av)
 {
+	std::cout << ft::generateFileIndex(".");
 	if (ac > 2)
 	{
 		std::cout << "Too many args. Usage: ./webserv /path/to/config/file\n";

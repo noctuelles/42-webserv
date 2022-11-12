@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/12 13:21:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/12 14:16:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,13 +124,11 @@ namespace ft
 						{
 							m_state = SENDING_RESPONSE_HEADER;
 							m_status_code = http::BadRequest;
-							break;
 						}
 						catch (const std::ios_base::failure& f)
 						{
 							m_state = SENDING_RESPONSE_HEADER;
 							m_status_code = http::NotFound;
-							break;
 						}
 						catch (...)
 						{
@@ -174,7 +172,7 @@ namespace ft
 				if (m_status_code != http::OK)
 				{
 					respHeader.addField(http::Field::ContentType(), http::MIME::TextHtml());
-					respHeader.addField(http::Field::ContentLenght(), utils::integralToString(m_stat_info[m_status_code].page.first));
+					respHeader.addField(http::Field::ContentLenght(), utils::integralToString(m_stat_info[m_status_code].page.second.size()));
 				}
 				else
 					(this->*m_method_header_fnct[m_parser.getMethod()])(respHeader);
