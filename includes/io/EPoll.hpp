@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 11:53:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/05 00:54:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 13:35:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,33 +25,44 @@ namespace ft
 	{
 		public:
 
-			typedef std::vector<struct epoll_event>::iterator		iterator;
+			typedef std::vector<struct epoll_event>::iterator	iterator;
 
-			static const int IN = EPOLLIN;
-			static const int OUT = EPOLLOUT;
+			static const int	NoTimeout = -1;
+
+			class	Event
+			{
+				public:
+
+					operator	uint32_t() const {return (m_event);}
+
+					static Event	In()	{return Event(EPOLLIN);}
+					static Event	Out()	{return Event(EPOLLOUT);}
+					static Event	Hup()	{return Event(EPOLLHUP);}
+					static Event	Err()	{return Event(EPOLLERR);}
+
+					Event	operator&(const Event& rhs) {return (Event(m_event & rhs.m_event));}
+					Event	operator|(const Event& rhs) {return (Event(m_event | rhs.m_event));}
+					Event	operator^(const Event& rhs) {return (Event(m_event ^ rhs.m_event));}
+
+					Event	operator~() {return (Event(~m_event));};
+
+				private:
+
+					Event(uint32_t event)
+						: m_event(event)
+					{}
+
+					uint32_t m_event;
+			};
 
 			EPoll();
-
-			/* Stream socket constructor. */
-			template <class T>
-				EPoll(int fd, uint32_t events, T data)
-					: FileDescriptor(epoll_create(_S_poll_hint_size)),
-					  m_events(_S_initial_events),
-					  m_registred_fds(0),
-					  m_returned_events_size(0)
-				{
-					if (m_fd < 0)
-						throw (std::runtime_error("epoll_create"));
-					add(fd, events, data);
-				}
-
-			virtual ~EPoll();
+			~EPoll();
 
 			/* ######################### EPoll wrapper function ######################### */
 
 			/* Add an entry to the set of the epoll file descriptor. */
 			template <class T>
-				void	add(int fd, uint32_t events, T data)
+				void	add(int fd, const Event& events, T data)
 				{
 					struct epoll_event	event;
 
@@ -61,7 +72,7 @@ namespace ft
 						throw (std::runtime_error("epoll_ctl"));
 					m_registred_fds++;
 					if (m_registred_fds > m_events.size())
-						m_events.resize(m_events.size() * 2, epoll_event());
+						m_expand = true;
 				}
 
 			/* Remove (deregister) the target file descriptor fd from the epoll set. */
@@ -69,7 +80,7 @@ namespace ft
 
 			/* Change the settings associated with fd in the interest list to the new settings.*/
 			template <class T>
-				void	modify(int fd, uint32_t events, T data)
+				void	modify(int fd, const Event& events, T data)
 				{
 					struct epoll_event	event;
 
@@ -85,7 +96,6 @@ namespace ft
 			iterator		begin();
 			iterator		end();
 
-			static const int NOTIMEOUT = -1;
 
 		private:
 
@@ -97,14 +107,14 @@ namespace ft
 			void	_setEventData(struct epoll_event& event, uint32_t u32);
 			void	_setEventData(struct epoll_event& event, uint64_t u64);
 
-			static const int	_S_poll_hint_size = 1024; // as a hint for the kernel of how many fds gonna be registered with epoll_create()
-														  // note that since linux 2.6.8, the hint argument is ignored.
-														  // this argument only exist today for backward compatibility with other kernel.
-			static const size_t	_S_initial_events = 1024;
+
+			static const size_t	InitialEvents	= 1024;
+			static const int	HintSize		= InitialEvents; // as a hint for the kernel of how many fds gonna be registered with epoll_create()
 
 			std::vector<struct epoll_event>	m_events;
 			size_t							m_registred_fds;
 			size_t							m_returned_events_size;
+			bool							m_expand, m_shrink;
 	};
 }
 #endif

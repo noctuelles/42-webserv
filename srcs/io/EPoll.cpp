@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 12:38:42 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/05 00:55:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 13:05:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,11 @@
 namespace ft
 {
 	EPoll::EPoll()
-		: FileDescriptor(epoll_create(_S_poll_hint_size)),
-		  m_events(_S_initial_events),
+		: FileDescriptor(epoll_create(HintSize)),
+		  m_events(InitialEvents),
 		  m_registred_fds(0),
-		  m_returned_events_size(0)
+		  m_returned_events_size(0),
+		  m_expand(false), m_shrink(false)
 	{
 		if (m_fd < 0)
 			throw (std::runtime_error("epoll_create"));
@@ -32,12 +33,18 @@ namespace ft
 		if (epoll_ctl(m_fd, EPOLL_CTL_DEL, fd, NULL) < 0)
 			throw (std::runtime_error("epoll_ctl"));
 		m_registred_fds--;
+		if (m_registred_fds < m_events.size() - InitialEvents)
+			m_shrink = true;
 	}
 
 	bool EPoll::waitForEvents(int timeout)
 	{
 		int	rc;
 
+		if (m_expand)
+			m_events.resize(m_events.size() + InitialEvents, epoll_event()), m_expand = false;
+		else if (m_shrink)
+			m_events.resize(m_events.size() - InitialEvents, epoll_event()), m_shrink = false;
 		rc = epoll_wait(m_fd, m_events.data(), m_events.size(), timeout);
 		if (rc < 0)
 			throw (std::runtime_error("epoll_wait"));

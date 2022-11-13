@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 21:16:08 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 13:47:28 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ namespace ft
 			// See WebServ::run()
 			enum	State
 			{
-				FETCHING_REQUEST_HEADER = -10,
+				FETCHING_REQUEST_HEADER = -99,
 				FETCHING_REQUEST_BODY,
 				SENDING_RESPONSE_HEADER,
 				SENDING_RESPONSE_BODY,

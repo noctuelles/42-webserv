@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/12 12:39:48 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 13:47:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ namespace ft
 		for (; it != end; ++it)
 		{
 			m_socks.push_back(new ListeningSocket(it->first));
-			m_poller.add(m_socks.back()->getFd(), EPOLLIN, m_socks.back());
+			m_poller.add(m_socks.back()->getFd(), EPoll::Event::In(), m_socks.back());
 		}
 	}
 
@@ -60,7 +60,7 @@ namespace ft
 
 		m_socks.push_back(ptr);
 		ptr->listen(MaxPendingConnection); // CAN THROW
-		m_poller.add(*ptr, EPOLLIN, ptr); // CAN THROW
+		m_poller.add(*ptr, EPoll::Event::In(), ptr); // CAN THROW
 	}
 
 	void	WebServ::setStatusCodePage(http::StatusCode statuscode, const char* filename)
@@ -86,7 +86,7 @@ namespace ft
 			{
 				InternetSocket*		inSockPtr = static_cast<InternetSocket*>(it->data.ptr);
 
-				if (it->events & EPOLLERR || it->events & EPOLLHUP)
+				if (it->events & EPOLLHUP || it->events & EPOLLERR)
 				{ _removeSocket(inSockPtr); continue; }
 				if (it->events & EPOLLIN)
 				{
@@ -96,7 +96,7 @@ namespace ft
 					{
 						case ClientSocket::SENDING_RESPONSE_HEADER:
 						case ClientSocket::SENDING_RESPONSE_BODY:
-							m_poller.modify(*inSockPtr, EPOLLOUT, inSockPtr);
+							m_poller.modify(*inSockPtr, EPoll::Event::Out(), inSockPtr);
 							break;
 						case ClientSocket::DISCONNECT:
 							std::cout << "Client (" << inet_ntoa(inSockPtr->getSockAddr().sin_addr) << ":" << htons(inSockPtr->getSockAddr().sin_port) << ") " << "disconnected.\n";
@@ -132,11 +132,12 @@ namespace ft
 		ClientSocket*	ptr = new ClientSocket(fd, m_status_table);
 
 		m_socks.push_back(ptr);
-		m_poller.add(*ptr, EPOLLIN, ptr);
+		m_poller.add(*ptr, EPoll::Event::In(), ptr);
 	}
 
 	inline void	WebServ::_removeSocket(InternetSocket* ptr)
 	{
+		m_poller.remove(*ptr);
 		delete ptr;
 		m_socks.erase(std::find(m_socks.begin(), m_socks.end(), ptr));
 	}
