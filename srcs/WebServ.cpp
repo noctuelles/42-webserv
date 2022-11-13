@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 13:47:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 15:58:52 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,6 @@ namespace ft
 							m_poller.modify(*inSockPtr, EPoll::Event::Out(), inSockPtr);
 							break;
 						case ClientSocket::DISCONNECT:
-							std::cout << "Client (" << inet_ntoa(inSockPtr->getSockAddr().sin_addr) << ":" << htons(inSockPtr->getSockAddr().sin_port) << ") " << "disconnected.\n";
 							_removeSocket(inSockPtr);
 							break;
 						case ClientSocket::FETCHING_REQUEST_BODY:

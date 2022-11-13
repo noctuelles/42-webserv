@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/12 14:16:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 15:50:39 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@
 #ifndef NDEBUG
 # include "DebugColors.h"
 #endif
+
+using ft::http::Field;
 
 namespace ft
 {
@@ -106,24 +108,12 @@ namespace ft
 					{
 						try
 						{
-							const std::string&				host_val	= m_parser.getHeaderFields()[http::Field::Host()];
-							const std::vector<VirtServ*>&	virtServs	= _getBoundedVirtServs();
-
-							const std::vector<VirtServ*>::const_iterator it = std::find_if(virtServs.begin(), virtServs.end(), MatchingServerName(host_val));
-							if (it == virtServs.end())
-								m_conn_info = *virtServs.begin();
-							else
-								m_conn_info = *it;
+							_parseRequestHeaderFields();
 
 							m_parser.getRequestLine().insert(0, m_conn_info->m_root);
 
 							(this->*m_method_init_fnct[m_parser.getMethod()])();
 							m_state = SENDING_RESPONSE_HEADER;
-						}
-						catch (const std::logic_error& e)
-						{
-							m_state = SENDING_RESPONSE_HEADER;
-							m_status_code = http::BadRequest;
 						}
 						catch (const std::ios_base::failure& f)
 						{
@@ -164,20 +154,14 @@ namespace ft
 			{
 				http::ResponseHeader	respHeader(m_stat_info[m_status_code].phrase);
 
-				// Every response will contains these three field.
-				respHeader.addField(http::Field::Server(), WebServ::Version);
-				respHeader.addField(http::Field::Date(), utils::getRFC822NowDate());
-				respHeader.addField(http::Field::Connection(), "closed");
+				_setupDefaultHeaderField(respHeader);
 
 				if (m_status_code != http::OK)
-				{
-					respHeader.addField(http::Field::ContentType(), http::MIME::TextHtml());
-					respHeader.addField(http::Field::ContentLenght(), utils::integralToString(m_stat_info[m_status_code].page.second.size()));
-				}
+					_setupErrorHeaderField(respHeader);
 				else
 					(this->*m_method_header_fnct[m_parser.getMethod()])(respHeader);
 
-				if (::send(this->getFd(), respHeader.toCString(), respHeader.size(), 0) < 0)
+				if (::send(getFd(), respHeader.toCString(), respHeader.size(), 0) < 0)
 					m_state = DISCONNECT;
 				else
 					m_state = SENDING_RESPONSE_BODY;
@@ -198,18 +182,54 @@ namespace ft
 		return (m_state);
 	}
 
+	void	ClientSocket::_setupDefaultHeaderField(http::ResponseHeader& respHeader)
+	{
+			respHeader.addField(Field::Server(), WebServ::Version);
+			respHeader.addField(Field::Date(), utils::getRFC822NowDate());
+			respHeader.addField(Field::Connection(), "closed");
+	}
+
+	void	ClientSocket::_setupErrorHeaderField(http::ResponseHeader& respHeader)
+	{
+			respHeader.addField(Field::ContentType(), http::MIME::TextHtml());
+			respHeader.addField(Field::ContentLenght(), utils::integralToString(m_stat_info[m_status_code].page.second.size()));
+	}
+
+	void	ClientSocket::_parseRequestHeaderFields()
+	{
+		using ft::http::HeaderFieldMap;
+
+		const HeaderFieldMap&	hFields = m_parser.getHeaderFields();
+
+		/* Connection header */
+		{}
+
+		/* Host header */
+
+		{
+			const std::string&				host				= hFields.at(Field::Host());
+			const std::vector<VirtServ*>&	virtServs			= _getBoundedVirtServs();
+			const std::vector<VirtServ*>::const_iterator	it	= std::find_if(virtServs.begin(), virtServs.end(), MatchingServerName(host));
+
+			if (it == virtServs.end())
+				m_conn_info = *virtServs.begin();
+			else
+				m_conn_info = *it;
+		}
+	}
+
 	const std::vector<VirtServ*>&	ClientSocket::_getBoundedVirtServs()
 	{
-		try
-		{
-			return (env_g->getVirtServInfo()[m_sockaddr]);
-		}
-		catch (const std::logic_error& e)
+		VirtServInfo::VirtServMap::const_iterator	it = env_g->getVirtServInfo().m_virtserv_map.find(m_sockaddr);
+
+		if (it != env_g->getVirtServInfo().m_virtserv_map.end())
+			return (it->second);
+		else
 		{
 			sockaddr_in	tmp_sock = this->m_sockaddr;
 
 			tmp_sock.sin_addr.s_addr = INADDR_ANY;
-			return (env_g->getVirtServInfo()[tmp_sock]);
+			return (env_g->getVirtServInfo().m_virtserv_map.at(tmp_sock));
 		}
 	}
 

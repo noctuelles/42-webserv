@@ -22,6 +22,7 @@ namespace ft
 				static MIME	TextPlain()					{return MIME("text/plain");}
 				static MIME	TextCss()					{return MIME("text/css");}
 				static MIME	TextJavascript()			{return MIME("text/javascript");}
+				static MIME	ImageXIcon()				{return MIME("image/x-icon");}
 				static MIME	ImageJpeg()					{return MIME("image/jpeg");}
 				static MIME	ImagePng()					{return MIME("image/png");}
 				static MIME	ImageBmp()					{return MIME("image/bmp");}

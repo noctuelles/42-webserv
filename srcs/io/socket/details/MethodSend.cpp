@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 15:17:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 15:51:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ namespace ft
 		else if (m_file_handle.eof())
 		{
 			m_file_handle.close();
-			m_state = DISCONNECT; // end-of-file is reached.
+			m_state = DISCONNECT;
 		}
 	}
 

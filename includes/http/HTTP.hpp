@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/12 12:39:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 13:57:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,10 +99,7 @@ namespace ft
 		{
 			public:
 
-				operator	ci_string&()
-				{
-					return (m_str);
-				}
+				operator	const ci_string&() const {return (m_str);}
 
 				static inline Field	Server()			{return Field("Server");}
 				static inline Field	Date()				{return Field("Date");}
