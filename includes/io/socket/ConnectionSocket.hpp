@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 16:35:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 21:54:51 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ namespace ft
 
 			enum	State
 			{
-				FETCHING_REQUEST_HEADER = -99,
+				FETCHING_REQUEST_HEADER = -0xFF,
 				FETCHING_REQUEST_BODY,
 				SENDING_RESPONSE_HEADER,
 				SENDING_RESPONSE_BODY,
@@ -60,8 +60,10 @@ namespace ft
 
 			State					m_state;
 			struct sockaddr_in		m_bounded_sockaddr;
+			const void*				m_data_to_send;
+			size_t					m_data_size;
 			std::vector<uint8_t>	m_recv_buff, m_send_buff;
-			ssize_t					m_recv_bytes, m_send_bytes;
+			ssize_t					m_recv_bytes;
 	};
 }
 

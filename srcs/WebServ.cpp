@@ -6,12 +6,12 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 15:58:52 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 21:37:41 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
-#include "ClientSocket.hpp"
+#include "ConnectionSocket.hpp"
 #include "ListeningSocket.hpp"
 #include "FileUtils.hpp"
 #include "Http.hpp"
@@ -94,25 +94,25 @@ namespace ft
 
 					switch ((ret = inSockPtr->recv()))
 					{
-						case ClientSocket::SENDING_RESPONSE_HEADER:
-						case ClientSocket::SENDING_RESPONSE_BODY:
+						case ConnectionSocket::SENDING_RESPONSE_HEADER:
+						case ConnectionSocket::SENDING_RESPONSE_BODY:
 							m_poller.modify(*inSockPtr, EPoll::Event::Out(), inSockPtr);
 							break;
-						case ClientSocket::DISCONNECT:
+						case ConnectionSocket::DISCONNECT:
 							_removeSocket(inSockPtr);
 							break;
-						case ClientSocket::FETCHING_REQUEST_BODY:
-						case ClientSocket::FETCHING_REQUEST_HEADER:
+						case ConnectionSocket::FETCHING_REQUEST_BODY:
+						case ConnectionSocket::FETCHING_REQUEST_HEADER:
 							break;
 						default:
-							_addClient(ret);
+							_newRequest(ret);
 					}
 				}
 				else if (it->events & EPOLLOUT)
 				{
 					switch (inSockPtr->send())
 					{
-						case ClientSocket::DISCONNECT:
+						case ConnectionSocket::DISCONNECT:
 							_removeSocket(inSockPtr);
 							break;
 					}

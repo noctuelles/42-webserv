@@ -6,12 +6,12 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 21:34:03 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 22:18:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CLIENT_CLASS_HTPP
-# define CLIENT_CLASS_HTPP 
+#ifndef HTTPREQUEST_HANDLER_HPP
+# define HTTPREQUEST_HANDLER_HPP 
 
 # include <cstring>
 # include <exception>
@@ -87,14 +87,17 @@ namespace ft
 				};
 
 				static const methodInitFnct				m_method_init_fnct[http::NbrAvailableMethod];
-				static const methodHeaderFnct			m_method_header_fnct[http::NbrAvailableMethod];
-				static const methodSendFnct				m_method_send_fnct[http::NbrAvailableMethod];
+				static const methodHeaderFnct			m_method_header_fnct[http::NbrAvailableMethod + 1];
+				static const methodSendFnct				m_method_send_fnct[http::NbrAvailableMethod + 1];
+				static const size_t						Error = 3;
 
 				std::ifstream							m_file_handle;
+				RequestParser::HeaderInfo				m_header_info;
 
-				RequestParser							m_parser;
+				RequestParser							m_header_parser;
 				StatusCode								m_status_code;
 				const VirtServInfo::VirtServMap&		m_virtserv_map;
+
 
 				/* ############################ Private function ############################ */
 
@@ -115,10 +118,15 @@ namespace ft
 					m_state = state;
 					m_status_code = code;
 				}
+				inline bool	_errorState() const
+				{
+					return (m_status_code != OK);
+				}
 
 				void							_setupDefaultHeaderField(ResponseHeader& respHeader);
 				void							_setupErrorHeaderField(ResponseHeader& respHeader);
 				void							_parseRequestHeaderFields();
+
 
 				const std::vector<VirtServ*>&	_getBoundedVirtServs();
 
@@ -129,6 +137,7 @@ namespace ft
 				void	_methodHeaderGet(ResponseHeader& header);
 				void	_methodHeaderPost(ResponseHeader& header);
 				void	_methodHeaderDelete(ResponseHeader& header);
+				void	_handleHeaderError(ResponseHeader& header);
 
 				void	_methodSendGet();
 				void	_methodSendPost();

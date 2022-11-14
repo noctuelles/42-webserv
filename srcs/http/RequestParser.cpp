@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 17:25:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 22:09:55 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ namespace ft
 			   'x',     'y',     'z',      0,      '|',      0,      '~',       0
 		};
 
-		RequestParser::RequestParser()
+		RequestParser::RequestParser(HeaderInfo& header_info)
 			: m_header_size(0),
 			m_index(0),
 			m_previous_state(),
@@ -96,7 +96,7 @@ namespace ft
 			m_callback_fnct(NULL),
 			m_buffer(),
 			m_ws_buffer(),
-			m_info()
+			m_info(header_info)
 		{
 			m_buffer.first.reserve(MaxHeaderFieldSize);
 			m_buffer.second.reserve(MaxHeaderFieldSize);

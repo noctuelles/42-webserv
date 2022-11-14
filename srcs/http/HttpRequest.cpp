@@ -6,11 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 18:02:46 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 22:17:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
+#include "Utils.hpp"
+#include "WebServ.hpp"
 
 namespace ft
 {
@@ -40,10 +42,15 @@ namespace ft
 		HttpRequest::HttpRequest(int fd, const VirtServInfo::VirtServMap& virt_serv_map)
 			: ConnectionSocket(fd),
 			m_file_handle(),
-			m_parser(),
+			m_header_info(),
+			m_header_parser(m_header_info),
 			m_status_code(OK),
 			m_virtserv_map(virt_serv_map)
-		{}
+		{
+			_setState(FETCHING_REQUEST_HEADER);
+		}
+
+		/* We gather the data */
 
 		int	HttpRequest::recv()
 		{
@@ -53,7 +60,7 @@ namespace ft
 			{
 				if (_state(FETCHING_REQUEST_HEADER))
 				{
-					if (m_parser.parse(m_recv_buff, m_recv_bytes))
+					if (m_header_parser.parse(m_recv_buff, m_recv_bytes))
 					{
 						// Le HOST qui va nous permettre de selectionner votre virtual server.
 						// Parsing des headers GENERAL.
@@ -61,22 +68,28 @@ namespace ft
 						//
 						_parseRequestHeaderFields();
 
-						(this->*m_method_init_fnct[m_parser.getMethod()])();
+						(this->*m_method_init_fnct[m_header_info.method])();
+
+
 						_setState(FETCHING_REQUEST_BODY);
 					}
 				}
 				if (_state(FETCHING_REQUEST_BODY))
 				{
 					// Request body is ignored in GET... :)
-					if (m_parser.getMethod() != Get)
+					if (m_header_info.method != Get)
 					{
+
 					}
+
+					_setState(SENDING_RESPONSE_HEADER);
 				}
 			}
 			catch (const Exception& e)
 			{
 				_setState(SENDING_RESPONSE_HEADER, e.what());
 			}
+
 			return (m_state);
 		}
 
@@ -86,14 +99,22 @@ namespace ft
 			{
 				ResponseHeader	respHeader;
 
-				std::memcpy(m_send_buff.data(), respHeader.toCString(), respHeader.size());
+				respHeader.addField(Field::Date(), utils::getRFC822NowDate());
+				respHeader.addField(Field::Server(), WebServ::Version);
+
+				m_data_to_send = respHeader.toCString();
+				m_data_size = respHeader.size();
 			}
 			else if (_state(SENDING_RESPONSE_BODY))
 			{
-
 			}
-			ConnectionSocket::send();
-			return (m_state);
+
+			return (ConnectionSocket::send());
+		}
+
+		HttpRequest::~HttpRequest()
+		{
+			delete m_header_parser;
 		}
 	}
 }

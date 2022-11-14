@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 17:25:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 22:09:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,23 @@ namespace ft
 				static const int	MinorVersionSupported			= 1;
 				static const char*	StateTable[]; //debugging purpose.
 
+				struct HeaderInfo 
+				{
+					HeaderInfo()
+						: method(), ver_major(), ver_minor(), err_code(), req_line(), header_fields()
+					{
+						req_line.reserve(MaxRequestLineSize);
+					}
+
+					Method		method;
+					int			ver_major;
+					int			ver_minor;
+					StatusCode	err_code;
+					string		req_line;
+
+					HeaderFieldMap	header_fields;
+				};
+
 				enum State
 				{
 					P_START_REQUEST_LINE = 0,
@@ -97,7 +114,7 @@ namespace ft
 					P_DONE
 				};
 
-				RequestParser();
+				RequestParser(HeaderInfo& header_info);
 				~RequestParser();
 
 				bool	parse(const std::vector<uint8_t>& buffer, size_t recv_bytes);
@@ -106,11 +123,6 @@ namespace ft
 				void	report();
 #endif
 
-				inline Method			getMethod() const		{return (m_info.method);   }
-				inline int				getMajorVersion() const	{return (m_info.ver_major);}
-				inline int				getMinorVersion() const	{return (m_info.ver_minor);}
-				inline string&			getRequestLine()		{return (m_info.req_line); }
-				inline HeaderFieldMap&	getHeaderFields()		{return (m_info.header_fields);}
 				inline size_t			getHeaderSize()			{return (m_header_size);}
 
 			private:
@@ -120,22 +132,7 @@ namespace ft
 				static const char*	m_http;
 				static const char	m_token[256];
 
-				struct ParseInfo
-				{
-					ParseInfo()
-						: method(), ver_major(), ver_minor(), err_code(), req_line(), header_fields()
-					{
-						req_line.reserve(MaxRequestLineSize);
-					}
 
-					Method		method;
-					int			ver_major;
-					int			ver_minor;
-					StatusCode	err_code;
-					string		req_line;
-
-					HeaderFieldMap	header_fields;
-				};
 
 				size_t			m_header_size;
 				size_t			m_index;
@@ -150,7 +147,7 @@ namespace ft
 				HeaderField		m_buffer;
 				string			m_ws_buffer;
 
-				ParseInfo		m_info;
+				HeaderInfo&		m_info;
 
 				inline bool			_isVChar(unsigned char ch)		{return (ch > ' ' && ch < 0x7F);		}
 				inline bool			_isTknChar(unsigned char ch)	{return (m_token[ch] != 0);				}
