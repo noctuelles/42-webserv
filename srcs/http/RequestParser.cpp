@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 15:48:50 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 17:25:35 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <cctype>
 
 #include "Utils.hpp"
+#include "HttpRequest.hpp"
 
 #ifndef NDEBUG
 # include "DebugColors.h"
@@ -44,8 +45,7 @@ namespace ft
 			"P_CRLF",
 			"P_WS",
 			"P_OWS",
-			"P_DONE",
-			"P_DONE_ERR"
+			"P_DONE"
 		};
 
 		const char*	RequestParser::m_http = "HTTP/";
@@ -109,20 +109,19 @@ namespace ft
 		/* Using a simple state machine to parse the request.
 		 * That is: no memory allocation, no system call... */
 
-		RequestParser::State	RequestParser::parse(const std::vector<uint8_t>& buffer, size_t recv_bytes)
+		bool	RequestParser::parse(const std::vector<uint8_t>& buffer, size_t recv_bytes)
 		{
 			unsigned char							ch = 0;
 			std::vector<uint8_t>::const_iterator	it = buffer.begin();
 
-			while (recv_bytes--)
+			while (m_current_state != P_DONE && recv_bytes--)
 			{
 				ch = *it;
 				if (m_header_size++ >= MaxHeaderSize)
-					return (_errorState(BadRequest));
+					throw (HttpRequest::Exception(BadRequest));
 				switch (m_current_state)
 				{
 					case P_START_REQUEST_LINE:
-						// Determine the method.
 						switch (ch)
 						{
 							case 'G':
@@ -141,7 +140,7 @@ namespace ft
 								_changeState(P_PARSE_METHOD);
 								break;
 							default:
-								return (_errorState(NotImplemented));
+								throw (HttpRequest::Exception(NotImplemented));
 						};
 						break;
 
@@ -151,13 +150,13 @@ namespace ft
 							if (_isWS(ch) && MethodTable[m_info.method][m_index] == '\0')
 								_transitionState(P_OWS, P_PARSE_REQ_LINE);
 							else
-								return (_errorState(BadRequest));
+								throw (HttpRequest::Exception(BadRequest));
 						} else m_index++;
 						break;
 
 					case P_PARSE_REQ_LINE:
 						if (m_info.req_line.size() >= MaxRequestLineSize)
-							return (_errorState(UriTooLong));
+							throw (HttpRequest::Exception(UriTooLong));
 						if (_isWS(ch))
 							_transitionState(P_OWS, P_HTTP), m_index = 0;
 						else
@@ -170,31 +169,34 @@ namespace ft
 							if (m_http[m_index] == '\0')
 								_dontEat(), _changeState(P_HTTP_MAJOR_VER);
 							else
-								return (_errorState(BadRequest));
+								throw (HttpRequest::Exception(BadRequest));
 						} else m_index++;
 						break;
 
 					case P_HTTP_MAJOR_VER:
 						if (!isdigit(ch))
-							return (_errorState(BadRequest));
+							throw (HttpRequest::Exception(BadRequest));
+
 						m_info.ver_major = utils::charToIntegral<int>(ch);
 						if (m_info.ver_major != MajorVersionSupported)
-							return (_errorState(VersionNotSupported));
+							throw (HttpRequest::Exception(VersionNotSupported));
+
 						_changeState(P_HTTP_DOT);
 						break;
 
 					case P_HTTP_DOT:
 						if (ch != '.')
-							return (_errorState(BadRequest));
+							throw (HttpRequest::Exception(BadRequest));
 						_changeState(P_HTTP_MINOR_VER);
 						break;
 
 					case P_HTTP_MINOR_VER:
 						if (!isdigit(ch))
-							return (_errorState(BadRequest));
+							throw (HttpRequest::Exception(BadRequest));
+
 						m_info.ver_minor = utils::charToIntegral<int>(ch);
 						if (m_info.ver_minor != MinorVersionSupported)
-							return (_errorState(VersionNotSupported));
+							throw (HttpRequest::Exception(VersionNotSupported));
 						_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
 						break;
 
@@ -209,7 +211,7 @@ namespace ft
 								case ':':
 									// Empty field name, bad request.
 									if (m_buffer.first.empty())
-										return (_errorState(BadRequest));
+										throw (HttpRequest::Exception(BadRequest));
 
 									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
 									break;
@@ -227,13 +229,13 @@ namespace ft
 									break;
 
 								default: // WS is not allowed in field_name (trailing and leading).
-									return (_errorState(BadRequest));
+									throw (HttpRequest::Exception(BadRequest));
 							}
 						}
 						else
 						{
 							if (m_buffer.first.size() >= MaxHeaderFieldSize)
-								return (_errorState(BadRequest));
+								throw (HttpRequest::Exception(BadRequest));
 							m_buffer.first.push_back(transformed_ch);
 						}
 						break;
@@ -264,7 +266,7 @@ namespace ft
 						else
 						{
 							if (m_buffer.second.size() >= MaxHeaderFieldSize)
-								return (_errorState(BadRequest));
+								throw (HttpRequest::Exception(BadRequest));
 							m_buffer.second.push_back(ch);
 						}
 
@@ -275,12 +277,9 @@ namespace ft
 						if (ch != '\r')
 						{
 							if (ch != '\n')
-								return (_errorState(BadRequest));
+								throw (HttpRequest::Exception(BadRequest));
 							if (m_callback_fnct)
-							{
-								if (CALL_MEMBER_FN(m_callback_fnct)() == -1)
-									return (_errorState(BadRequest));
-							}
+								CALL_MEMBER_FN(m_callback_fnct)();
 							_changeState(m_next_state);
 						}
 						break;
@@ -307,28 +306,49 @@ namespace ft
 						}
 						break;
 
-					case P_DONE:
-						goto DONE;
-						break;
-
 					default:
 						break;
 				};
 
 				if (!m_eat)
-					m_eat = true, recv_bytes++;
+					m_eat = true, recv_bytes++, m_header_size--;
 				else
 					it++;
 			}
-DONE:
+
 			if (m_current_state == P_DONE)
 			{
+				/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
 				try
-				{ m_info.header_fields.at(Field::Host()); }
+				{
+					m_info.header_fields.at(Field::Host());
+				}
 				catch (const std::logic_error& e)
-				{ return (_errorState(BadRequest)); }
+				{
+					throw (HttpRequest::Exception(BadRequest));
+				}
+				return (true);
 			}
-			return (m_current_state);
+			else
+				return (false);
+		}
+
+		void	RequestParser::_insertField()
+		{
+			std::pair<HeaderFieldMap::iterator, bool>	ret = m_info.header_fields.insert(m_buffer);
+
+			if (!ret.second)
+			{
+				/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
+				if (ret.first->first == Field::Host().str())
+					throw (HttpRequest::Exception(BadRequest));
+				/* https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.2 */
+				ret.first->second
+					.append(",")
+					.append(m_buffer.second);
+			}
+			m_buffer.first.clear();
+			m_buffer.second.clear();
 		}
 
 #ifndef NDEBUG

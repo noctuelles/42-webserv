@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 17:05:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 17:29:51 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,11 @@ namespace ft
 		{
 			public:
 
-				class RequestException
+				class Exception
 				{
 					public:
 
-						RequestException(StatusCode code);
+						Exception(StatusCode code);
 
 						StatusCode	what() const {return (m_code);}
 
@@ -108,6 +108,13 @@ namespace ft
 				 *
 				 * *Send* functions are called when we're sending an (optionnal) body to the client.
 				 * They describe how we should send the content. */
+
+				inline bool						_state(State state) {return (m_state == state);}
+				inline void						_setState(State state, StatusCode code = OK)
+				{
+					m_state = state;
+					m_status_code = code;
+				}
 
 				void							_setupDefaultHeaderField(ResponseHeader& respHeader);
 				void							_setupErrorHeaderField(ResponseHeader& respHeader);

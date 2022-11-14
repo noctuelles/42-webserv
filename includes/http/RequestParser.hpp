@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 16:39:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 17:25:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,14 +94,14 @@ namespace ft
 					P_CRLF,
 					P_WS,
 					P_OWS,
-					P_DONE,
-					P_DONE_ERR
+					P_DONE
 				};
 
 				RequestParser();
 				~RequestParser();
 
-				State		parse(const std::vector<uint8_t>& buffer, size_t recv_bytes);
+				bool	parse(const std::vector<uint8_t>& buffer, size_t recv_bytes);
+
 #ifndef NDEBUG
 				void	report();
 #endif
@@ -109,13 +109,13 @@ namespace ft
 				inline Method			getMethod() const		{return (m_info.method);   }
 				inline int				getMajorVersion() const	{return (m_info.ver_major);}
 				inline int				getMinorVersion() const	{return (m_info.ver_minor);}
-				inline StatusCode		getErrorCode() const	{return (m_info.err_code); }
 				inline string&			getRequestLine()		{return (m_info.req_line); }
 				inline HeaderFieldMap&	getHeaderFields()		{return (m_info.header_fields);}
+				inline size_t			getHeaderSize()			{return (m_header_size);}
 
 			private:
 
-				typedef int	(RequestParser::*callBackFnct)();
+				typedef void	(RequestParser::*callBackFnct)();
 
 				static const char*	m_http;
 				static const char	m_token[256];
@@ -159,12 +159,6 @@ namespace ft
 
 				inline void			_dontEat()						{m_eat = false;}
 
-				inline State	_errorState(StatusCode err_code)
-				{
-					m_info.err_code = err_code;
-					return (P_DONE_ERR);
-				};
-
 				inline void			_transitionState(State new_state, State next_state, callBackFnct fnct = NULL)
 				{
 					_changeState(new_state);
@@ -178,24 +172,7 @@ namespace ft
 					m_current_state = s;
 				}
 
-				int	_insertField()
-				{
-					std::pair<HeaderFieldMap::iterator, bool>	ret = m_info.header_fields.insert(m_buffer);
-
-					if (!ret.second)
-					{
-						/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
-						if (ret.first->first == Field::Host().str())
-							return (-1);
-						/* https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.2 */
-						ret.first->second
-							.append(",")
-							.append(m_buffer.second);
-					}
-					m_buffer.first.clear();
-					m_buffer.second.clear();
-					return (0);
-				}
+				void	_insertField();
 		};
 	}
 }

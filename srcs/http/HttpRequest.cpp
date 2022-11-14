@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 17:07:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 18:02:46 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,30 +51,48 @@ namespace ft
 				return (DISCONNECT);
 			try
 			{
-				if (m_state == FETCHING_REQUEST_HEADER)
+				if (_state(FETCHING_REQUEST_HEADER))
 				{
+					if (m_parser.parse(m_recv_buff, m_recv_bytes))
+					{
+						// Le HOST qui va nous permettre de selectionner votre virtual server.
+						// Parsing des headers GENERAL.
+						// Une requete POST va peut etre avoir besoin de plus de header: ce n'est pas un header general.
+						//
+						_parseRequestHeaderFields();
+
+						(this->*m_method_init_fnct[m_parser.getMethod()])();
+						_setState(FETCHING_REQUEST_BODY);
+					}
 				}
-				if (m_state == FETCHING_REQUEST_BODY)
+				if (_state(FETCHING_REQUEST_BODY))
 				{
+					// Request body is ignored in GET... :)
 					if (m_parser.getMethod() != Get)
 					{
-
 					}
-					// Request body is ignored in GET.
-					// To be use ONLY for POST request (chunked request, multipart/formdata...)
 				}
 			}
-			catch (const RequestException& e)
+			catch (const Exception& e)
 			{
-				m_state = SENDING_RESPONSE_HEADER;
-				m_status_code = e.what();
+				_setState(SENDING_RESPONSE_HEADER, e.what());
 			}
-
 			return (m_state);
 		}
 
 		int	HttpRequest::send()
 		{
+			if (_state(SENDING_RESPONSE_HEADER))
+			{
+				ResponseHeader	respHeader;
+
+				std::memcpy(m_send_buff.data(), respHeader.toCString(), respHeader.size());
+			}
+			else if (_state(SENDING_RESPONSE_BODY))
+			{
+
+			}
+			ConnectionSocket::send();
 			return (m_state);
 		}
 	}
