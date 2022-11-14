@@ -143,6 +143,7 @@ class VirtServInfo
 	void _parseRoot(VirtServInfo::configstream_iterator& it);
 	void _parseIndex(VirtServInfo::configstream_iterator& it);
 	void _parseServerName(VirtServInfo::configstream_iterator& it);
+	void _parseAutoindex(VirtServInfo::configstream_iterator& it);
 	void _parseLocationBlock(VirtServInfo::configstream_iterator& it);
 	void _parseLocationAutoindex(VirtServInfo::configstream_iterator& it);
 	void _parseLocationRoot(VirtServInfo::configstream_iterator& it);

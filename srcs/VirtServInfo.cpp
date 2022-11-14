@@ -46,6 +46,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_server_block_dispatch_table
     {"root", &VirtServInfo::_parseRoot},
     {"index", &VirtServInfo::_parseIndex},
     {"server_name", &VirtServInfo::_parseServerName},
+    {"autoindex", &VirtServInfo::_parseAutoindex},
 };
 
 // Range constructor
@@ -179,6 +180,23 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 	++it;
 }
 
+void VirtServInfo::_parseAutoindex(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	if ( *it == "on")
+		m_virtserv_vec.back().m_autoindex = true;
+	else if ( *it == "off")
+		m_virtserv_vec.back().m_autoindex = false;
+	else
+		throw std::runtime_error("Config file error: Invalid argument for autoindex directive in server block: Can only be \"on\" on \"off\"");
+	++it;
+	if (*it != ";")
+		throw std::runtime_error("Config file error: missing ; after autoindex directive in server block");
+	else
+		++it;
+}
+
 void VirtServInfo::_parseLocationAutoindex(VirtServInfo::configstream_iterator& it)
 {
 	// Can only have one argument
@@ -221,9 +239,12 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	++it;
 	// Parse location data
 	_match(it, m_location_block_dispatch_vec);
-	// Give parent root directive if none was defined. Not sure if good design yet
+	// Give parent root directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_root.empty() )
 		m_virtserv_vec.back().m_routes_vec.back().m_root = m_virtserv_vec.back().m_root;
+	// Give parent autoindex directive if none was defined.
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_autoindex == -1)
+		m_virtserv_vec.back().m_routes_vec.back().m_autoindex = m_virtserv_vec.back().m_autoindex;
 	// Check for end delimiter
 	if (*it != "}")
 		throw std::runtime_error("Config file error: Invalid token");

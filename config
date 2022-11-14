@@ -14,6 +14,7 @@ server {
 	server_name hello.bye     ;
 	root /var/www ;
 	location /love/ {root /tmp/love; autoindex on;}
+	location /love/ {}
 
 }
 
@@ -22,3 +23,13 @@ server{   server_name i_have_no_listen.wtf      ;
 	}
 
 server{server_name i_am_an_ugly_bastard; root /home/uglybastard; index index.htm index.html index.love index.wtf;}
+
+server {
+	listen 9000 ;
+	server_name hello.bye     ;
+	autoindex on ;
+	root /var/data ;
+	location / {autoindex off;}
+	location /data {}
+
+}
