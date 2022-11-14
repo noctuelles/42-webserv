@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 17:29:51 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/14 21:34:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include <vector>
 # include <list>
 # include <fstream>
-# include "HTTP.hpp"
+# include "Http.hpp"
 # include "ResponseHeader.hpp"
 # include "SocketTypes.hpp"
 #include "ConnectionSocket.hpp"
@@ -119,6 +119,7 @@ namespace ft
 				void							_setupDefaultHeaderField(ResponseHeader& respHeader);
 				void							_setupErrorHeaderField(ResponseHeader& respHeader);
 				void							_parseRequestHeaderFields();
+
 				const std::vector<VirtServ*>&	_getBoundedVirtServs();
 
 				void	_methodInitGet();

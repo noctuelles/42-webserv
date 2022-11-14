@@ -8,7 +8,7 @@
 #include "ResponseHeader.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
-#include "HTTPMIME.hpp"
+#include "HttpMIME.hpp"
 #include "AutoIndex.hpp"
 #include "Traits.hpp"
 

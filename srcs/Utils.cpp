@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "Utils.hpp"
-#include "HTTP.hpp"
+#include "Http.hpp"
 #include <ctime>
 #include <stdexcept>
 

@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "ResponseHeader.hpp"
-#include "HTTP.hpp"
+#include "Http.hpp"
 #include "FileUtils.hpp"
 #include <sstream>
 #include <string>

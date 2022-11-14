@@ -12,9 +12,9 @@
 
 #include "ClientSocket.hpp"
 #include "FileUtils.hpp"
-#include "HTTP.hpp"
+#include "Http.hpp"
 #include "Utils.hpp"
-#include "HTTPMIME.hpp"
+#include "HttpMIME.hpp"
 
 namespace ft
 {

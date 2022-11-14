@@ -12,7 +12,7 @@
 
 #include "RequestParser.hpp"
 #include "FileUtils.hpp"
-#include "HTTP.hpp"
+#include "Http.hpp"
 #include "WebServ.hpp"
 #include <stdexcept>
 #include <string>

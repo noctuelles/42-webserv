@@ -20,7 +20,7 @@
 # include <vector>
 # include <stdint.h>
 
-# include "HTTP.hpp"
+# include "Http.hpp"
 
 using std::string;
 

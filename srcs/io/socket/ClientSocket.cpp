@@ -11,12 +11,12 @@
 /* ************************************************************************** */
 
 #include "ClientSocket.hpp"
-#include "HTTPMIME.hpp"
+#include "HttpMIME.hpp"
 #include "ResponseHeader.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
-#include "HTTP.hpp"
-#include "HTTPMIME.hpp"
+#include "Http.hpp"
+#include "HttpMIME.hpp"
 #include "RequestParser.hpp"
 #include "env_g.hpp"
 

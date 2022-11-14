@@ -13,7 +13,7 @@
 #ifndef RESPONSEHEADER_HPP
 # define RESPONSEHEADER_HPP
 
-# include "HTTP.hpp"
+# include "Http.hpp"
 # include <map>
 # include <string>
 

@@ -14,7 +14,7 @@
 #include "ClientSocket.hpp"
 #include "ListeningSocket.hpp"
 #include "FileUtils.hpp"
-#include "HTTP.hpp"
+#include "Http.hpp"
 #include <algorithm>
 #include <exception>
 #include <functional>

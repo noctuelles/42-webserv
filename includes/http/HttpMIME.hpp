@@ -1,5 +1,5 @@
-#ifndef HTTPMIME_HPP
-# define HTTPMIME_HPP
+#ifndef HttpMIME.hpp
+# define HttpMIME.hpp
 
 # include <map>
 
