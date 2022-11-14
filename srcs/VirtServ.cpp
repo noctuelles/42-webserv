@@ -23,7 +23,7 @@ std::ostream& operator<<(std::ostream& os, const VirtServ::RouteOptions& routein
 	os << routeinfo.m_root;
 	os << '\n';
 	os	<< "\t\tautoindex:\t";
-	os << routeinfo.m_autoindex;
+	os << (bool) routeinfo.m_autoindex;
 	os << '\n';
 	os << "\t\t-------------------------\n";
 
@@ -47,6 +47,9 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 	{
 		os << servinfo.m_index_vec[i] << '\t';
 	}
+	os << '\n';
+	os	<< "\tautoindex:\t\t" ;
+	os << servinfo.m_autoindex << '\t';
 	os << '\n';
 	os	<< "\tlocation blocks:\n";
 	for (size_t i = 0; i < servinfo.m_routes_vec.size(); ++i)
