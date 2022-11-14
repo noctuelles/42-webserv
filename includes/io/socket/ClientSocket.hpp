@@ -80,7 +80,14 @@ namespace ft
 
 					inline bool	operator()(const std::vector<VirtServ*>::value_type ptr)
 					{
-						return (m_host_field == ptr->m_server_name);
+						for(std::vector<std::string>::const_iterator it = ptr->m_server_name_vec.begin();
+							it != ptr->m_server_name_vec.end();
+							++it)
+						{
+							if (*it == m_host_field)
+								return true;
+						}
+						return false;
 					}
 
 				private:

@@ -1,5 +1,5 @@
-#ifndef CONFIGPARSER_HPP
-#define CONFIGPARSER_HPP
+#ifndef VIRTSERVINFO_HPP
+#define VIRTSERVINFO_HPP
 
 #include <algorithm>
 #include <assert.h>
@@ -11,10 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "EPoll.hpp"
-#include "FileUtils.hpp"
-#include "HTTP.hpp"
-#include "ListeningSocket.hpp"
 #include "VirtServ.hpp"
 #include "less_sockaddr.hpp"
 
@@ -33,6 +29,86 @@ class VirtServInfo
 	typedef std::map<sockaddr_in, VirtServPtrVector >		VirtServMap;
 	typedef VirtServMap::iterator							iterator;
 
+#ifndef CONFIG_DELIMITER_SET
+# define CONFIG_DELIMITER_SET ";{}"
+#endif
+
+	class configstream_iterator
+	{
+		public:
+
+		configstream_iterator(std::ifstream& config_stream) : m_ch()
+			,m_delim_set(CONFIG_DELIMITER_SET) 
+			,m_buffer() 
+			,m_stream(config_stream)
+			,m_is_delim(false)
+		{
+			m_stream >> std::noskipws;
+			advance();
+		}
+
+		const std::string&		operator*() { return m_buffer; };
+		const std::string*		operator->() { return &m_buffer; };
+
+		configstream_iterator&	operator++() { advance(); return *this; }
+
+		bool is_delim() { return m_is_delim; }
+
+		private:
+
+		char 		 			m_ch;
+		std::string	 			m_delim_set;
+		std::string	 			m_buffer;
+		std::ifstream&			m_stream;
+		bool					m_is_delim;
+
+		void advance()
+		{
+			static bool send_delim = false;
+
+			if (m_stream.eof())
+			{
+				m_buffer = "";
+				m_is_delim = false;
+				return;
+			}
+			// Must send a delim
+			if (send_delim)
+			{
+				m_buffer = m_ch;
+				send_delim = false;
+				m_is_delim = true;
+				return;
+			}
+			//Skip whitespace
+			for (m_stream >> m_ch ; m_stream and std::isspace(m_ch) ; m_stream >> m_ch)
+			{ }
+			// Is a delimiter ?
+			if (m_delim_set.find(m_ch) != std::string::npos)
+			{
+				m_buffer = m_ch;
+				m_is_delim = true;
+				return;
+			}
+			else
+			{
+				// Look for token
+				m_is_delim = false;
+				m_buffer.clear();
+				for (; m_stream and not std::isspace(m_ch); m_stream >> m_ch)
+				{
+					if (m_delim_set.find(m_ch) != std::string::npos)
+					{
+						send_delim = true; // m_ch will hold the delimiter
+						return;
+					}
+					m_buffer += m_ch;
+				}
+			}
+		}
+	};
+#undef CONFIG_DELIMITER_SET
+
 	std::vector<VirtServ>								m_virtserv_vec;
 	VirtServMap											m_virtserv_map;
 
@@ -50,22 +126,28 @@ class VirtServInfo
 	typedef struct token_dispatch
 	{
 		std::string token;
-		void (VirtServInfo::*parse_method)(std::istream_iterator< std::string >&);
+		void (VirtServInfo::*parse_method)(configstream_iterator& it);
 	} token_dispatch_t;
 
 	static const token_dispatch_t                m_block_dispatch_table[];
 	static const token_dispatch_t                m_server_block_dispatch_table[];
+	static const token_dispatch_t                m_location_block_dispatch_table[];
 	static const std::vector< token_dispatch_t > m_block_dispatch_vec;
 	static const std::vector< token_dispatch_t > m_server_block_dispatch_vec;
+	static const std::vector< token_dispatch_t > m_location_block_dispatch_vec;
 
 	void _parseConfig(const char* config);
-	void _match(std::istream_iterator< std::string >& it, const std::vector< token_dispatch_t >& dispatch_table, bool throw_on_not_found);
-	void _parseServerBlock(std::istream_iterator< std::string >& it);
-	void _parseListen(std::istream_iterator< std::string >& it);
-	void _parseRoot(std::istream_iterator< std::string >& it);
-	void _parseIndex(std::istream_iterator< std::string >& it);
-	void _parseServerName(std::istream_iterator< std::string >& it);
+	void _match(VirtServInfo::configstream_iterator& it, const std::vector< token_dispatch_t >& dispatch_table, bool throw_on_not_found);
+	void _parseServerBlock(VirtServInfo::configstream_iterator& it);
+	void _parseListen(VirtServInfo::configstream_iterator& it);
+	void _parseRoot(VirtServInfo::configstream_iterator& it);
+	void _parseIndex(VirtServInfo::configstream_iterator& it);
+	void _parseServerName(VirtServInfo::configstream_iterator& it);
+	void _parseLocationBlock(VirtServInfo::configstream_iterator& it);
+	void _parseLocationAutoindex(VirtServInfo::configstream_iterator& it);
+	void _parseLocationRoot(VirtServInfo::configstream_iterator& it);
 };
+
 } // namespace ft
 
-#endif /* CONFIGPARSER_HPP */
+#endif /* VIRTSERVINFO_HPP */

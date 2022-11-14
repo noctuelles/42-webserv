@@ -77,6 +77,9 @@ fclean:					clean
 
 re:						fclean all
 
+print_name:				
+						@echo "$(NAME)"
+
 -include $(OBJS/DEPS)
 
-.PHONY:			all clean fclean re
+.PHONY:			all clean fclean re print_name
