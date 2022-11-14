@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 15:48:55 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 16:39:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,8 +184,13 @@ namespace ft
 
 					if (!ret.second)
 					{
+						/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
 						if (ret.first->first == Field::Host().str())
 							return (-1);
+						/* https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.2 */
+						ret.first->second
+							.append(",")
+							.append(m_buffer.second);
 					}
 					m_buffer.first.clear();
 					m_buffer.second.clear();

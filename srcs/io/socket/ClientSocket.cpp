@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 18:34:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 15:50:39 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 16:24:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ namespace ft
 	{
 		m_last_activity = time(NULL);
 		m_recv_bytes = ::recv(*this, m_recv_buffer.data(), m_recv_buffer.size(), 0); // noexcept
+		std::cout << m_recv_buffer.data() << '\n';
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
 		switch (m_state)
@@ -106,6 +107,7 @@ namespace ft
 				{
 					case http::RequestParser::P_DONE:
 					{
+						m_parser.report();
 						try
 						{
 							_parseRequestHeaderFields();
@@ -113,7 +115,7 @@ namespace ft
 							m_parser.getRequestLine().insert(0, m_conn_info->m_root);
 
 							(this->*m_method_init_fnct[m_parser.getMethod()])();
-							m_state = SENDING_RESPONSE_HEADER;
+							// pas forcement...
 						}
 						catch (const std::ios_base::failure& f)
 						{

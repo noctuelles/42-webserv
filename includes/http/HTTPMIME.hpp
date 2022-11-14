@@ -13,7 +13,7 @@ namespace ft
 		{
 			public:
 
-				operator	std::string()
+				operator	std::string() const
 				{
 					return (str);
 				}
@@ -28,6 +28,9 @@ namespace ft
 				static MIME	ImageBmp()					{return MIME("image/bmp");}
 				static MIME	ImageGif()					{return MIME("image/gif");}
 				static MIME	ApplicationOctetStream()	{return MIME("application/octet-stream");}
+
+				static MIME	ApplicationUrlEncoded()		{return MIME("application/x-www-form-urlencoded");}
+				static MIME	MultipartFormData()			{return MIME("multipart/form-data");}
 
 				const std::string&	toStr() const
 				{

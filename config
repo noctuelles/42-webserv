@@ -8,5 +8,5 @@ server {
 	server_name		localhost:8081;
 	listen      	8081;
 	index			test.html;
-	root			www/a_website;
+	root			www/post;
 }
