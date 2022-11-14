@@ -1,6 +1,11 @@
 server {
-	listen      	8081;
-	server_name		localhost:8081;
-	index			test.html;
-	root			www/post;
+	listen      	8080;
+	server_name		localhost:8080;
+	index			index.html;
+}
+
+server
+{
+	listen			8080;
+	server_name	pouet:8080;
 }
