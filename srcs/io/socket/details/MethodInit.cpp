@@ -6,12 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 16:53:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 16:19:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ClientSocket.hpp"
 #include "FileUtils.hpp"
+#include <iostream>
 
 namespace ft
 {
@@ -29,6 +30,7 @@ namespace ft
 			throw (std::ios_base::failure("can't open file"));
 		else if (io::isADirectory(m_parser.getRequestLine().c_str()))
 			throw (std::ios_base::failure("is a directory"));
+		m_state = SENDING_RESPONSE_HEADER;
 	}
 
 	void	ClientSocket::_methodInitPost()

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 15:29:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 16:23:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ namespace ft
 
 			static const size_t			MaxErrorPageSize		= 2097152; // 2MB
 			static const unsigned int	MaxPendingConnection	= 5;
-			static const time_t			ConnectionTimeout		= 2; // in seconds.
+			static const time_t			ConnectionTimeout		= 20; // in seconds.
 			static const std::string	Version;
 
 			WebServ(const char *config_filename);

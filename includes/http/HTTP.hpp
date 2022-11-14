@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 13:57:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/13 16:40:45 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,7 @@ namespace ft
 				static inline Field	ContentType()		{return Field("Content-Type");}
 				static inline Field	Connection()		{return Field("Connection");}
 				static inline Field	Host()				{return Field("Host");}
+				static inline Field	SetCookie()			{return Field("Set-Cookie");}
 
 				inline const ci_string&	str() const
 				{
