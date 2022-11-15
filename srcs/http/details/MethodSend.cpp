@@ -6,12 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:13:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:45:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
 #include "StatusInfoPages.hpp"
+
+#include <iostream>
 
 namespace ft
 {

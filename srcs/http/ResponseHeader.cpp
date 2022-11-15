@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/28 18:02:49 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/12 12:13:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:37:46 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ namespace ft
 {
 	namespace http
 	{
-		ResponseHeader::ResponseHeader(const std::string& phrase)
-			: m_header_field(), m_http_version("HTTP/1.1"), m_reason_phrase(phrase), m_cache(), m_build_cache(true)
+		ResponseHeader::ResponseHeader()
+			: m_header_field(), m_http_version("HTTP/1.1"), m_reason_phrase(), m_cache(), m_build_cache(true)
 		{
 			m_cache.reserve(DefaultCacheSize);
 		}
@@ -47,6 +47,11 @@ namespace ft
 			m_header_field = rhs.m_header_field;
 			m_cache = rhs.m_cache;
 			return (*this);
+		}
+
+		void	ResponseHeader::setReasonPhrase(const std::string& phrase)
+		{
+			m_reason_phrase = phrase;
 		}
 
 		void	ResponseHeader::addField(const Field& field, const std::string& str)

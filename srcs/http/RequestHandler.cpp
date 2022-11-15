@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpRequestHandler.cpp                             :+:      :+:    :+:   */
+/*   RequestHandler.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:09:38 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 16:03:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ namespace ft
 			}
 			catch (const Exception& e)
 			{
+				std::clog << "Error code " << e.what() << '\n';
 				_setState(PROCESSING_RESPONSE_HEADER, e.what());
 			}
 			return (m_state);
@@ -102,10 +103,12 @@ namespace ft
 
 				respHeader.addField(Field::Date(), utils::getRFC822NowDate());
 				respHeader.addField(Field::Server(), WebServ::Version);
+				respHeader.addField(Field::Connection(), "closed");
 
 				(this->*m_method_header_fnct[m_header_info.method])(respHeader);
 
-				m_data_to_send = respHeader.toCString();
+				std::memcpy(m_data_buff.data(), respHeader.toCString(), respHeader.size()); // changed later.
+				m_data_to_send = m_data_buff.data();
 				m_data_to_send_size = respHeader.size();
 
 				_setState(PROCESSING_RESPONSE_BODY);
@@ -160,6 +163,7 @@ namespace ft
 			}
 
 			{
+				m_header_info.req_line.insert(0, m_virtserv->m_root);
 			}
 		}
 	}

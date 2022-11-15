@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/27 14:20:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 15:21:05 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:37:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,13 @@ namespace ft
 		{
 			public:
 
-				ResponseHeader(const std::string& phrase = "");
+				ResponseHeader();
 				ResponseHeader(const ResponseHeader& other);
 				~ResponseHeader();
 
 				ResponseHeader&	operator=(const ResponseHeader& rhs);
 
-				void			changeReasonPhrase(const std::string& phrase);
+				void			setReasonPhrase(const std::string& phrase);
 
 				void			addField(const Field& field, const std::string& value = "");
 				void			removeField(const Field& field);

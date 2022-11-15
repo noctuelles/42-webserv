@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:02:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 16:03:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,9 @@ namespace ft
 	}
 
 	ConnectionSocket::~ConnectionSocket()
-	{}
+	{
+		std::clog << "Client " << inet_ntoa(m_peer_sockaddr.sin_addr) << " disconnected.\n";
+	}
 
 	int	ConnectionSocket::recv()
 	{
@@ -44,7 +46,7 @@ namespace ft
 		m_recv_bytes = ::recv(*this, m_recv_buff.data(), m_recv_buff.size(), 0);
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
-		if (m_request_handler.fetchIncomingData(m_recv_buff, m_recv_bytes) == RequestHandler::PROCESSING_RESPONSE_BODY)
+		if (m_request_handler.fetchIncomingData(m_recv_buff, m_recv_bytes) == RequestHandler::PROCESSING_RESPONSE_HEADER)
 			m_state = WRITING;
 		return (m_state);
 	}

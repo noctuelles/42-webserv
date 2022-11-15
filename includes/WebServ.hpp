@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:45:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:48:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ namespace ft
 				{
 					if (ptr->isTimeout())
 					{
-						std::cout << "byebye\n";
 						delete ptr;
 						ptr = 0;
 					}

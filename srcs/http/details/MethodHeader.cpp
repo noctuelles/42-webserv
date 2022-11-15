@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:12:56 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:38:50 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ namespace ft
 		{
 			size_t	fileSize = io::getFileSize(m_header_info.req_line.c_str());
 
+			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
 			header.addField(Field::ContentLenght(), utils::integralToString(fileSize));
 			header.addField(Field::ContentType(), getMimeFromFileExtension(m_header_info.req_line.c_str()));
 		}
@@ -41,6 +42,7 @@ namespace ft
 
 		void	RequestHandler::_methodHeaderError(ResponseHeader& header)
 		{
+			header.setReasonPhrase(StatusInfoPages::get()[m_status_code].phrase);
 			header.addField(Field::ContentType(), MIME::TextHtml());
 			header.addField(Field::ContentLenght(), utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));
 		}

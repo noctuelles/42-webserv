@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:48:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:59:52 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,8 +76,8 @@ namespace ft
 			Get,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-get */
 			Post,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-post */
 			Delete,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-delete */
-			NbrAvailableMethod,						/* Not used, only a placeholder. */
-			Err							/* RESERVED */
+			NbrAvailableMethod = 3,						/* Not used, only a placeholder. */
+			Err = 3							/* RESERVED */
 		} Method;
 
 		struct StatusInfo
