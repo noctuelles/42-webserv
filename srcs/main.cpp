@@ -12,11 +12,6 @@
 #include "AutoIndex.hpp"
 #include "Traits.hpp"
 
-namespace ft
-{
-	WebServ *env_g;
-}
-
 using namespace ft;
 
 int main(int ac, char **av)
@@ -28,7 +23,6 @@ int main(int ac, char **av)
 	}
 
 	WebServ	serv(av[1]);
-	env_g = &serv;
 
 	try {
 		serv.run();
