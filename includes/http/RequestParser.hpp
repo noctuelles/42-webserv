@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 22:09:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 11:11:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ namespace ft
 				RequestParser(HeaderInfo& header_info);
 				~RequestParser();
 
-				bool	parse(const std::vector<uint8_t>& buffer, size_t recv_bytes);
+				bool	parseHeader(const std::vector<uint8_t>& buffer, size_t recv_bytes);
 
 #ifndef NDEBUG
 				void	report();

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 22:09:55 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 11:10:55 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ namespace ft
 		/* Using a simple state machine to parse the request.
 		 * That is: no memory allocation, no system call... */
 
-		bool	RequestParser::parse(const std::vector<uint8_t>& buffer, size_t recv_bytes)
+		bool	RequestParser::parseHeader(const std::vector<uint8_t>& buffer, size_t recv_bytes)
 		{
 			unsigned char							ch = 0;
 			std::vector<uint8_t>::const_iterator	it = buffer.begin();

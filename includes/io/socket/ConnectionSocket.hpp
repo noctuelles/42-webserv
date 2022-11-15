@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 21:54:51 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 11:11:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <list>
 # include <fstream>
 # include "SocketTypes.hpp"
+# include "HttpRequest.hpp"
 
 namespace ft
 {
@@ -57,6 +58,8 @@ namespace ft
 			inline void	_updateLastActivity() {m_last_activity = time(NULL);};
 
 		protected:
+
+			HttpRequest				m_request; // has-a
 
 			State					m_state;
 			struct sockaddr_in		m_bounded_sockaddr;
