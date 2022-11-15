@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <fstream>
+#include <sstream>
 #include <iterator>
 #include <map>
 #include <netinet/in.h>
@@ -18,6 +19,7 @@ namespace ft
 {
 	using std::vector;
 	using std::map;
+	using std::stringstream;
 
 class VirtServInfo
 {
@@ -109,6 +111,18 @@ class VirtServInfo
 	};
 #undef CONFIG_DELIMITER_SET
 
+	//class ConfigFileError : public std::exception
+	//{
+	//public:
+	//    ConfigFileError(const char *info) throw() : m_ss("Config File Error: ") { m_ss << info << '\n'; m_ss >> m_what; }
+	//    virtual const char*	what() const throw() { return m_what; }
+	//    ~ConfigFileError() throw() {};
+	//private:
+	//    static const string		prefix;
+	//    char					m_what[512];
+	//    stringstream			m_ss;
+	//};
+
 	std::vector<VirtServ>								m_virtserv_vec;
 	VirtServMap											m_virtserv_map;
 
@@ -144,9 +158,15 @@ class VirtServInfo
 	void _parseIndex(VirtServInfo::configstream_iterator& it);
 	void _parseServerName(VirtServInfo::configstream_iterator& it);
 	void _parseAutoindex(VirtServInfo::configstream_iterator& it);
+	void _parseErrorPage(VirtServInfo::configstream_iterator& it);
+	void _parseClientMaxBodySize(VirtServInfo::configstream_iterator& it);
+	void _parseCgiSetup(VirtServInfo::configstream_iterator& it);
 	void _parseLocationBlock(VirtServInfo::configstream_iterator& it);
+	void _parseLocationIndex(VirtServInfo::configstream_iterator& it);
 	void _parseLocationAutoindex(VirtServInfo::configstream_iterator& it);
 	void _parseLocationRoot(VirtServInfo::configstream_iterator& it);
+	void _parseLocationLimitExcept(VirtServInfo::configstream_iterator& it);
+	void _parseLocationCgiSetup(VirtServInfo::configstream_iterator& it); // I hereby protest against the existence of this function
 };
 
 } // namespace ft

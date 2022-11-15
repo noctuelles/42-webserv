@@ -15,8 +15,10 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
+#include <stack>
 
 #include "VirtServInfo.hpp"
+#include "Utils.hpp"
 
 namespace ft
 {
@@ -24,12 +26,15 @@ namespace ft
 using std::ifstream;
 using std::string;
 using std::vector;
+using std::stack;
 using std::ostringstream;
 using std::cout;
 
-/* STATIC DATA */
+/** STATIC DATA **/
 
 #define SIZE(x) sizeof(x) / sizeof(x[0])
+
+	/* Main context tokens */
 
 const VirtServInfo::token_dispatch_t VirtServInfo::m_block_dispatch_table[] = {
 	{"server", &VirtServInfo::_parseServerBlock},
@@ -40,6 +45,8 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_block_dispatch_table[] = {
 const vector< VirtServInfo::token_dispatch_t > VirtServInfo::m_block_dispatch_vec(m_block_dispatch_table,
                                                              m_block_dispatch_table + SIZE(m_block_dispatch_table));
 
+	/* Server context tokens */
+
 const VirtServInfo::token_dispatch_t VirtServInfo::m_server_block_dispatch_table[] = {
     {"location", &VirtServInfo::_parseLocationBlock},
     {"listen", &VirtServInfo::_parseListen},
@@ -47,16 +54,23 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_server_block_dispatch_table
     {"index", &VirtServInfo::_parseIndex},
     {"server_name", &VirtServInfo::_parseServerName},
     {"autoindex", &VirtServInfo::_parseAutoindex},
+    {"error_page", &VirtServInfo::_parseErrorPage},
+    {"client_max_body_size", &VirtServInfo::_parseClientMaxBodySize},
+    {"cgi_setup", &VirtServInfo::_parseCgiSetup},
 };
 
 // Range constructor
 const vector< VirtServInfo::token_dispatch_t > VirtServInfo::m_server_block_dispatch_vec(m_server_block_dispatch_table,
                                                                     m_server_block_dispatch_table +
                                                                         SIZE(m_server_block_dispatch_table));
+	/* Location context tokens */
 
 const VirtServInfo::token_dispatch_t VirtServInfo::m_location_block_dispatch_table[] = {
     {"root", &VirtServInfo::_parseLocationRoot},
     {"autoindex", &VirtServInfo::_parseLocationAutoindex},
+    {"index", &VirtServInfo::_parseLocationIndex},
+    {"limit_except", &VirtServInfo::_parseLocationLimitExcept},
+    {"cgi_setup", &VirtServInfo::_parseLocationCgiSetup},
 };
 
 // Range constructor
@@ -66,7 +80,7 @@ const vector< VirtServInfo::token_dispatch_t > VirtServInfo::m_location_block_di
 
 #undef SIZE
 
-/* METHODS */
+/** METHODS **/
 
 #ifndef DEFAULT_CONFIG 
 # define DEFAULT_CONFIG "webserv.conf"
@@ -146,7 +160,11 @@ void VirtServInfo::_match(VirtServInfo::configstream_iterator& it, const vector<
 			i = -1;
 		}
 	}
-	if (throw_on_not_found and i == table_size)
+	if (*it == ";")
+	{
+		throw std::runtime_error("Config file error: Empty directive");
+	}
+	else if (throw_on_not_found and i == table_size)
 	{
 		throw std::runtime_error("Config file error: Unknown token");
 	}
@@ -154,12 +172,16 @@ void VirtServInfo::_match(VirtServInfo::configstream_iterator& it, const vector<
 
 // Each _parse* function is responsible for consuming the terminating delimiter
 
+#ifndef DEFAULT_REQUEST_MAX_BODY_SIZE
+# define DEFAULT_REQUEST_MAX_BODY_SIZE 1024*1024
+#endif
+
 void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 {
 	++it;
 	// Check begin delimiter
 	if (*it != "{")
-		throw std::runtime_error("Config file error: Missing '{' delimiter after server block directive");
+		throw std::runtime_error("Config file error: Invalid token after server block directive: Missing '{' maybe ?");
 	++it;
 	// Add a new virtual server
 	m_virtserv_vec.push_back(VirtServ());
@@ -174,11 +196,16 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 		sockaddr.sin_port = htons(80);
 		m_virtserv_vec.back().m_sockaddr_vec.push_back(sockaddr);
 	}
+	if (m_virtserv_vec.back().m_max_body_size == 0)
+	{
+		m_virtserv_vec.back().m_max_body_size = DEFAULT_REQUEST_MAX_BODY_SIZE;
+	}
 	// Check for end delimiter
 	if (*it != "}")
-		throw std::runtime_error("Config file error: Invalid token");
+		throw std::runtime_error("Config file error: Invalid token in server block: Forgot '}' maybe ?");
 	++it;
 }
+#undef DEFAULT_REQUEST_MAX_BODY_SIZE
 
 void VirtServInfo::_parseAutoindex(VirtServInfo::configstream_iterator& it)
 {
@@ -228,6 +255,36 @@ void VirtServInfo::_parseLocationRoot(VirtServInfo::configstream_iterator& it)
 		++it;
 }
 
+void VirtServInfo::_parseLocationIndex(VirtServInfo::configstream_iterator& it)
+{
+	for (++it; not it.is_delim() ; ++it)
+		m_virtserv_vec.back().m_routes_vec.back().m_index_vec.push_back(*it);
+	if (*it != ";")
+		throw std::runtime_error("Config file error: missing ; after index directive in location block");
+	else
+		++it;
+}
+
+void VirtServInfo::_parseLocationLimitExcept(VirtServInfo::configstream_iterator& it)
+{
+	for (++it; not it.is_delim() ; ++it)
+	{
+		if ( *it == "GET" )
+			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(http::Get);
+		else if ( *it == "POST" )
+			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(http::Post);
+		else if ( *it == "DELETE" )
+			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(http::Delete);
+		else
+			throw std::runtime_error("Config file error: Invalid or unsupported method for limit_except directive in location block: Supported methods are \"GET\", \"POST\" and \"DELETE\"");
+	}
+	if (*it != ";")
+		throw std::runtime_error("Config file error: missing ; after autoindex directive in location block");
+	else
+		++it;
+}
+
+
 void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 {
 	++it;
@@ -235,29 +292,54 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	++it;
 	// Check begin delimiter
 	if (*it != "{")
-		throw std::runtime_error("Config file error: Missing '{' delimiter after location block directive");
+		throw std::runtime_error("Config file error: Invalid token after location block directive: Missing '{' maybe ?");
 	++it;
 	// Parse location data
 	_match(it, m_location_block_dispatch_vec);
-	// Give parent root directive if none was defined.
+	if (*it != "}")
+		throw std::runtime_error("Config file error: Invalid token in location block");
+	++it;
+		
+	// Get parent root directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_root.empty() )
 		m_virtserv_vec.back().m_routes_vec.back().m_root = m_virtserv_vec.back().m_root;
-	// Give parent autoindex directive if none was defined.
+	// Get parent index directive if none was defined.
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_index_vec.empty() )
+		m_virtserv_vec.back().m_routes_vec.back().m_index_vec = m_virtserv_vec.back().m_index_vec;
+	// Get parent autoindex directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_autoindex == -1)
 		m_virtserv_vec.back().m_routes_vec.back().m_autoindex = m_virtserv_vec.back().m_autoindex;
+	// Get cgi_setup if none defined
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.empty() )
+		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_cgi_extension;
+	// Get cgi_setup if none defined
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.empty() )
+		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_cgi_extension;
+	// Put all methods to true if 0
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_methods == 0 )
+		m_virtserv_vec.back().m_routes_vec.back().m_methods.set();
 	// Check for end delimiter
-	if (*it != "}")
-		throw std::runtime_error("Config file error: Invalid token");
-	++it;
 }
 
-static int xatoi(const string& str)
+void VirtServInfo::_parseLocationCgiSetup(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = *it;
+	++it;
+	if (*it != ";")
+		throw std::runtime_error("Config file error: missing ; after cgi_setup directive in location block");
+	else
+		++it;
+}
+
+static int xatoi(const string& str, const char *info)
 {
 	string::const_iterator it = str.begin();
 	string::const_iterator end = str.end();
 	for (--end; it != end ; ++it)
 		if ( not std::isdigit(*it) )
-			throw std::runtime_error("Config file error: invalid port in listen directive ");
+			throw std::runtime_error(info);
 	return ::atoi(str.c_str());
 }
 
@@ -290,13 +372,13 @@ void VirtServInfo::_parseListen(VirtServInfo::configstream_iterator& it)
 	sockaddr.sin_addr.s_addr = inet_addr(host.c_str());
 	if ( sockaddr.sin_addr.s_addr == INADDR_NONE )
 		throw std::runtime_error("Config file error: listen directive does not have a valid ip address");
-	sockaddr.sin_port = htons(xatoi(port.c_str()));
+	sockaddr.sin_port = htons(xatoi(port.c_str(), "Config file error: invalid port in listen directive "));
 
 	m_virtserv_vec.back().m_sockaddr_vec.push_back(sockaddr);
 
 	++it;
 	if ( *it != ";")
-		throw std::runtime_error("Config file error: listen unterminated listen directive");
+		throw std::runtime_error("Config file error: missing ; after listen directive");
 	else
 		++it;
 }
@@ -321,7 +403,7 @@ void VirtServInfo::_parseRoot(VirtServInfo::configstream_iterator& it)
 	m_virtserv_vec.back().m_root = *it;
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after root directive");
+		throw std::runtime_error("Config file error: missing ; after root directive in server block");
 	else
 		++it;
 }
@@ -332,7 +414,50 @@ void VirtServInfo::_parseIndex(VirtServInfo::configstream_iterator& it)
 	for (++it; not it.is_delim() ; ++it)
 		m_virtserv_vec.back().m_index_vec.push_back(*it);
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after index directive");
+		throw std::runtime_error("Config file error: missing ; after index directive in server block");
+	else
+		++it;
+}
+
+//	 Check if it's a valid status code ? Pb not worth it
+void VirtServInfo::_parseErrorPage(VirtServInfo::configstream_iterator& it)
+{
+	stack<http::StatusCode> codes;
+	for (++it; not it.is_delim() and (*it)[0] != '/'; ++it)
+		codes.push((http::StatusCode)xatoi(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
+	if (it.is_delim())
+		throw std::runtime_error("Config file error: Missing path to default error page file at the end of error_page directive in server block");
+	else if ((*it)[0] != '/')
+		throw std::runtime_error("Config file error: Invalid path at the end of error_page directive in server block");
+	for (; not codes.empty(); codes.pop())
+	    m_virtserv_vec.back() .m_error_page_map[codes.top()] = *it;;
+	++it;
+	if (*it != ";")
+		throw std::runtime_error("Config file error: missing ; after error_page directive in server block");
+	else
+		++it;
+}
+
+void VirtServInfo::_parseClientMaxBodySize(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_max_body_size = xatoi(*it, "Config file error: Invalid number after client_max_body_size directive in server block");
+	++it;
+	if (*it != ";")
+		throw std::runtime_error("Config file error: missing ; after client_max_body_size directive in server block");
+	else
+		++it;
+}
+
+void VirtServInfo::_parseCgiSetup(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_cgi_extension = *it;
+	++it;
+	if (*it != ";")
+		throw std::runtime_error("Config file error: missing ; after cgi_setup directive in server block");
 	else
 		++it;
 }

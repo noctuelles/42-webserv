@@ -1,0 +1,20 @@
+server{client_max_body_size 1024;listen 5000;}
+
+server {
+	listen      	8081;
+	server_name		localhost:8081;
+	index			test.html;
+	root			www/post;
+	error_page		201 203 205 /error_page.html;
+	error_page		201 302 305 /oops_page.html;
+	cgi_setup		.php ;
+
+
+	location /bla/bla { index blabla_list.htm blabla_list.hml ;  }
+	
+	location /fils/a/papa {
+		cgi_setup .py;
+								limit_except	GET DELETE;
+   	}
+}
+
