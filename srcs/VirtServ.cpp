@@ -24,7 +24,7 @@ std::ostream& operator<<(std::ostream& os, const ft::VirtServ::RouteOptions& rou
 {
 	os << "\t\t-------------------------\n";
 	os	<< "\t\turi:\t\t" ;
-	os << routeinfo.m_uri;
+	os << routeinfo.m_location_match;
 	os << '\n';
 	os	<< "\t\tindex:\t\t";
 	for (size_t i = 0; i < routeinfo.m_index_vec.size(); ++i)

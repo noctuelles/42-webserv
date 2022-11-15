@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:45:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:50:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ namespace ft
 			// TODO: la page d'erreur custom.
 			m_data_to_send = StatusInfoPages::get()[m_status_code].page.c_str();
 			m_data_to_send_size = StatusInfoPages::get()[m_status_code].page.size();
+			std::cout << StatusInfoPages::get()[m_status_code].phrase << '\n';
 			m_state = DONE;
 		}
 	}

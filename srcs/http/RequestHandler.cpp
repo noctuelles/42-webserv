@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 16:03:03 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:54:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 using std::make_pair;
 using std::vector;
@@ -89,8 +90,8 @@ namespace ft
 			}
 			catch (const Exception& e)
 			{
-				std::clog << "Error code " << e.what() << '\n';
-				_setState(PROCESSING_RESPONSE_HEADER, e.what());
+				_setErrorState(PROCESSING_RESPONSE_HEADER, e.what());
+				std::clog << "Error of " << e.what() << '\n';
 			}
 			return (m_state);
 		}
@@ -162,8 +163,29 @@ namespace ft
 					m_virtserv = *virt_serv.begin();
 			}
 
+			// Next, find if the request URI match any of the location block.
 			{
-				m_header_info.req_line.insert(0, m_virtserv->m_root);
+				typedef vector<VirtServ::RouteOptions>::const_iterator	RouteOptionsIt;
+
+				vector<RouteOptionsIt>	matching_candidate;
+
+				std::clog << "There is " << m_virtserv->m_routes_vec.size() << '\n';
+
+				for (RouteOptionsIt it = m_virtserv->m_routes_vec.begin(); it != m_virtserv->m_routes_vec.end(); it++)
+				{
+					if (m_header_info.req_line.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
+					{
+						std::clog << "Candidate " << it->m_location_match << " regirestered!\n";
+						matching_candidate.push_back(it);
+					}
+				}
+
+				vector<RouteOptionsIt>::const_iterator	best_candidate = std::max_element(matching_candidate.begin(), matching_candidate.end());
+				
+				if (best_candidate != matching_candidate.end())
+					m_header_info.req_line.insert(0, (*best_candidate)->m_root);
+				else // no location block present.
+					m_header_info.req_line.insert(0, m_virtserv->m_root);
 			}
 		}
 	}

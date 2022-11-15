@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:28:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 18:53:57 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,13 +139,18 @@ namespace ft
 				 * They describe how we should send the content. */
 
 				inline bool						_state(State state) {return (m_state == state);}
-				inline void						_setState(State state, StatusCode code = OK)
+				inline void						_setState(State state)
 				{
 					m_state = state;
-					m_status_code = code;
-					if (code != OK)
-						m_header_info.method = Err;
 				}
+
+				inline void	_setErrorState(State state, StatusCode code)
+				{
+					_setState(state);
+					m_status_code = code;
+					m_header_info.method = Err;
+				}
+
 				inline bool	_errorState() const
 				{
 					return (m_status_code != OK);

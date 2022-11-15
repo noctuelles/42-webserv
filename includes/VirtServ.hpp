@@ -17,17 +17,25 @@ using std::vector;
 using std::map;
 using std::bitset;
 
+using std::string;
+using std::vector;
+
 struct VirtServ
 {
 	struct RouteOptions 
 	{
-		RouteOptions(string uri) : m_uri(uri) , m_autoindex(-1)
+		RouteOptions(string uri) : m_location_match(uri) , m_autoindex(-1)
 		{}
+
+		bool	operator<(const RouteOptions& rhs)
+		{
+			return (m_location_match.length() < rhs.m_location_match.length());
+		}
 
 		bitset<http::NbrAvailableMethod>	m_methods;
 		string							m_cgi_extension;
 		string							m_root;
-		string							m_uri;
+		string							m_location_match;
 		vector<string>					m_index_vec;
 		map<http::StatusCode, string>	m_error_page_map;
 		short							m_autoindex;
@@ -42,6 +50,7 @@ struct VirtServ
 	bool							m_autoindex;
 	int								m_max_body_size;
 	string							m_cgi_extension;
+
 };
 
 } // namespace ft
