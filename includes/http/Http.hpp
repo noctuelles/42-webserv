@@ -6,12 +6,12 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:01:11 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:48:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef Http.hpp
-# define Http.hpp
+#ifndef HTTP_HPP 
+# define HTTP_HPP 
 
 
 # include "SocketTypes.hpp"
@@ -19,7 +19,7 @@
 
 # include <cctype>
 # include <functional>
-#include <ostream>
+# include <ostream>
 # include <utility>
 # include <string>
 # include <map>

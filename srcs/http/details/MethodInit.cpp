@@ -6,11 +6,11 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:15:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:14:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HttpRequestHandler.hpp"
+#include "RequestHandler.hpp"
 #include "FileUtils.hpp"
 #include <iostream>
 
@@ -18,7 +18,7 @@ namespace ft
 {
 	namespace http
 	{
-		void	HttpRequestHandler::_methodInitGet()
+		void	RequestHandler::_methodInitGet()
 		{
 			using std::ios;
 			using std::ifstream;
@@ -34,11 +34,11 @@ namespace ft
 				throw (std::ios_base::failure("is a directory"));
 		}
 
-		void	HttpRequestHandler::_methodInitPost()
+		void	RequestHandler::_methodInitPost()
 		{
 		}
 
-		void	HttpRequestHandler::_methodInitDelete()
+		void	RequestHandler::_methodInitDelete()
 		{
 		}
 	}

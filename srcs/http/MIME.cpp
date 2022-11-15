@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-#include "HttpMIME.hpp"
+#include "MIME.hpp"
 
 using std::string;
 

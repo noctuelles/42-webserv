@@ -6,11 +6,11 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:42:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:09:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HttpRequestHandler.hpp"
+#include "RequestHandler.hpp"
 #include "ConnectionSocket.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
@@ -26,30 +26,30 @@ namespace ft
 {
 	namespace http
 	{
-		const HttpRequestHandler::methodInitFnct		HttpRequestHandler::m_method_init_fnct[NbrAvailableMethod] = 
+		const RequestHandler::methodInitFnct		RequestHandler::m_method_init_fnct[NbrAvailableMethod] = 
 		{
-			&HttpRequestHandler::_methodInitGet,
-			&HttpRequestHandler::_methodInitPost,
-			&HttpRequestHandler::_methodInitDelete
+			&RequestHandler::_methodInitGet,
+			&RequestHandler::_methodInitPost,
+			&RequestHandler::_methodInitDelete
 		};
 
-		const HttpRequestHandler::methodHeaderFnct	HttpRequestHandler::m_method_header_fnct[NbrAvailableMethod + 1] = 
+		const RequestHandler::methodHeaderFnct	RequestHandler::m_method_header_fnct[NbrAvailableMethod + 1] = 
 		{
-			&HttpRequestHandler::_methodHeaderGet,
-			&HttpRequestHandler::_methodHeaderPost,
-			&HttpRequestHandler::_methodHeaderDelete,
-			&HttpRequestHandler::_methodHeaderError
+			&RequestHandler::_methodHeaderGet,
+			&RequestHandler::_methodHeaderPost,
+			&RequestHandler::_methodHeaderDelete,
+			&RequestHandler::_methodHeaderError
 		};
 
-		const HttpRequestHandler::methodSendFnct		HttpRequestHandler::m_method_send_fnct[NbrAvailableMethod + 1] = 
+		const RequestHandler::methodSendFnct		RequestHandler::m_method_send_fnct[NbrAvailableMethod + 1] = 
 		{
-			&HttpRequestHandler::_methodSendGet,
-			&HttpRequestHandler::_methodSendPost,
-			&HttpRequestHandler::_methodSendDelete,
-			&HttpRequestHandler::_methodSendError
+			&RequestHandler::_methodSendGet,
+			&RequestHandler::_methodSendPost,
+			&RequestHandler::_methodSendDelete,
+			&RequestHandler::_methodSendError
 		};
 
-		HttpRequestHandler::HttpRequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
+		RequestHandler::RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
 			m_state(FETCHING_REQUEST_HEADER),
 			m_virtserv_map(virt_serv_map),
 			m_virtserv(),
@@ -63,7 +63,7 @@ namespace ft
 
 		/* We gather the data */
 
-		HttpRequestHandler::State	HttpRequestHandler::fetchIncomingData(const vector<uint8_t>& data_buff, size_t recv_bytes)
+		RequestHandler::State	RequestHandler::fetchIncomingData(const vector<uint8_t>& data_buff, size_t recv_bytes)
 		{
 			try
 			{
@@ -94,7 +94,7 @@ namespace ft
 			return (m_state);
 		}
 
-		HttpRequestHandler::State	HttpRequestHandler::prepareOutcomingData()
+		RequestHandler::State	RequestHandler::prepareOutcomingData()
 		{
 			if (_state(PROCESSING_RESPONSE_HEADER))
 			{
@@ -115,22 +115,22 @@ namespace ft
 			return (m_state);
 		}
 
-		void	HttpRequestHandler::setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock)
+		void	RequestHandler::setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock)
 		{
 			m_bounded_sock = bounded_sock;
 		}
 
-		HttpRequestHandler::DataInfo	HttpRequestHandler::getDataToSend() const
+		RequestHandler::DataInfo	RequestHandler::getDataToSend() const
 		{
 			return (make_pair(m_data_to_send, m_data_to_send_size));
 		}
 
-		HttpRequestHandler::~HttpRequestHandler()
+		RequestHandler::~RequestHandler()
 		{}
 
 		/* ############################ Private function ############################ */
 
-		const vector<VirtServ*>&	HttpRequestHandler::_getBoundedVirtServ()
+		const vector<VirtServ*>&	RequestHandler::_getBoundedVirtServ()
 		{
 			VirtServInfo::VirtServMap::const_iterator	it = m_virtserv_map.find(m_bounded_sock);
 
@@ -145,7 +145,7 @@ namespace ft
 			}
 		}
 
-		void	HttpRequestHandler::_parseGeneralHeaderFields()
+		void	RequestHandler::_parseGeneralHeaderFields()
 		{
 			// First, get the correct virtual server by parsing the Host field.
 			{

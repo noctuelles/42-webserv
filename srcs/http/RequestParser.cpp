@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 11:10:55 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:12:13 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #include <cctype>
 
 #include "Utils.hpp"
-#include "HttpRequest.hpp"
+#include "RequestHandler.hpp"
 
 #ifndef NDEBUG
 # include "DebugColors.h"
@@ -118,7 +118,7 @@ namespace ft
 			{
 				ch = *it;
 				if (m_header_size++ >= MaxHeaderSize)
-					throw (HttpRequest::Exception(BadRequest));
+					throw (RequestHandler::Exception(BadRequest));
 				switch (m_current_state)
 				{
 					case P_START_REQUEST_LINE:
@@ -140,7 +140,7 @@ namespace ft
 								_changeState(P_PARSE_METHOD);
 								break;
 							default:
-								throw (HttpRequest::Exception(NotImplemented));
+								throw (RequestHandler::Exception(NotImplemented));
 						};
 						break;
 
@@ -150,13 +150,13 @@ namespace ft
 							if (_isWS(ch) && MethodTable[m_info.method][m_index] == '\0')
 								_transitionState(P_OWS, P_PARSE_REQ_LINE);
 							else
-								throw (HttpRequest::Exception(BadRequest));
+								throw (RequestHandler::Exception(BadRequest));
 						} else m_index++;
 						break;
 
 					case P_PARSE_REQ_LINE:
 						if (m_info.req_line.size() >= MaxRequestLineSize)
-							throw (HttpRequest::Exception(UriTooLong));
+							throw (RequestHandler::Exception(UriTooLong));
 						if (_isWS(ch))
 							_transitionState(P_OWS, P_HTTP), m_index = 0;
 						else
@@ -169,34 +169,34 @@ namespace ft
 							if (m_http[m_index] == '\0')
 								_dontEat(), _changeState(P_HTTP_MAJOR_VER);
 							else
-								throw (HttpRequest::Exception(BadRequest));
+								throw (RequestHandler::Exception(BadRequest));
 						} else m_index++;
 						break;
 
 					case P_HTTP_MAJOR_VER:
 						if (!isdigit(ch))
-							throw (HttpRequest::Exception(BadRequest));
+							throw (RequestHandler::Exception(BadRequest));
 
 						m_info.ver_major = utils::charToIntegral<int>(ch);
 						if (m_info.ver_major != MajorVersionSupported)
-							throw (HttpRequest::Exception(VersionNotSupported));
+							throw (RequestHandler::Exception(VersionNotSupported));
 
 						_changeState(P_HTTP_DOT);
 						break;
 
 					case P_HTTP_DOT:
 						if (ch != '.')
-							throw (HttpRequest::Exception(BadRequest));
+							throw (RequestHandler::Exception(BadRequest));
 						_changeState(P_HTTP_MINOR_VER);
 						break;
 
 					case P_HTTP_MINOR_VER:
 						if (!isdigit(ch))
-							throw (HttpRequest::Exception(BadRequest));
+							throw (RequestHandler::Exception(BadRequest));
 
 						m_info.ver_minor = utils::charToIntegral<int>(ch);
 						if (m_info.ver_minor != MinorVersionSupported)
-							throw (HttpRequest::Exception(VersionNotSupported));
+							throw (RequestHandler::Exception(VersionNotSupported));
 						_transitionState(P_CRLF, P_HEADER_FIELD_NAME);
 						break;
 
@@ -211,7 +211,7 @@ namespace ft
 								case ':':
 									// Empty field name, bad request.
 									if (m_buffer.first.empty())
-										throw (HttpRequest::Exception(BadRequest));
+										throw (RequestHandler::Exception(BadRequest));
 
 									_transitionState(P_OWS, P_HEADER_FIELD_VALUE);
 									break;
@@ -229,13 +229,13 @@ namespace ft
 									break;
 
 								default: // WS is not allowed in field_name (trailing and leading).
-									throw (HttpRequest::Exception(BadRequest));
+									throw (RequestHandler::Exception(BadRequest));
 							}
 						}
 						else
 						{
 							if (m_buffer.first.size() >= MaxHeaderFieldSize)
-								throw (HttpRequest::Exception(BadRequest));
+								throw (RequestHandler::Exception(BadRequest));
 							m_buffer.first.push_back(transformed_ch);
 						}
 						break;
@@ -266,7 +266,7 @@ namespace ft
 						else
 						{
 							if (m_buffer.second.size() >= MaxHeaderFieldSize)
-								throw (HttpRequest::Exception(BadRequest));
+								throw (RequestHandler::Exception(BadRequest));
 							m_buffer.second.push_back(ch);
 						}
 
@@ -277,7 +277,7 @@ namespace ft
 						if (ch != '\r')
 						{
 							if (ch != '\n')
-								throw (HttpRequest::Exception(BadRequest));
+								throw (RequestHandler::Exception(BadRequest));
 							if (m_callback_fnct)
 								CALL_MEMBER_FN(m_callback_fnct)();
 							_changeState(m_next_state);
@@ -325,7 +325,7 @@ namespace ft
 				}
 				catch (const std::logic_error& e)
 				{
-					throw (HttpRequest::Exception(BadRequest));
+					throw (RequestHandler::Exception(BadRequest));
 				}
 				return (true);
 			}
@@ -341,7 +341,7 @@ namespace ft
 			{
 				/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
 				if (ret.first->first == Field::Host().str())
-					throw (HttpRequest::Exception(BadRequest));
+					throw (RequestHandler::Exception(BadRequest));
 				/* https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.2 */
 				ret.first->second
 					.append(",")
@@ -356,11 +356,11 @@ namespace ft
 		{
 			using namespace std;
 			cout << "\t## " << UYEL << "Parsing report" << CRST << " ##\n\n";
-			cout << RED << "Method" << CRST << ": " << GRN << MethodTable[getMethod()] << '\n';
+			cout << RED << "Method" << CRST << ": " << GRN << MethodTable[m_info.method] << '\n';
 			cout << RED << "Internal state" << CRST << ": " << UCYN << StateTable[m_current_state] << '\n';
-			cout << RED << "HTTP Version" << CRST << ": " << GRN <<  getMajorVersion() << '.' << getMinorVersion() << CRST << "\n\n";
+			cout << RED << "HTTP Version" << CRST << ": " << GRN <<  m_info.ver_major << '.' << m_info.ver_minor << CRST << "\n\n";
 			cout << "\t## " << UYEL << "Parsed header" << CRST << " ##\n";
-			for (HeaderFieldMap::const_iterator i = getHeaderFields().begin(); i != getHeaderFields().end(); i++)
+			for (HeaderFieldMap::const_iterator i = m_info.header_fields.begin(); i != m_info.header_fields.end(); i++)
 				std::cout << GRN << i->first << CRST << ": " << BLU << i->second << CRST << "\\n\n";
 			cout << "\t## " << UYEL << "End of parsing report" << CRST << " ##\n\n";
 		}

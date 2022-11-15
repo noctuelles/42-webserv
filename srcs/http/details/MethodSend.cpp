@@ -6,18 +6,18 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:32:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:13:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HttpRequestHandler.hpp"
+#include "RequestHandler.hpp"
 #include "StatusInfoPages.hpp"
 
 namespace ft
 {
 	namespace http
 	{
-		void	HttpRequestHandler::_methodSendGet()
+		void	RequestHandler::_methodSendGet()
 		{
 			m_file_handle.read(reinterpret_cast<char *>(m_data_buff.data()), m_data_buff.size());
 
@@ -31,17 +31,17 @@ namespace ft
 			}
 		}
 
-		void	HttpRequestHandler::_methodSendPost()
+		void	RequestHandler::_methodSendPost()
 		{
 
 		}
 
-		void	HttpRequestHandler::_methodSendDelete()
+		void	RequestHandler::_methodSendDelete()
 		{
 
 		}
 
-		void	HttpRequestHandler::_methodSendError()
+		void	RequestHandler::_methodSendError()
 		{
 			// TODO: la page d'erreur custom.
 			m_data_to_send = StatusInfoPages::get()[m_status_code].page.c_str();

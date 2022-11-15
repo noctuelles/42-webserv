@@ -6,22 +6,22 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:33:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:12:56 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HttpRequestHandler.hpp"
+#include "RequestHandler.hpp"
 #include "FileUtils.hpp"
 #include "Http.hpp"
 #include "Utils.hpp"
-#include "HttpMIME.hpp"
+#include "MIME.hpp"
 #include "StatusInfoPages.hpp"
 
 namespace ft
 {
 	namespace http
 	{
-		void	HttpRequestHandler::_methodHeaderGet(ResponseHeader& header)
+		void	RequestHandler::_methodHeaderGet(ResponseHeader& header)
 		{
 			size_t	fileSize = io::getFileSize(m_header_info.req_line.c_str());
 
@@ -29,17 +29,17 @@ namespace ft
 			header.addField(Field::ContentType(), getMimeFromFileExtension(m_header_info.req_line.c_str()));
 		}
 
-		void	HttpRequestHandler::_methodHeaderPost(ResponseHeader& header)
+		void	RequestHandler::_methodHeaderPost(ResponseHeader& header)
 		{
 			(void) header;
 		}
 
-		void	HttpRequestHandler::_methodHeaderDelete(ResponseHeader& header)
+		void	RequestHandler::_methodHeaderDelete(ResponseHeader& header)
 		{
 			(void) header;
 		}
 
-		void	HttpRequestHandler::_methodHeaderError(ResponseHeader& header)
+		void	RequestHandler::_methodHeaderError(ResponseHeader& header)
 		{
 			header.addField(Field::ContentType(), MIME::TextHtml());
 			header.addField(Field::ContentLenght(), utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));

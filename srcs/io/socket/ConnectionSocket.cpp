@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:39:15 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:02:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ namespace ft
 		m_recv_bytes = ::recv(*this, m_recv_buff.data(), m_recv_buff.size(), 0);
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
-		if (m_request_handler.fetchIncomingData(m_recv_buff, m_recv_bytes) == HttpRequestHandler::PROCESSING_RESPONSE_BODY)
+		if (m_request_handler.fetchIncomingData(m_recv_buff, m_recv_bytes) == RequestHandler::PROCESSING_RESPONSE_BODY)
 			m_state = WRITING;
 		return (m_state);
 	}
@@ -53,7 +53,7 @@ namespace ft
 	{
 		try
 		{
-			if (m_request_handler.prepareOutcomingData() == HttpRequestHandler::DONE)
+			if (m_request_handler.prepareOutcomingData() == RequestHandler::DONE)
 				m_state = DISCONNECT;
 		}
 		catch(...)
@@ -61,7 +61,7 @@ namespace ft
 			return (DISCONNECT);
 		}
 
-		HttpRequestHandler::DataInfo	data_info = m_request_handler.getDataToSend();
+		RequestHandler::DataInfo	data_info = m_request_handler.getDataToSend();
 
 		_updateLastActivity();
 		if (::send(*this, data_info.first, data_info.second, 0) < 0)

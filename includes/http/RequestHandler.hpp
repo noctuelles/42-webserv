@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpRequestHandler.hpp                             :+:      :+:    :+:   */
+/*   RequestHandler.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:43:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:17:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ namespace ft
 {
 	namespace http
 	{
-		class HttpRequestHandler
+		class RequestHandler
 		{
 			public:
 
@@ -53,7 +53,9 @@ namespace ft
 				{
 					public:
 
-						Exception(StatusCode code);
+						Exception(StatusCode code) :
+							m_code(code)
+						{}
 
 						StatusCode	what() const {return (m_code);}
 
@@ -62,8 +64,8 @@ namespace ft
 						StatusCode m_code;
 				};
 
-				HttpRequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
-				~HttpRequestHandler();
+				RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
+				~RequestHandler();
 
 				State		fetchIncomingData(const std::vector<uint8_t>& data_buff, size_t recv_bytes);
 				State		prepareOutcomingData();
@@ -75,9 +77,9 @@ namespace ft
 
 				/* ################################ Typedefs ################################ */
 
-				typedef void (HttpRequestHandler::*methodInitFnct)();
-				typedef void (HttpRequestHandler::*methodHeaderFnct)(ResponseHeader&);
-				typedef void (HttpRequestHandler::*methodSendFnct)();
+				typedef void (RequestHandler::*methodInitFnct)();
+				typedef void (RequestHandler::*methodHeaderFnct)(ResponseHeader&);
+				typedef void (RequestHandler::*methodSendFnct)();
 
 				/* ############################## Nested Class ############################## */
 
@@ -118,10 +120,10 @@ namespace ft
 				const void*					m_data_to_send;
 				size_t						m_data_to_send_size;
 
-				ifstream					m_file_handle;
+				ifstream						m_file_handle;
 				RequestParser::HeaderInfo	m_header_info;
 				RequestParser				m_header_parser;
-				StatusCode					m_status_code;
+				StatusCode						m_status_code;
 
 				/* ############################ Private function ############################ */
 

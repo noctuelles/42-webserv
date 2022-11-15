@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:19:51 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 15:02:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,12 @@
 # include <fstream>
 
 # include "SocketTypes.hpp"
-# include "HttpRequestHandler.hpp"
+# include "RequestHandler.hpp"
 
 
 namespace ft
 {
-	using http::HttpRequestHandler;
+	using http::RequestHandler;
 
 	class ConnectionSocket : public InternetSocket
 	{
@@ -55,8 +55,8 @@ namespace ft
 			ConnectionSocket(const ConnectionSocket& other);
 			ConnectionSocket&	operator=(const ConnectionSocket& rhs);
 
-			time_t	m_last_activity;
-			HttpRequestHandler	m_request_handler; // has-a
+			time_t			m_last_activity;
+			RequestHandler	m_request_handler; // has-a
 
 			State				m_state;
 			struct sockaddr_in	m_peer_sockaddr;
