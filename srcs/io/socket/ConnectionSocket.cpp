@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 21:55:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:39:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,23 +17,22 @@
 
 namespace ft
 {
-	ConnectionSocket::ConnectionSocket(int fd)
+	ConnectionSocket::ConnectionSocket(int fd, const VirtServInfo::VirtServMap& virt_serv_map)
 		: InternetSocket(fd),
 		m_last_activity(std::time(NULL)),
-		m_state(FETCHING_REQUEST_HEADER),
-		m_bounded_sockaddr(),
-		m_data_to_send(NULL),
-		m_data_size(0),
+		m_request_handler(virt_serv_map),
+		m_state(READING),
+		m_peer_sockaddr(),
 		m_recv_buff(MaxRecvBufferSize),
-		m_send_buff(MaxSendBufferSize),
 		m_recv_bytes(0)
 	{
-		setBlockingMode(false);
+		this->setBlockingMode(false);
 		m_len = sizeof(struct sockaddr_in);
-		if (getsockname(fd, reinterpret_cast<struct sockaddr*>(&m_bounded_sockaddr), &m_len) < 0)
+		if (getsockname(fd, reinterpret_cast<struct sockaddr*>(&m_sockaddr), &m_len) < 0)
 			throw (std::runtime_error("::getsockname"));
-		if (getpeername(fd, reinterpret_cast<struct sockaddr*>(&m_sockaddr), &m_len) < 0)
+		if (getpeername(fd, reinterpret_cast<struct sockaddr*>(&m_peer_sockaddr), &m_len) < 0)
 			throw (std::runtime_error("::getpeername"));
+		m_request_handler.setConnectionBoundedSocket(m_sockaddr);
 	}
 
 	ConnectionSocket::~ConnectionSocket()
@@ -44,14 +43,28 @@ namespace ft
 		_updateLastActivity();
 		m_recv_bytes = ::recv(*this, m_recv_buff.data(), m_recv_buff.size(), 0);
 		if (m_recv_bytes <= 0)
-			m_state = DISCONNECT;
+			return (DISCONNECT);
+		if (m_request_handler.fetchIncomingData(m_recv_buff, m_recv_bytes) == HttpRequestHandler::PROCESSING_RESPONSE_BODY)
+			m_state = WRITING;
 		return (m_state);
 	}
 
 	int	ConnectionSocket::send()
 	{
+		try
+		{
+			if (m_request_handler.prepareOutcomingData() == HttpRequestHandler::DONE)
+				m_state = DISCONNECT;
+		}
+		catch(...)
+		{
+			return (DISCONNECT);
+		}
+
+		HttpRequestHandler::DataInfo	data_info = m_request_handler.getDataToSend();
+
 		_updateLastActivity();
-		if (::send(*this, m_data_to_send, m_send_bytes, 0) < 0)
+		if (::send(*this, data_info.first, data_info.second, 0) < 0)
 			m_state = DISCONNECT;
 		return (m_state);
 	}

@@ -6,38 +6,40 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 16:19:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:15:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ClientSocket.hpp"
+#include "HttpRequestHandler.hpp"
 #include "FileUtils.hpp"
 #include <iostream>
 
 namespace ft
 {
-	void	ClientSocket::_methodInitGet()
+	namespace http
 	{
-		using std::ios;
-		using std::ifstream;
+		void	HttpRequestHandler::_methodInitGet()
+		{
+			using std::ios;
+			using std::ifstream;
 
-		// TODO: detect if the file is a folder (in UNIX a folder is also a folder)
-		// Code AutoIndex
-		// For now, send a 404 error.
+			// TODO: detect if the file is a folder (in UNIX a folder is also a folder)
+			// Code AutoIndex
+			// For now, send a 404 error.
 
-		m_file_handle.open(m_parser.getRequestLine().c_str(), ios::in | ios::binary);
-		if (!m_file_handle.is_open())
-			throw (std::ios_base::failure("can't open file"));
-		else if (io::isADirectory(m_parser.getRequestLine().c_str()))
-			throw (std::ios_base::failure("is a directory"));
-		m_state = SENDING_RESPONSE_HEADER;
-	}
+			m_file_handle.open(m_header_info.req_line.c_str(), ios::in | ios::binary);
+			if (!m_file_handle.is_open())
+				throw (std::ios_base::failure("can't open file"));
+			else if (io::isADirectory(m_header_info.req_line.c_str()))
+				throw (std::ios_base::failure("is a directory"));
+		}
 
-	void	ClientSocket::_methodInitPost()
-	{
-	}
+		void	HttpRequestHandler::_methodInitPost()
+		{
+		}
 
-	void	ClientSocket::_methodInitDelete()
-	{
+		void	HttpRequestHandler::_methodInitDelete()
+		{
+		}
 	}
 }

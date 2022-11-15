@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 16:40:45 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:01:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ namespace ft
 {
 	namespace http
 	{
+		using std::string;
 
 		typedef std::pair<ci_string, std::string>	HeaderField;
 		typedef std::map<ci_string, std::string>	HeaderFieldMap;
@@ -75,7 +76,8 @@ namespace ft
 			Get,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-get */
 			Post,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-post */
 			Delete,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-delete */
-			NbrAvailableMethod						/* Not used, only a placeholder. */
+			NbrAvailableMethod,						/* Not used, only a placeholder. */
+			Err							/* RESERVED */
 		} Method;
 
 		struct StatusInfo
@@ -85,14 +87,12 @@ namespace ft
 			{}
 
 			StatusInfo(const std::string& phrase, const std::string& page_content)
-				: phrase(phrase), page()
+				: phrase(phrase), page(page_content)
 			{
-				page.first = page_content.size();
-				page.second = page_content;
 			}
 
-			std::string						phrase;
-			std::pair<size_t, std::string>	page;
+			string	phrase;
+			string	page;
 		};
 
 		class Field

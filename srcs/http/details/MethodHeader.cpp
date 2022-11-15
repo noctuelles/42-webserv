@@ -6,35 +6,43 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 14:28:51 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:33:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ClientSocket.hpp"
+#include "HttpRequestHandler.hpp"
 #include "FileUtils.hpp"
 #include "Http.hpp"
 #include "Utils.hpp"
 #include "HttpMIME.hpp"
+#include "StatusInfoPages.hpp"
 
 namespace ft
 {
-	using namespace http;
-
-	void	ClientSocket::_methodHeaderGet(ResponseHeader& header)
+	namespace http
 	{
-		size_t	fileSize = io::getFileSize(m_parser.getRequestLine().c_str());
+		void	HttpRequestHandler::_methodHeaderGet(ResponseHeader& header)
+		{
+			size_t	fileSize = io::getFileSize(m_header_info.req_line.c_str());
 
-		header.addField(Field::ContentLenght(), utils::integralToString(fileSize));
-		header.addField(Field::ContentType(), getMimeFromFileExtension(m_parser.getRequestLine()).toStr());
-	}
+			header.addField(Field::ContentLenght(), utils::integralToString(fileSize));
+			header.addField(Field::ContentType(), getMimeFromFileExtension(m_header_info.req_line.c_str()));
+		}
 
-	void	ClientSocket::_methodHeaderPost(ResponseHeader& header)
-	{
-		(void) header;
-	}
+		void	HttpRequestHandler::_methodHeaderPost(ResponseHeader& header)
+		{
+			(void) header;
+		}
 
-	void	ClientSocket::_methodHeaderDelete(ResponseHeader& header)
-	{
-		(void) header;
+		void	HttpRequestHandler::_methodHeaderDelete(ResponseHeader& header)
+		{
+			(void) header;
+		}
+
+		void	HttpRequestHandler::_methodHeaderError(ResponseHeader& header)
+		{
+			header.addField(Field::ContentType(), MIME::TextHtml());
+			header.addField(Field::ContentLenght(), utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));
+		}
 	}
 }

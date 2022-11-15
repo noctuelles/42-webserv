@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 11:11:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:19:51 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,35 +18,37 @@
 # include <vector>
 # include <list>
 # include <fstream>
+
 # include "SocketTypes.hpp"
-# include "HttpRequest.hpp"
+# include "HttpRequestHandler.hpp"
+
 
 namespace ft
 {
+	using http::HttpRequestHandler;
+
 	class ConnectionSocket : public InternetSocket
 	{
-
 		public:
+
+			typedef std::vector<uint8_t>	DataBuffer;
 
 			static const size_t		MaxRecvBufferSize = 1024 * 8;
 			static const size_t		MaxSendBufferSize = 1024 * 8;
 
 			enum	State
 			{
-				FETCHING_REQUEST_HEADER = -0xFF,
-				FETCHING_REQUEST_BODY,
-				SENDING_RESPONSE_HEADER,
-				SENDING_RESPONSE_BODY,
+				READING = -0xFF,
+				WRITING,
 				DISCONNECT
 			};
 
-			explicit ConnectionSocket(int fd);
+			ConnectionSocket(int fd, const VirtServInfo::VirtServMap& virt_serv_map);
 			virtual ~ConnectionSocket();
 
 			virtual int		recv();
 			virtual int		send();
-
-			bool			isTimeout();
+			virtual bool	isTimeout();
 
 		private:
 
@@ -54,19 +56,14 @@ namespace ft
 			ConnectionSocket&	operator=(const ConnectionSocket& rhs);
 
 			time_t	m_last_activity;
+			HttpRequestHandler	m_request_handler; // has-a
+
+			State				m_state;
+			struct sockaddr_in	m_peer_sockaddr;
+			DataBuffer			m_recv_buff;
+			ssize_t				m_recv_bytes;
 
 			inline void	_updateLastActivity() {m_last_activity = time(NULL);};
-
-		protected:
-
-			HttpRequest				m_request; // has-a
-
-			State					m_state;
-			struct sockaddr_in		m_bounded_sockaddr;
-			const void*				m_data_to_send;
-			size_t					m_data_size;
-			std::vector<uint8_t>	m_recv_buff, m_send_buff;
-			ssize_t					m_recv_bytes;
 	};
 }
 

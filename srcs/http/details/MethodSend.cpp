@@ -6,34 +6,47 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 15:51:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:32:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ClientSocket.hpp"
+#include "HttpRequestHandler.hpp"
+#include "StatusInfoPages.hpp"
 
 namespace ft
 {
-	void	ClientSocket::_methodSendGet()
+	namespace http
 	{
-		// read can throw a failure.
-		m_file_handle.read(reinterpret_cast<char *>(m_send_buffer.data()), m_send_buffer.size());
-		if (::send(m_fd, m_send_buffer.data(), m_file_handle.gcount(), 0) < 0)
-			m_state = DISCONNECT; // an error occured
-		else if (m_file_handle.eof())
+		void	HttpRequestHandler::_methodSendGet()
 		{
-			m_file_handle.close();
-			m_state = DISCONNECT;
+			m_file_handle.read(reinterpret_cast<char *>(m_data_buff.data()), m_data_buff.size());
+
+			m_data_to_send = m_data_buff.data();
+			m_data_to_send_size = m_file_handle.gcount();
+
+			if (m_file_handle.eof())
+			{
+				m_file_handle.close();
+				m_state = DONE;
+			}
 		}
-	}
 
-	void	ClientSocket::_methodSendPost()
-	{
+		void	HttpRequestHandler::_methodSendPost()
+		{
 
-	}
+		}
 
-	void	ClientSocket::_methodSendDelete()
-	{
+		void	HttpRequestHandler::_methodSendDelete()
+		{
 
+		}
+
+		void	HttpRequestHandler::_methodSendError()
+		{
+			// TODO: la page d'erreur custom.
+			m_data_to_send = StatusInfoPages::get()[m_status_code].page.c_str();
+			m_data_to_send_size = StatusInfoPages::get()[m_status_code].page.size();
+			m_state = DONE;
+		}
 	}
 }

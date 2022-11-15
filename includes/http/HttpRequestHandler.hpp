@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpRequest.hpp                                    :+:      :+:    :+:   */
+/*   HttpRequestHandler.hpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 22:18:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:43:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,18 +21,33 @@
 # include "Http.hpp"
 # include "ResponseHeader.hpp"
 # include "SocketTypes.hpp"
-#include "ConnectionSocket.hpp"
 # include "RequestParser.hpp"
-#include "VirtServ.hpp"
-#include "VirtServInfo.hpp"
+# include "VirtServ.hpp"
+# include "VirtServInfo.hpp"
+
+using std::pair;
+using std::vector;
+using std::string;
+using std::ifstream;
 
 namespace ft
 {
 	namespace http
 	{
-		class HttpRequest : private ConnectionSocket 
+		class HttpRequestHandler
 		{
 			public:
+
+				enum State
+				{
+					FETCHING_REQUEST_HEADER,
+					FETCHING_REQUEST_BODY,
+					PROCESSING_RESPONSE_HEADER,
+					PROCESSING_RESPONSE_BODY,
+					DONE
+				};
+
+				typedef pair<const void*, size_t>	DataInfo;
 
 				class Exception
 				{
@@ -47,18 +62,22 @@ namespace ft
 						StatusCode m_code;
 				};
 
-				HttpRequest(int fd, const VirtServInfo::VirtServMap& virt_serv_map);
+				HttpRequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
+				~HttpRequestHandler();
 
-				int		recv();
-				int		send();
+				State		fetchIncomingData(const std::vector<uint8_t>& data_buff, size_t recv_bytes);
+				State		prepareOutcomingData();
+
+				void		setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
+				DataInfo	getDataToSend() const;
 
 			private:
 
 				/* ################################ Typedefs ################################ */
 
-				typedef void (HttpRequest::*methodInitFnct)();
-				typedef void (HttpRequest::*methodHeaderFnct)(ResponseHeader&);
-				typedef void (HttpRequest::*methodSendFnct)();
+				typedef void (HttpRequestHandler::*methodInitFnct)();
+				typedef void (HttpRequestHandler::*methodHeaderFnct)(ResponseHeader&);
+				typedef void (HttpRequestHandler::*methodSendFnct)();
 
 				/* ############################## Nested Class ############################## */
 
@@ -66,12 +85,12 @@ namespace ft
 				{
 					public:
 
-						MatchingServerName(const std::string& hostField)
+						MatchingServerName(const string& hostField)
 							: m_host_field(hostField) {}
 
-						inline bool	operator()(const std::vector<VirtServ*>::value_type ptr)
+						inline bool	operator()(const vector<VirtServ*>::value_type ptr)
 						{
-							for(std::vector<std::string>::const_iterator it = ptr->m_server_name_vec.begin();
+							for(vector<std::string>::const_iterator it = ptr->m_server_name_vec.begin();
 								it != ptr->m_server_name_vec.end();
 								++it)
 							{
@@ -83,21 +102,26 @@ namespace ft
 
 					private:
 
-						const std::string&	m_host_field;
+						const string&	m_host_field;
 				};
 
 				static const methodInitFnct				m_method_init_fnct[http::NbrAvailableMethod];
 				static const methodHeaderFnct			m_method_header_fnct[http::NbrAvailableMethod + 1];
 				static const methodSendFnct				m_method_send_fnct[http::NbrAvailableMethod + 1];
-				static const size_t						Error = 3;
 
-				std::ifstream							m_file_handle;
-				RequestParser::HeaderInfo				m_header_info;
+				State								m_state;
+				const VirtServInfo::VirtServMap&	m_virtserv_map;
+				const VirtServ*						m_virtserv;
+				struct sockaddr_in					m_bounded_sock;
 
-				RequestParser							m_header_parser;
-				StatusCode								m_status_code;
-				const VirtServInfo::VirtServMap&		m_virtserv_map;
+				vector<uint8_t>				m_data_buff;
+				const void*					m_data_to_send;
+				size_t						m_data_to_send_size;
 
+				ifstream					m_file_handle;
+				RequestParser::HeaderInfo	m_header_info;
+				RequestParser				m_header_parser;
+				StatusCode					m_status_code;
 
 				/* ############################ Private function ############################ */
 
@@ -117,18 +141,16 @@ namespace ft
 				{
 					m_state = state;
 					m_status_code = code;
+					if (code != OK)
+						m_header_info.method = Err;
 				}
 				inline bool	_errorState() const
 				{
 					return (m_status_code != OK);
 				}
 
-				void							_setupDefaultHeaderField(ResponseHeader& respHeader);
-				void							_setupErrorHeaderField(ResponseHeader& respHeader);
-				void							_parseRequestHeaderFields();
-
-
-				const std::vector<VirtServ*>&	_getBoundedVirtServs();
+				const vector<VirtServ*>&	_getBoundedVirtServ();
+				void						_parseGeneralHeaderFields();
 
 				void	_methodInitGet();
 				void	_methodInitPost();
@@ -137,11 +159,12 @@ namespace ft
 				void	_methodHeaderGet(ResponseHeader& header);
 				void	_methodHeaderPost(ResponseHeader& header);
 				void	_methodHeaderDelete(ResponseHeader& header);
-				void	_handleHeaderError(ResponseHeader& header);
+				void	_methodHeaderError(ResponseHeader& header);
 
 				void	_methodSendGet();
 				void	_methodSendPost();
 				void	_methodSendDelete();
+				void	_methodSendError();
 		};
 	}
 }

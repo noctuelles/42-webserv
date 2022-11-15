@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 21:37:41 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:46:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,20 +30,8 @@ namespace ft
 	WebServ::WebServ(const char *config_filename)
 		: m_poller(),
 		m_socks(),
-		m_status_table(),
 		m_virtserv_info(config_filename)
 	{
-		m_status_table.resize(http::MaxStatusCode);
-
-		m_status_table[http::OK]					= HTTP_STATUS("200 OK");
-		m_status_table[http::BadRequest]			= HTTP_ERRPAGE("400 Bad Request");
-		m_status_table[http::Forbidden]				= HTTP_ERRPAGE("403 Forbidden");
-		m_status_table[http::NotFound]				= HTTP_ERRPAGE("404 Not Found");
-		m_status_table[http::RequestTimeout]		= HTTP_ERRPAGE("408 Request Timeout");
-		m_status_table[http::UriTooLong]			= HTTP_ERRPAGE("414 Uri Too Long");
-		m_status_table[http::NotImplemented]		= HTTP_ERRPAGE("501 Not Implemented");
-		m_status_table[http::VersionNotSupported]	= HTTP_ERRPAGE("505 HTTP Version Not Supported");
-
 		// Init listening_sockets and add them to watchlist
 		VirtServInfo::iterator it  = m_virtserv_info.begin();
 		VirtServInfo::iterator end = m_virtserv_info.end();
@@ -61,18 +49,6 @@ namespace ft
 		m_socks.push_back(ptr);
 		ptr->listen(MaxPendingConnection); // CAN THROW
 		m_poller.add(*ptr, EPoll::Event::In(), ptr); // CAN THROW
-	}
-
-	void	WebServ::setStatusCodePage(http::StatusCode statuscode, const char* filename)
-	{
-		try
-		{
-			m_status_table[statuscode].page.second = io::loadFileContent(filename);
-		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "webserv: cannot load error page '" << filename << "': default page is used instead.\n";
-		}
 	}
 
 	void	WebServ::run()
@@ -94,18 +70,16 @@ namespace ft
 
 					switch ((ret = inSockPtr->recv()))
 					{
-						case ConnectionSocket::SENDING_RESPONSE_HEADER:
-						case ConnectionSocket::SENDING_RESPONSE_BODY:
+						case ConnectionSocket::READING:
+							break;
+						case ConnectionSocket::WRITING:
 							m_poller.modify(*inSockPtr, EPoll::Event::Out(), inSockPtr);
 							break;
 						case ConnectionSocket::DISCONNECT:
 							_removeSocket(inSockPtr);
 							break;
-						case ConnectionSocket::FETCHING_REQUEST_BODY:
-						case ConnectionSocket::FETCHING_REQUEST_HEADER:
-							break;
 						default:
-							_newRequest(ret);
+							_addConnection(ret);
 					}
 				}
 				else if (it->events & EPOLLOUT)
@@ -114,6 +88,9 @@ namespace ft
 					{
 						case ConnectionSocket::DISCONNECT:
 							_removeSocket(inSockPtr);
+							break;
+						case ConnectionSocket::READING:
+							// Keep-alive...
 							break;
 					}
 				}
@@ -126,9 +103,9 @@ namespace ft
 		std::for_each(m_socks.begin(), m_socks.end(), DeleteObj());
 	}
 
-	inline void	WebServ::_addClient(int fd)
+	inline void	WebServ::_addConnection(int fd)
 	{
-		ClientSocket*	ptr = new ClientSocket(fd, m_status_table);
+		ConnectionSocket*	ptr = new ConnectionSocket(fd, m_virtserv_info.m_virtserv_map);
 
 		m_socks.push_back(ptr);
 		m_poller.add(*ptr, EPoll::Event::In(), ptr);

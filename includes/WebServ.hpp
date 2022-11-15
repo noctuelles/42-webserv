@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/14 16:22:51 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/15 14:45:23 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ namespace ft
 		public:
 
 			typedef std::vector<InternetSocket*>	InSockVector;
-			typedef std::vector<http::StatusInfo>	StatusInfoVector;
 
 			static const size_t			MaxErrorPageSize		= 2097152; // 2MB
 			static const unsigned int	MaxPendingConnection	= 5;
@@ -45,8 +44,6 @@ namespace ft
 			void	run();
 
 			const VirtServInfo&		getVirtServInfo() const { return m_virtserv_info; }
-
-			void	setStatusCodePage(http::StatusCode, const char* filename);
 
 		private:
 
@@ -76,13 +73,12 @@ namespace ft
 
 			EPoll				m_poller;
 			InSockVector		m_socks;
-			StatusInfoVector	m_status_table;
 			VirtServInfo		m_virtserv_info;
 
 			WebServ(const WebServ& other);
 			WebServ&	operator=(const WebServ& rhs);
 
-			inline void	_addClient(int fd);
+			inline void	_addConnection(int fd);
 			inline void	_removeSocket(InternetSocket* ptr);
 			inline void	_removeTimeoutSocket();
 	};
