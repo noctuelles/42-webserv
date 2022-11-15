@@ -111,17 +111,20 @@ class VirtServInfo
 	};
 #undef CONFIG_DELIMITER_SET
 
-	//class ConfigFileError : public std::exception
-	//{
-	//public:
-	//    ConfigFileError(const char *info) throw() : m_ss("Config File Error: ") { m_ss << info << '\n'; m_ss >> m_what; }
-	//    virtual const char*	what() const throw() { return m_what; }
-	//    ~ConfigFileError() throw() {};
-	//private:
-	//    static const string		prefix;
-	//    char					m_what[512];
-	//    stringstream			m_ss;
-	//};
+	class ConfigFileError : public std::exception
+	{
+	public:
+		ConfigFileError(const char *info) throw()
+		{
+			stringstream ss;
+			ss << "Config file errror: " << info << '\n';
+			m_what = ss.str();
+		}
+		virtual const char*	what() const throw()			{ return m_what.c_str(); }
+		~ConfigFileError() throw() {};
+	private:
+		string					m_what;
+	};
 
 	std::vector<VirtServ>								m_virtserv_vec;
 	VirtServMap											m_virtserv_map;

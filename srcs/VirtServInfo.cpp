@@ -162,11 +162,11 @@ void VirtServInfo::_match(VirtServInfo::configstream_iterator& it, const vector<
 	}
 	if (*it == ";")
 	{
-		throw std::runtime_error("Config file error: Empty directive");
+		throw ConfigFileError("Empty directive");
 	}
 	else if (throw_on_not_found and i == table_size)
 	{
-		throw std::runtime_error("Config file error: Unknown token");
+		throw ConfigFileError("Unknown token");
 	}
 }
 
@@ -181,7 +181,7 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 	++it;
 	// Check begin delimiter
 	if (*it != "{")
-		throw std::runtime_error("Config file error: Invalid token after server block directive: Missing '{' maybe ?");
+		throw ConfigFileError("Invalid token after server block directive: Missing '{' maybe ?");
 	++it;
 	// Add a new virtual server
 	m_virtserv_vec.push_back(VirtServ());
@@ -202,7 +202,7 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 	}
 	// Check for end delimiter
 	if (*it != "}")
-		throw std::runtime_error("Config file error: Invalid token in server block: Forgot '}' maybe ?");
+		throw ConfigFileError("Invalid token in server block: Forgot '}' maybe ?");
 	++it;
 }
 #undef DEFAULT_REQUEST_MAX_BODY_SIZE
@@ -216,10 +216,10 @@ void VirtServInfo::_parseAutoindex(VirtServInfo::configstream_iterator& it)
 	else if ( *it == "off")
 		m_virtserv_vec.back().m_autoindex = false;
 	else
-		throw std::runtime_error("Config file error: Invalid argument for autoindex directive in server block: Can only be \"on\" on \"off\"");
+		throw ConfigFileError("Invalid argument for autoindex directive in server block: Can only be \"on\" on \"off\"");
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after autoindex directive in server block");
+		throw ConfigFileError("missing ; after autoindex directive in server block");
 	else
 		++it;
 }
@@ -233,10 +233,10 @@ void VirtServInfo::_parseLocationAutoindex(VirtServInfo::configstream_iterator& 
 	else if ( *it == "off")
 		m_virtserv_vec.back().m_routes_vec.back().m_autoindex = false;
 	else
-		throw std::runtime_error("Config file error: Invalid argument for autoindex directive in location block: Can only be \"on\" on \"off\"");
+		throw ConfigFileError("Invalid argument for autoindex directive in location block: Can only be \"on\" on \"off\"");
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after autoindex directive in location block");
+		throw ConfigFileError("missing ; after autoindex directive in location block");
 	else
 		++it;
 }
@@ -245,12 +245,12 @@ void VirtServInfo::_parseLocationRoot(VirtServInfo::configstream_iterator& it)
 {
 	// Can only have one argument
 	if ( not m_virtserv_vec.back().m_routes_vec.back().m_root.empty() )
-		throw std::runtime_error("Config file error: Two root directives are defined in the same location block");
+		throw ConfigFileError("Two root directives are defined in the same location block");
 	++it;
 	m_virtserv_vec.back().m_routes_vec.back().m_root = *it;
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after root directive in location block");
+		throw ConfigFileError("missing ; after root directive in location block");
 	else
 		++it;
 }
@@ -260,7 +260,7 @@ void VirtServInfo::_parseLocationIndex(VirtServInfo::configstream_iterator& it)
 	for (++it; not it.is_delim() ; ++it)
 		m_virtserv_vec.back().m_routes_vec.back().m_index_vec.push_back(*it);
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after index directive in location block");
+		throw ConfigFileError("missing ; after index directive in location block");
 	else
 		++it;
 }
@@ -276,10 +276,10 @@ void VirtServInfo::_parseLocationLimitExcept(VirtServInfo::configstream_iterator
 		else if ( *it == "DELETE" )
 			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(http::Delete);
 		else
-			throw std::runtime_error("Config file error: Invalid or unsupported method for limit_except directive in location block: Supported methods are \"GET\", \"POST\" and \"DELETE\"");
+			throw ConfigFileError("Invalid or unsupported method for limit_except directive in location block: Supported methods are \"GET\", \"POST\" and \"DELETE\"");
 	}
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after autoindex directive in location block");
+		throw ConfigFileError("missing ; after autoindex directive in location block");
 	else
 		++it;
 }
@@ -292,12 +292,12 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	++it;
 	// Check begin delimiter
 	if (*it != "{")
-		throw std::runtime_error("Config file error: Invalid token after location block directive: Missing '{' maybe ?");
+		throw ConfigFileError("Invalid token after location block directive: Missing '{' maybe ?");
 	++it;
 	// Parse location data
 	_match(it, m_location_block_dispatch_vec);
 	if (*it != "}")
-		throw std::runtime_error("Config file error: Invalid token in location block");
+		throw ConfigFileError("Invalid token in location block");
 	++it;
 		
 	// Get parent root directive if none was defined.
@@ -328,7 +328,7 @@ void VirtServInfo::_parseLocationCgiSetup(VirtServInfo::configstream_iterator& i
 	m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = *it;
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after cgi_setup directive in location block");
+		throw ConfigFileError("missing ; after cgi_setup directive in location block");
 	else
 		++it;
 }
@@ -371,14 +371,14 @@ void VirtServInfo::_parseListen(VirtServInfo::configstream_iterator& it)
 	sockaddr.sin_family = AF_INET;
 	sockaddr.sin_addr.s_addr = inet_addr(host.c_str());
 	if ( sockaddr.sin_addr.s_addr == INADDR_NONE )
-		throw std::runtime_error("Config file error: listen directive does not have a valid ip address");
+		throw ConfigFileError("listen directive does not have a valid ip address");
 	sockaddr.sin_port = htons(xatoi(port.c_str(), "Config file error: invalid port in listen directive "));
 
 	m_virtserv_vec.back().m_sockaddr_vec.push_back(sockaddr);
 
 	++it;
 	if ( *it != ";")
-		throw std::runtime_error("Config file error: missing ; after listen directive");
+		throw ConfigFileError("missing ; after listen directive");
 	else
 		++it;
 }
@@ -389,7 +389,7 @@ void VirtServInfo::_parseServerName(VirtServInfo::configstream_iterator& it)
 	for (++it; not it.is_delim() ; ++it)
 		m_virtserv_vec.back().m_server_name_vec.push_back(*it);
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after server_name directive");
+		throw ConfigFileError("missing ; after server_name directive");
 	else
 		++it;
 }
@@ -399,11 +399,11 @@ void VirtServInfo::_parseRoot(VirtServInfo::configstream_iterator& it)
 	// Can only have one argument
 	++it;
 	if (not m_virtserv_vec.back().m_root.empty() )
-		throw std::runtime_error("Config file error: Two root directives are defined in the same server block");
+		throw ConfigFileError("Two root directives are defined in the same server block");
 	m_virtserv_vec.back().m_root = *it;
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after root directive in server block");
+		throw ConfigFileError("missing ; after root directive in server block");
 	else
 		++it;
 }
@@ -414,7 +414,7 @@ void VirtServInfo::_parseIndex(VirtServInfo::configstream_iterator& it)
 	for (++it; not it.is_delim() ; ++it)
 		m_virtserv_vec.back().m_index_vec.push_back(*it);
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after index directive in server block");
+		throw ConfigFileError("missing ; after index directive in server block");
 	else
 		++it;
 }
@@ -426,14 +426,14 @@ void VirtServInfo::_parseErrorPage(VirtServInfo::configstream_iterator& it)
 	for (++it; not it.is_delim() and (*it)[0] != '/'; ++it)
 		codes.push((http::StatusCode)xatoi(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
 	if (it.is_delim())
-		throw std::runtime_error("Config file error: Missing path to default error page file at the end of error_page directive in server block");
+		throw ConfigFileError("Missing path to default error page file at the end of error_page directive in server block");
 	else if ((*it)[0] != '/')
-		throw std::runtime_error("Config file error: Invalid path at the end of error_page directive in server block");
+		throw ConfigFileError("Invalid path at the end of error_page directive in server block");
 	for (; not codes.empty(); codes.pop())
 	    m_virtserv_vec.back() .m_error_page_map[codes.top()] = *it;;
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after error_page directive in server block");
+		throw ConfigFileError("missing ; after error_page directive in server block");
 	else
 		++it;
 }
@@ -445,7 +445,7 @@ void VirtServInfo::_parseClientMaxBodySize(VirtServInfo::configstream_iterator& 
 	m_virtserv_vec.back().m_max_body_size = xatoi(*it, "Config file error: Invalid number after client_max_body_size directive in server block");
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after client_max_body_size directive in server block");
+		throw ConfigFileError("missing ; after client_max_body_size directive in server block");
 	else
 		++it;
 }
@@ -457,7 +457,7 @@ void VirtServInfo::_parseCgiSetup(VirtServInfo::configstream_iterator& it)
 	m_virtserv_vec.back().m_cgi_extension = *it;
 	++it;
 	if (*it != ";")
-		throw std::runtime_error("Config file error: missing ; after cgi_setup directive in server block");
+		throw ConfigFileError("missing ; after cgi_setup directive in server block");
 	else
 		++it;
 }

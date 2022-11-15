@@ -4,7 +4,7 @@ server {
 	listen      	8081;
 	server_name		localhost:8081;
 	index			test.html;
-	root			www/post;
+	root			www/post
 	error_page		201 203 205 /error_page.html;
 	error_page		201 302 305 /oops_page.html;
 	cgi_setup		.php ;
