@@ -5,6 +5,5 @@ server
 	root		www/a_website;
 
 	location / {
-		index index.html xedni;
 	}
 }
