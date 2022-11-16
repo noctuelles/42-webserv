@@ -6,13 +6,17 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 10:51:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 15:21:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
 #include "FileUtils.hpp"
+#include <algorithm>
 #include <iostream>
+#include <sys/stat.h>
+
+using std::find_if;
 
 namespace ft
 {
@@ -23,16 +27,30 @@ namespace ft
 			using std::ios;
 			using std::ifstream;
 
-			// TODO: detect if the file is a folder (in UNIX a folder is also a folder)
-			// Code AutoIndex
-			// For now, send a 404 error.
+			if (*m_header_info.uri.rbegin() == '/')
+			{
+				if (!m_route->m_autoindex)
+				{
+					const vector<string>&			index_vec		= m_route->m_index_vec;
+					vector<string>::const_iterator	selected_file	= find_if(index_vec.begin(), index_vec.end(), ValidIndexFile(m_header_info.uri));
 
-			//std::clog << "Trying to open " << m_header_info.uri << "...\n";
+					if (selected_file != index_vec.end())
+						m_header_info.uri.append(*selected_file);
+					else
+						throw (Exception(NotFound));
+				}
+				else // autoindex
+					throw (Exception(NotImplemented));
+			}
+			else
+			{
+				if (!io::isAReadableRegFile(m_header_info.uri.c_str()))
+					throw (Exception(NotFound));
+			}
+
 			m_file_handle.open(m_header_info.uri.c_str(), ios::in | ios::binary);
 			if (!m_file_handle.is_open())
-				throw (RequestHandler::Exception(NotFound));
-			else if (io::isADirectory(m_header_info.uri.c_str()))
-				throw (RequestHandler::Exception(NotFound));
+				throw (RequestHandler::Exception(InternalServerError));
 		}
 
 		void	RequestHandler::_methodInitPost()

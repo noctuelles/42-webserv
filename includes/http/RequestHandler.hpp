@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 10:31:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 15:14:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,9 @@
 
 # include <cstring>
 # include <exception>
+#include <functional>
 # include <vector>
+#include <sys/stat.h>
 # include <list>
 # include <fstream>
 # include "Http.hpp"
@@ -64,6 +66,11 @@ namespace ft
 						StatusCode m_code;
 				};
 
+				struct io
+				{
+					static bool	isAReadableRegFile(const char* path);
+				};
+
 				RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
 				~RequestHandler();
 
@@ -110,6 +117,33 @@ namespace ft
 						const string&	m_host_field;
 				};
 
+				class ValidIndexFile : public std::unary_function<const string&, bool>
+				{
+					public:
+
+						ValidIndexFile(const string& prefix)
+							: m_prefix(prefix) {}
+
+						bool operator()(const string& index)
+						{
+							struct stat	stat_buf;
+							string		path(m_prefix);
+
+							if (::stat(path.append(index).c_str(), &stat_buf) < 0)
+							{
+								if (errno != ENOENT)
+									throw (Exception(InternalServerError));
+							}
+							else if (!S_ISDIR(stat_buf.st_mode) && (stat_buf.st_mode & S_IRUSR))
+								return (true);
+							return (false);
+						}
+
+					private:
+
+						const string	&m_prefix;
+				};
+
 				static const methodInitFnct				m_method_init_fnct[http::NbrAvailableMethod];
 				static const methodHeaderFnct			m_method_header_fnct[http::NbrAvailableMethod + 1];
 				static const methodSendFnct				m_method_send_fnct[http::NbrAvailableMethod + 1];
@@ -117,16 +151,17 @@ namespace ft
 				State								m_state;
 				const VirtServInfo::VirtServMap&	m_virtserv_map;
 				const VirtServ*						m_virtserv;
+				const VirtServ::RouteOptions*		m_route;
 				struct sockaddr_in					m_bounded_sock;
 
 				vector<uint8_t>				m_data_buff;
 				const void*					m_data_to_send;
 				size_t						m_data_to_send_size;
 
-				ifstream						m_file_handle;
+				ifstream					m_file_handle;
 				RequestParser::HeaderInfo	m_header_info;
 				RequestParser				m_header_parser;
-				StatusCode						m_status_code;
+				StatusCode					m_status_code;
 
 				/* ############################ Private function ############################ */
 

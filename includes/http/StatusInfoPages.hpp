@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 13:55:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:12:28 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 15:13:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ namespace ft
 						(*m_singleton)[NotFound]			= HTTP_ERRPAGE("404 Not Found");
 						(*m_singleton)[RequestTimeout]		= HTTP_ERRPAGE("408 Request Timeout");
 						(*m_singleton)[UriTooLong]			= HTTP_ERRPAGE("414 Uri Too Long");
+						(*m_singleton)[InternalServerError]	= HTTP_ERRPAGE("500 Internal Server Error");
 						(*m_singleton)[NotImplemented]		= HTTP_ERRPAGE("501 Not Implemented");
 						(*m_singleton)[VersionNotSupported]	= HTTP_ERRPAGE("505 HTTP Version Not Supported");
 					}

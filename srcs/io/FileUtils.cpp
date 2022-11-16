@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 16:08:33 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/11 16:52:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 14:50:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,9 @@
 #include <unistd.h>
 
 #include "FileUtils.hpp"
+#include "Http.hpp"
 #include "Utils.hpp"
+#include "RequestHandler.hpp"
 
 namespace ft
 {
@@ -41,6 +43,18 @@ namespace ft
 			if (stat(filename, &statbuf) < 0)
 				throw (std::runtime_error("stat"));
 			return (S_ISDIR(statbuf.st_mode));
+		}
+
+		struct stat	statWrapper(const char* filename)
+		{
+			struct stat	stat_buf;
+
+			if (stat(filename, &stat_buf) < 0)
+			{
+				if (errno != EACCES)
+					throw (http::RequestHandler::Exception(http::InternalServerError));
+			}
+			return (stat_buf);
 		}
 
 		std::string	getFileLastModifiedDate(const char* filename)

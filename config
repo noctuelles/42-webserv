@@ -6,5 +6,11 @@ server
 
 	location /
 	{
+		index	groscaca.html index.html;
+	}
+
+	location /images/
+	{
+		autoindex	on;
 	}
 }

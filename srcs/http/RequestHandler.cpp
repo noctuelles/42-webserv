@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 10:52:11 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 15:15:29 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,8 @@ namespace ft
 		RequestHandler::RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
 			m_state(FETCHING_REQUEST_HEADER),
 			m_virtserv_map(virt_serv_map),
-			m_virtserv(),
+			m_virtserv(NULL),
+			m_route(NULL),
 			m_bounded_sock(),
 			m_data_buff(ConnectionSocket::MaxSendBufferSize),
 			m_file_handle(),
@@ -190,9 +191,12 @@ namespace ft
 				}
 
 				vector<RouteOptionsIt>::const_iterator	best_candidate = std::max_element(matching_candidate.begin(), matching_candidate.end());
-				
+
 				if (best_candidate != matching_candidate.end())
-					m_header_info.uri.insert(0, (*best_candidate)->m_root);
+				{
+					m_route = &**best_candidate;
+					m_header_info.uri.insert(0, m_route->m_root);
+				}
 				else // no location block present.
 					m_header_info.uri.insert(0, m_virtserv->m_root);
 			}
