@@ -1,12 +1,22 @@
 server
 {
-	listen		10.11.2.2:8080;
+	listen		127.0.0.1:8080;
 	server_name	localhost:8080;
-	root		www/a_website;
 
 	location / {
-		index			index.html;
+		root			www/a_website;
 		limit_except	GET;
-		autoindex		off;
+	}
+}
+
+server
+{
+	listen		10.11.2.2:8080;
+	server_name	10.11.2.2:8080;
+	root		www/main;
+
+	location / {
+		index			test.html;
+		limit_except	GET;
 	}
 }
