@@ -61,25 +61,26 @@ std::ostream& operator<<(std::ostream& os, const ft::VirtServ& servinfo)
 	}
 	os << '\n';
 	os	<< "\troot:\t\t" ;
-	os << servinfo.m_root << '\t';
+	os << servinfo.m_default_route_options.m_root << '\t';
 	os << '\n';
 	os	<< "\tindex:\t\t";
-	for (size_t i = 0; i < servinfo.m_index_vec.size(); ++i)
+	for (size_t i = 0; i < servinfo.m_default_route_options.m_index_vec.size(); ++i)
 	{
-		os << servinfo.m_index_vec[i] << '\t';
+		os << servinfo.m_default_route_options.m_index_vec[i] << '\t';
 	}
 	os << '\n';
 	os	<< "\tautoindex:\t\t" ;
-	os << servinfo.m_autoindex << '\t';
+	os << servinfo.m_default_route_options.m_autoindex << '\t';
 	os << '\n';
 	os	<< "\tmax_body_size:\t\t" ;
 	os << servinfo.m_max_body_size << '\t';
 	os << '\n';
 	os	<< "\tcgi_setup:\t";
-	os << servinfo.m_cgi_extension;
+	os << servinfo.m_default_route_options.m_cgi_extension;
 	os << '\n';
 	os	<< "\terror_page:\t\t";
-	for (map<ft::http::StatusCode, string>::const_iterator it = servinfo.m_error_page_map.begin(); it != servinfo.m_error_page_map.end(); ++it)
+	for (map<ft::http::StatusCode, string>::const_iterator it = servinfo.m_default_route_options.m_error_page_map.begin();
+			it != servinfo.m_default_route_options.m_error_page_map.end(); ++it)
 	{
 		os << it->first <<": "<< it->second << '\t';
 	}

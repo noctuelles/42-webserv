@@ -25,7 +25,9 @@ struct VirtServ
 	struct RouteOptions 
 	{
 		RouteOptions(string uri) : m_location_match(uri) , m_autoindex(-1)
-		{}
+		{
+			m_index_vec.push_back("index.html");
+		}
 
 		bool	operator<(const RouteOptions& rhs)
 		{
@@ -41,16 +43,13 @@ struct VirtServ
 		short							m_autoindex;
 	};
 
-	vector<string>					m_server_name_vec;
-	string							m_root;
-	vector<string>					m_index_vec;
-	vector<sockaddr_in>				m_sockaddr_vec;
-	vector<RouteOptions>			m_routes_vec;
-	map<http::StatusCode, string>	m_error_page_map;
-	bool							m_autoindex;
-	int								m_max_body_size;
-	string							m_cgi_extension;
+	VirtServ() : m_default_route_options("/") {}
 
+	RouteOptions					m_default_route_options;
+	int								m_max_body_size;
+	vector<RouteOptions>			m_routes_vec;
+	vector<sockaddr_in>				m_sockaddr_vec;
+	vector<string>					m_server_name_vec;
 };
 
 } // namespace ft

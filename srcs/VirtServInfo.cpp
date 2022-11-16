@@ -200,6 +200,10 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 	{
 		m_virtserv_vec.back().m_max_body_size = DEFAULT_REQUEST_MAX_BODY_SIZE;
 	}
+	if (m_virtserv_vec.back().m_default_route_options.m_autoindex == -1)
+	{
+		m_virtserv_vec.back().m_default_route_options.m_autoindex = 0;
+	}
 	// Check for end delimiter
 	if (*it != "}")
 		throw ConfigFileError("Invalid token in server block: Forgot '}' maybe ?");
@@ -212,9 +216,9 @@ void VirtServInfo::_parseAutoindex(VirtServInfo::configstream_iterator& it)
 	// Can only have one argument
 	++it;
 	if ( *it == "on")
-		m_virtserv_vec.back().m_autoindex = true;
+		m_virtserv_vec.back().m_default_route_options.m_autoindex = 1;
 	else if ( *it == "off")
-		m_virtserv_vec.back().m_autoindex = false;
+		m_virtserv_vec.back().m_default_route_options.m_autoindex = 0;
 	else
 		throw ConfigFileError("Invalid argument for autoindex directive in server block: Can only be \"on\" on \"off\"");
 	++it;
@@ -302,19 +306,19 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 		
 	// Get parent root directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_root.empty() )
-		m_virtserv_vec.back().m_routes_vec.back().m_root = m_virtserv_vec.back().m_root;
+		m_virtserv_vec.back().m_routes_vec.back().m_root = m_virtserv_vec.back().m_default_route_options.m_root;
 	// Get parent index directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_index_vec.empty() )
-		m_virtserv_vec.back().m_routes_vec.back().m_index_vec = m_virtserv_vec.back().m_index_vec;
+		m_virtserv_vec.back().m_routes_vec.back().m_index_vec = m_virtserv_vec.back().m_default_route_options.m_index_vec;
 	// Get parent autoindex directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_autoindex == -1)
-		m_virtserv_vec.back().m_routes_vec.back().m_autoindex = m_virtserv_vec.back().m_autoindex;
+		m_virtserv_vec.back().m_routes_vec.back().m_autoindex = m_virtserv_vec.back().m_default_route_options.m_autoindex;
 	// Get cgi_setup if none defined
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.empty() )
-		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_cgi_extension;
+		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_default_route_options.m_cgi_extension;
 	// Get cgi_setup if none defined
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.empty() )
-		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_cgi_extension;
+		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_default_route_options.m_cgi_extension;
 	// Put all methods to true if 0
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_methods == 0 )
 		m_virtserv_vec.back().m_routes_vec.back().m_methods.set();
@@ -398,9 +402,9 @@ void VirtServInfo::_parseRoot(VirtServInfo::configstream_iterator& it)
 {
 	// Can only have one argument
 	++it;
-	if (not m_virtserv_vec.back().m_root.empty() )
+	if (not m_virtserv_vec.back().m_default_route_options.m_root.empty() )
 		throw ConfigFileError("Two root directives are defined in the same server block");
-	m_virtserv_vec.back().m_root = *it;
+	m_virtserv_vec.back().m_default_route_options.m_root = *it;
 	++it;
 	if (*it != ";")
 		throw ConfigFileError("missing ; after root directive in server block");
@@ -412,7 +416,7 @@ void VirtServInfo::_parseIndex(VirtServInfo::configstream_iterator& it)
 {
 	// Various args possible
 	for (++it; not it.is_delim() ; ++it)
-		m_virtserv_vec.back().m_index_vec.push_back(*it);
+		m_virtserv_vec.back().m_default_route_options.m_index_vec.push_back(*it);
 	if (*it != ";")
 		throw ConfigFileError("missing ; after index directive in server block");
 	else
@@ -430,7 +434,7 @@ void VirtServInfo::_parseErrorPage(VirtServInfo::configstream_iterator& it)
 	else if ((*it)[0] != '/')
 		throw ConfigFileError("Invalid path at the end of error_page directive in server block");
 	for (; not codes.empty(); codes.pop())
-	    m_virtserv_vec.back() .m_error_page_map[codes.top()] = *it;;
+	    m_virtserv_vec.back().m_default_route_options.m_error_page_map[codes.top()] = *it;;
 	++it;
 	if (*it != ";")
 		throw ConfigFileError("missing ; after error_page directive in server block");
@@ -454,7 +458,7 @@ void VirtServInfo::_parseCgiSetup(VirtServInfo::configstream_iterator& it)
 {
 	// Can only have one argument
 	++it;
-	m_virtserv_vec.back().m_cgi_extension = *it;
+	m_virtserv_vec.back().m_default_route_options.m_cgi_extension = *it;
 	++it;
 	if (*it != ";")
 		throw ConfigFileError("missing ; after cgi_setup directive in server block");
