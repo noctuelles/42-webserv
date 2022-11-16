@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HttpRequestParser.hpp                              :+:      :+:    :+:   */
+/*   RequestParser.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 11:11:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 10:44:28 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ namespace ft
 			public:
 
 				static const size_t	MaxHeaderSize					= 1024 * 80; // 80kb header
-				static const size_t	MaxRequestLineSize				= 1024 * 8;  // 8kb uri
+				static const size_t	MaxUriSize						= 1024 * 8;  // 8kb uri
 				static const size_t	MaxHeaderFieldSize				= 1024;
 				static const size_t	DefaultAllocatedHeaderField		= 1024;
 				static const int	MajorVersionSupported			= 1;
@@ -83,16 +83,16 @@ namespace ft
 				struct HeaderInfo 
 				{
 					HeaderInfo()
-						: method(), ver_major(), ver_minor(), err_code(), req_line(), header_fields()
+						: method(), ver_major(), ver_minor(),  uri(), request_line(), header_fields()
 					{
-						req_line.reserve(MaxRequestLineSize);
+						request_line.reserve(MaxUriSize);
 					}
 
 					Method		method;
 					int			ver_major;
 					int			ver_minor;
-					StatusCode	err_code;
-					string		req_line;
+					string		uri;
+					string		request_line;
 
 					HeaderFieldMap	header_fields;
 				};
@@ -131,8 +131,6 @@ namespace ft
 
 				static const char*	m_http;
 				static const char	m_token[256];
-
-
 
 				size_t			m_header_size;
 				size_t			m_index;

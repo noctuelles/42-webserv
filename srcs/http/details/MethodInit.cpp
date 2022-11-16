@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:27:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 10:51:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,11 @@ namespace ft
 			// Code AutoIndex
 			// For now, send a 404 error.
 
-			std::clog << "Trying to open " << m_header_info.req_line << "...\n";
-			m_file_handle.open(m_header_info.req_line.c_str(), ios::in | ios::binary);
+			//std::clog << "Trying to open " << m_header_info.uri << "...\n";
+			m_file_handle.open(m_header_info.uri.c_str(), ios::in | ios::binary);
 			if (!m_file_handle.is_open())
 				throw (RequestHandler::Exception(NotFound));
-			else if (io::isADirectory(m_header_info.req_line.c_str()))
+			else if (io::isADirectory(m_header_info.uri.c_str()))
 				throw (RequestHandler::Exception(NotFound));
 		}
 

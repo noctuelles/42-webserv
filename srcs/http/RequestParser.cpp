@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:12:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 10:47:23 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,12 +155,12 @@ namespace ft
 						break;
 
 					case P_PARSE_REQ_LINE:
-						if (m_info.req_line.size() >= MaxRequestLineSize)
+						if (m_info.uri.size() >= MaxUriSize)
 							throw (RequestHandler::Exception(UriTooLong));
 						if (_isWS(ch))
 							_transitionState(P_OWS, P_HTTP), m_index = 0;
 						else
-							m_info.req_line.push_back(ch);
+							m_info.uri.push_back(ch);
 						break;
 
 					case P_HTTP:
@@ -319,6 +319,14 @@ namespace ft
 			if (m_current_state == P_DONE)
 			{
 				/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
+
+				m_info.request_line
+					.append(MethodTable[m_info.method])
+					.append(" ")
+					.append(m_info.uri)
+					.append(" ")
+					.append("HTTP/1.1");
+
 				try
 				{
 					m_info.header_fields.at(Field::Host());

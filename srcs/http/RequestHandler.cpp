@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 18:54:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 10:52:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,6 @@ namespace ft
 			catch (const Exception& e)
 			{
 				_setErrorState(PROCESSING_RESPONSE_HEADER, e.what());
-				std::clog << "Error of " << e.what() << '\n';
 			}
 			return (m_state);
 		}
@@ -127,6 +126,16 @@ namespace ft
 		RequestHandler::DataInfo	RequestHandler::getDataToSend() const
 		{
 			return (make_pair(m_data_to_send, m_data_to_send_size));
+		}
+
+		StatusCode	RequestHandler::getStatusCode() const
+		{
+			return (m_status_code);
+		}
+
+		const string&	RequestHandler::getRequestLine() const
+		{
+			return (m_header_info.request_line);
 		}
 
 		RequestHandler::~RequestHandler()
@@ -169,13 +178,13 @@ namespace ft
 
 				vector<RouteOptionsIt>	matching_candidate;
 
-				std::clog << "There is " << m_virtserv->m_routes_vec.size() << '\n';
+				//std::clog << "There is " << m_virtserv->m_routes_vec.size() << '\n';
 
 				for (RouteOptionsIt it = m_virtserv->m_routes_vec.begin(); it != m_virtserv->m_routes_vec.end(); it++)
 				{
-					if (m_header_info.req_line.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
+					if (m_header_info.uri.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
 					{
-						std::clog << "Candidate " << it->m_location_match << " regirestered!\n";
+						//std::clog << "Candidate " << it->m_location_match << " regirestered!\n";
 						matching_candidate.push_back(it);
 					}
 				}
@@ -183,9 +192,9 @@ namespace ft
 				vector<RouteOptionsIt>::const_iterator	best_candidate = std::max_element(matching_candidate.begin(), matching_candidate.end());
 				
 				if (best_candidate != matching_candidate.end())
-					m_header_info.req_line.insert(0, (*best_candidate)->m_root);
+					m_header_info.uri.insert(0, (*best_candidate)->m_root);
 				else // no location block present.
-					m_header_info.req_line.insert(0, m_virtserv->m_root);
+					m_header_info.uri.insert(0, m_virtserv->m_root);
 			}
 		}
 	}

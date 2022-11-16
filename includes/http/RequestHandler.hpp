@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 18:53:57 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 10:31:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,11 @@ namespace ft
 				State		fetchIncomingData(const std::vector<uint8_t>& data_buff, size_t recv_bytes);
 				State		prepareOutcomingData();
 
-				void		setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
-				DataInfo	getDataToSend() const;
+				void			setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
+
+				DataInfo		getDataToSend() const;
+				StatusCode		getStatusCode() const;
+				const string&	getRequestLine() const;
 
 			private:
 
