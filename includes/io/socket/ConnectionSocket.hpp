@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 10:32:08 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 18:30:45 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ namespace ft
 			typedef std::vector<uint8_t>	DataBuffer;
 
 			static const size_t		MaxRecvBufferSize = 1024 * 8;
-			static const size_t		MaxSendBufferSize = 1024 * 8;
+			static const size_t		MaxSendBufferSize = 1024 * 42;
 
 			enum	State
 			{

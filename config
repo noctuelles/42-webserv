@@ -1,9 +1,12 @@
 server
 {
-	listen		8080;
+	listen		10.11.2.2:8080;
 	server_name	localhost:8080;
 	root		www/a_website;
 
 	location / {
+		index			index.html;
+		limit_except	GET;
+		autoindex		off;
 	}
 }

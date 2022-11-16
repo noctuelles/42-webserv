@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 16:21:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 18:17:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "Utils.hpp"
 #include "MIME.hpp"
 #include "StatusInfoPages.hpp"
+#include <iostream>
 
 namespace ft
 {

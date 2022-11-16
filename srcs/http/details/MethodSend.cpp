@@ -6,10 +6,11 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 10:56:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 18:33:29 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "FileUtils.hpp"
 #include "RequestHandler.hpp"
 #include "StatusInfoPages.hpp"
 

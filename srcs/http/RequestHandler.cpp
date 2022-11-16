@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 16:08:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 18:22:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "ConnectionSocket.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
+#include <ios>
 #include <utility>
 #include <vector>
 #include <algorithm>
@@ -61,7 +62,8 @@ namespace ft
 			m_header_info(),
 			m_header_parser(m_header_info),
 			m_status_code(OK)
-		{}
+		{
+		}
 
 		/* We gather the data */
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 10:50:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 18:21:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ namespace ft
 		}
 		catch(...)
 		{
+			std::cerr << "exception of some sort thrown\n";
 			return (DISCONNECT);
 		}
 
@@ -72,7 +73,8 @@ namespace ft
 		_updateLastActivity();
 		if (::send(*this, data_info.first, data_info.second, 0) < 0)
 			m_state = DISCONNECT;
-		m_sent_bytes += data_info.second;
+		else
+			m_sent_bytes += data_info.second;
 		return (m_state);
 	}
 
