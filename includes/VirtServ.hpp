@@ -25,7 +25,7 @@ struct VirtServ
 	struct RouteOptions 
 	{
 		RouteOptions(string uri) : m_location_match(uri)
-			, m_methods(0xFFFF)
+			, m_methods(0xFFFFFFFF)
 			, m_cgi_extension()
 			, m_root()
 			, m_index_vec()
