@@ -85,6 +85,11 @@ std::ostream& operator<<(std::ostream& os, const ft::VirtServ& servinfo)
 		os << it->first <<": "<< it->second << '\t';
 	}
 	os << '\n';
+	os	<< "\tmethods:\t";
+	os << (servinfo.m_default_route_options.m_methods.test(ft::http::Get) ? " GET " : "");
+	os << (servinfo.m_default_route_options.m_methods.test(ft::http::Post) ? " POST " : "");
+	os << (servinfo.m_default_route_options.m_methods.test(ft::http::Delete) ? " DELETE " : "");
+	os << '\n';
 	os	<< "\tlocation blocks:\n";
 	for (size_t i = 0; i < servinfo.m_routes_vec.size(); ++i)
 	{
