@@ -43,7 +43,7 @@ struct VirtServ
 		short							m_autoindex;
 	};
 
-	VirtServ() : m_default_route_options("/") {}
+	VirtServ() : m_default_route_options("/"), m_max_body_size(), m_routes_vec(), m_sockaddr_vec(), m_server_name_vec() {}
 
 	RouteOptions					m_default_route_options;
 	int								m_max_body_size;

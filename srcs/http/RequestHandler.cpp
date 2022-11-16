@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 15:15:29 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 15:48:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,32 +173,27 @@ namespace ft
 					m_virtserv = *virt_serv.begin();
 			}
 
-			// Next, find if the request URI match any of the location block.
+			// Next, find if the request URI match any of the location block to find a route.
 			{
 				typedef vector<VirtServ::RouteOptions>::const_iterator	RouteOptionsIt;
+				const vector<VirtServ::RouteOptions>&					routes = m_virtserv->m_routes_vec;
+				vector<RouteOptionsIt>									matching_candidate;
 
-				vector<RouteOptionsIt>	matching_candidate;
-
-				//std::clog << "There is " << m_virtserv->m_routes_vec.size() << '\n';
-
-				for (RouteOptionsIt it = m_virtserv->m_routes_vec.begin(); it != m_virtserv->m_routes_vec.end(); it++)
+				for (RouteOptionsIt it = routes.begin(); it != routes.end(); it++)
 				{
 					if (m_header_info.uri.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
-					{
-						//std::clog << "Candidate " << it->m_location_match << " regirestered!\n";
 						matching_candidate.push_back(it);
-					}
 				}
 
+				// Select the longest matching location match.
 				vector<RouteOptionsIt>::const_iterator	best_candidate = std::max_element(matching_candidate.begin(), matching_candidate.end());
 
+				// Either our route vector was empty or no matching candidate
 				if (best_candidate != matching_candidate.end())
-				{
 					m_route = &**best_candidate;
-					m_header_info.uri.insert(0, m_route->m_root);
-				}
-				else // no location block present.
-					m_header_info.uri.insert(0, m_virtserv->m_root);
+				else
+					m_route = &m_virtserv->m_default_route_options;
+				m_header_info.uri.insert(0, m_route->m_root);
 			}
 		}
 	}

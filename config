@@ -1,16 +1,11 @@
 server
 {
-	listen 8080;
+	listen		8080;
 	server_name	localhost:8080;
-	root www/a_website;
+	root		www/a_website;
+	index		events.html;
 
-	location /
-	{
-		index	groscaca.html index.html;
-	}
-
-	location /images/
-	{
-		autoindex	on;
+	location / {
+		index index.html;
 	}
 }

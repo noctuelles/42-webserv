@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 15:21:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 15:58:45 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,9 @@ namespace ft
 						throw (Exception(NotFound));
 				}
 				else // autoindex
+				{
 					throw (Exception(NotImplemented));
+				}
 			}
 			else
 			{
@@ -49,7 +51,7 @@ namespace ft
 			}
 
 			m_file_handle.open(m_header_info.uri.c_str(), ios::in | ios::binary);
-			if (!m_file_handle.is_open())
+			if (!m_file_handle.is_open()) // at this point, the program MUST be able to open the file.
 				throw (RequestHandler::Exception(InternalServerError));
 		}
 
