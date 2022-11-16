@@ -70,7 +70,7 @@ std::ostream& operator<<(std::ostream& os, const ft::VirtServ& servinfo)
 	}
 	os << '\n';
 	os	<< "\tautoindex:\t\t" ;
-	os << servinfo.m_default_route_options.m_autoindex << '\t';
+	os << (bool) servinfo.m_default_route_options.m_autoindex << '\t';
 	os << '\n';
 	os	<< "\tmax_body_size:\t\t" ;
 	os << servinfo.m_max_body_size << '\t';

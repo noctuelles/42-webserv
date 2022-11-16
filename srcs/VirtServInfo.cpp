@@ -17,6 +17,7 @@
 #include <vector>
 #include <stack>
 
+#include "VirtServ.hpp"
 #include "VirtServInfo.hpp"
 #include "Utils.hpp"
 
@@ -188,21 +189,29 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 	// Parse virtual server data
 	_match(it, m_server_block_dispatch_vec);
 	// Insert default sockaddr_in if no `listen` directive was present
-	if (m_virtserv_vec.back().m_sockaddr_vec.empty())
+	VirtServ& vs= m_virtserv_vec.back();
+	if (vs.m_sockaddr_vec.empty())
 	{
 		sockaddr_in sockaddr;
 		sockaddr.sin_family = AF_INET;
 		sockaddr.sin_addr.s_addr = INADDR_ANY;
 		sockaddr.sin_port = htons(80);
-		m_virtserv_vec.back().m_sockaddr_vec.push_back(sockaddr);
+		vs.m_sockaddr_vec.push_back(sockaddr);
 	}
-	if (m_virtserv_vec.back().m_max_body_size == 0)
+	if (vs.m_max_body_size == 0)
 	{
-		m_virtserv_vec.back().m_max_body_size = DEFAULT_REQUEST_MAX_BODY_SIZE;
+		vs.m_max_body_size = DEFAULT_REQUEST_MAX_BODY_SIZE;
 	}
-	if (m_virtserv_vec.back().m_default_route_options.m_autoindex == -1)
+	if (vs.m_default_route_options.m_autoindex == -1)
 	{
-		m_virtserv_vec.back().m_default_route_options.m_autoindex = 0;
+		vs.m_default_route_options.m_autoindex = 0;
+	}
+	for (vector<VirtServ::RouteOptions>::iterator it = vs.m_routes_vec.begin()
+			; it != vs.m_routes_vec.end()
+			;	++it )
+	{
+		if (it->m_autoindex == -1)
+			 it->m_autoindex = vs.m_default_route_options.m_autoindex;
 	}
 	// Check for end delimiter
 	if (*it != "}")
