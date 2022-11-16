@@ -11,12 +11,17 @@ server
 
 server
 {
-	listen		10.11.2.2:8080;
-	server_name	10.11.2.2:8080;
-	root		www/main;
+	listen		127.0.0.1:8080;
+	server_name	127.0.0.1:8080;
 
 	location / {
+		root			www/main;
 		index			test.html;
+		limit_except	GET;
+	}
+
+	location /images/ {
+		root www/;
 		limit_except	GET;
 	}
 }
