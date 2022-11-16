@@ -3,7 +3,6 @@ server
 	listen		8080;
 	server_name	localhost:8080;
 	root		www/a_website;
-	index		events.html;
 
 	location / {
 		index index.html;

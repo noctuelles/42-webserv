@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 15:48:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/16 16:08:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,6 +194,12 @@ namespace ft
 				else
 					m_route = &m_virtserv->m_default_route_options;
 				m_header_info.uri.insert(0, m_route->m_root);
+			}
+
+			// Route, virtual server, has been found. We can now see if the method is supported in this route.
+			{
+				if (!m_route->m_methods[m_header_info.method])
+					throw (Exception(MethodNotAllowed));
 			}
 		}
 	}
