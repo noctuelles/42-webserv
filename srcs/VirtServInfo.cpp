@@ -206,14 +206,18 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 	{
 		vs.m_default_route_options.m_autoindex = 0;
 	}
+	if (vs.m_default_route_options.m_index_vec.empty())
+	{
+		vs.m_default_route_options.m_index_vec.push_back("index.html");
+	}
 	for (vector<VirtServ::RouteOptions>::iterator it = vs.m_routes_vec.begin()
 			; it != vs.m_routes_vec.end()
 			;	++it )
 	{
 		if (it->m_autoindex == -1)
 			 it->m_autoindex = vs.m_default_route_options.m_autoindex;
-		//if (it->m_index_vec.empty())
-		//     it->m_index_vec.push_back("index.html");
+		if (it->m_index_vec.empty())
+			 it->m_index_vec.push_back("index.html");
 	}
 	// Check for end delimiter
 	if (*it != "}")
