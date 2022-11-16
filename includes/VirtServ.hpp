@@ -24,20 +24,24 @@ struct VirtServ
 {
 	struct RouteOptions 
 	{
-		RouteOptions(string uri) : m_location_match(uri) , m_autoindex(-1)
-		{
-			m_index_vec.push_back("index.html");
-		}
+		RouteOptions(string uri) : m_location_match(uri)
+			, m_methods()
+			, m_cgi_extension()
+			, m_root()
+			, m_index_vec()
+			, m_error_page_map()
+			, m_autoindex(-1)
+		{}
 
 		bool	operator<(const RouteOptions& rhs)
 		{
 			return (m_location_match.length() < rhs.m_location_match.length());
 		}
 
+		string							m_location_match;
 		bitset<http::NbrAvailableMethod>	m_methods;
 		string							m_cgi_extension;
 		string							m_root;
-		string							m_location_match;
 		vector<string>					m_index_vec;
 		map<http::StatusCode, string>	m_error_page_map;
 		short							m_autoindex;

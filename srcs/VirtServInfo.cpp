@@ -188,7 +188,7 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 	m_virtserv_vec.push_back(VirtServ());
 	// Parse virtual server data
 	_match(it, m_server_block_dispatch_vec);
-	// Insert default sockaddr_in if no `listen` directive was present
+	// Makes undefined data in routes_options depend inherit from the server block
 	VirtServ& vs= m_virtserv_vec.back();
 	if (vs.m_sockaddr_vec.empty())
 	{
@@ -212,6 +212,8 @@ void VirtServInfo::_parseServerBlock(VirtServInfo::configstream_iterator& it)
 	{
 		if (it->m_autoindex == -1)
 			 it->m_autoindex = vs.m_default_route_options.m_autoindex;
+		//if (it->m_index_vec.empty())
+		//     it->m_index_vec.push_back("index.html");
 	}
 	// Check for end delimiter
 	if (*it != "}")
@@ -423,6 +425,9 @@ void VirtServInfo::_parseRoot(VirtServInfo::configstream_iterator& it)
 
 void VirtServInfo::_parseIndex(VirtServInfo::configstream_iterator& it)
 {
+	static bool cleared = false;
+	if (not cleared)
+		m_virtserv_vec.back().m_default_route_options.m_index_vec.clear(), cleared = true;
 	// Various args possible
 	for (++it; not it.is_delim() ; ++it)
 		m_virtserv_vec.back().m_default_route_options.m_index_vec.push_back(*it);
