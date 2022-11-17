@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 15:14:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/17 14:32:23 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,7 @@ namespace ft
 				DataInfo		getDataToSend() const;
 				StatusCode		getStatusCode() const;
 				const string&	getRequestLine() const;
+				const string&	getAbsPath()    const;
 
 			private:
 
@@ -160,6 +161,7 @@ namespace ft
 
 				ifstream					m_file_handle;
 				RequestParser::HeaderInfo	m_header_info;
+				RequestParser::UriInfo		m_uri_info;
 				RequestParser				m_header_parser;
 				StatusCode					m_status_code;
 

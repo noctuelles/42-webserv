@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 10:44:28 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/17 14:10:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ namespace ft
 			public:
 
 				static const size_t	MaxHeaderSize					= 1024 * 80; // 80kb header
-				static const size_t	MaxUriSize						= 1024 * 8;  // 8kb uri
+				static const size_t	MaxUriSize						= 1024;  // 8kb uri
 				static const size_t	MaxHeaderFieldSize				= 1024;
 				static const size_t	DefaultAllocatedHeaderField		= 1024;
 				static const int	MajorVersionSupported			= 1;
@@ -97,6 +97,27 @@ namespace ft
 					HeaderFieldMap	header_fields;
 				};
 
+				struct UriInfo
+				{
+					enum Form
+					{
+						ORIGIN_FORM,
+						ABSOLUTE_FORM
+					};
+
+					UriInfo()
+						: authority(), authority_host(), authority_port(), absolute_path("/"), query(), fragment()
+					{}
+
+					string	authority;
+					string	authority_host;
+					string	authority_port;
+
+					string	absolute_path;
+					string	query;
+					string	fragment;
+				};
+
 				enum State
 				{
 					P_START_REQUEST_LINE = 0,
@@ -111,13 +132,22 @@ namespace ft
 					P_CRLF,
 					P_WS,
 					P_OWS,
+
+					P_START_URI,
+					P_ABSOLUTE_FORM,
+					P_ABSOLUTE_FORM_HOST,
+					P_ABSOLUTE_FORM_PORT,
+					P_ABSOLUTE_PATH,
+					P_QUERY,
+					P_SKIP_ZERO,
 					P_DONE
 				};
 
-				RequestParser(HeaderInfo& header_info);
+				RequestParser(HeaderInfo& header_info, UriInfo& uri_info);
 				~RequestParser();
 
 				bool	parseHeader(const std::vector<uint8_t>& buffer, size_t recv_bytes);
+				void	parseURI(const string& uri);
 
 #ifndef NDEBUG
 				void	report();
@@ -130,6 +160,7 @@ namespace ft
 				typedef void	(RequestParser::*callBackFnct)();
 
 				static const char*	m_http;
+				static const char*	m_scheme;
 				static const char	m_token[256];
 
 				size_t			m_header_size;
@@ -146,6 +177,7 @@ namespace ft
 				string			m_ws_buffer;
 
 				HeaderInfo&		m_info;
+				UriInfo&		m_uri_info;
 
 				inline bool			_isVChar(unsigned char ch)		{return (ch > ' ' && ch < 0x7F);		}
 				inline bool			_isTknChar(unsigned char ch)	{return (m_token[ch] != 0);				}

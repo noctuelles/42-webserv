@@ -41,7 +41,7 @@ DEFINES			= ${DEBUG} -DDEFAULT_CONFIG=\"$(DEFAULT_CONFIG)\"
 CPPFLAGS		+= $(INCLUDE_FLAGS) $(IMACROS_FLAGS) $(DEFINES) -MMD #output .d dependencies rules to be included
 
 ## Compile flags
-CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 #-fsanitize=address
+CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -fsanitize=address
 ifdef DEBUG
 CXXFLAGS		+= -Wno-unused
 else
@@ -49,7 +49,7 @@ CXXFLAGS		+= -Werror
 endif
 
 ## Link flags
-LDFLAGS			=	#-fsanitize=address
+LDFLAGS			=	-fsanitize=address
 LDLIBS			=
 
 

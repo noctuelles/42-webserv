@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 10:47:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/17 15:20:41 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,8 @@ namespace ft
 			"P_DONE"
 		};
 
-		const char*	RequestParser::m_http = "HTTP/";
+		const char*	RequestParser::m_http	= "HTTP/";
+		const char*	RequestParser::m_scheme	= "http://";
 
 		const char	RequestParser::m_token[256] = 
 		{
@@ -86,7 +87,7 @@ namespace ft
 			   'x',     'y',     'z',      0,      '|',      0,      '~',       0
 		};
 
-		RequestParser::RequestParser(HeaderInfo& header_info)
+		RequestParser::RequestParser(HeaderInfo& header_info, UriInfo& uri_info)
 			: m_header_size(0),
 			m_index(0),
 			m_previous_state(),
@@ -96,7 +97,8 @@ namespace ft
 			m_callback_fnct(NULL),
 			m_buffer(),
 			m_ws_buffer(),
-			m_info(header_info)
+			m_info(header_info),
+			m_uri_info(uri_info)
 		{
 			m_buffer.first.reserve(MaxHeaderFieldSize);
 			m_buffer.second.reserve(MaxHeaderFieldSize);
@@ -157,10 +159,22 @@ namespace ft
 					case P_PARSE_REQ_LINE:
 						if (m_info.uri.size() >= MaxUriSize)
 							throw (RequestHandler::Exception(UriTooLong));
-						if (_isWS(ch))
-							_transitionState(P_OWS, P_HTTP), m_index = 0;
-						else
-							m_info.uri.push_back(ch);
+						switch (ch)
+						{
+							case ' ':
+							case '\t':
+								this->parseURI(m_info.uri);
+								_transitionState(P_OWS, P_HTTP), m_index = 0;
+								break;
+							/* https://httpwg.org/specs/rfc9112.html#request.target */
+							case '\n':
+							case '\f':
+							case '\r':
+								throw (RequestHandler::Exception(BadRequest));
+								break;
+							default:
+								m_info.uri.push_back(ch);
+						}
 						break;
 
 					case P_HTTP:
@@ -341,6 +355,119 @@ namespace ft
 				return (false);
 		}
 
+		void	RequestParser::parseURI(const string& uri)
+		{
+			char	ch = 0;
+
+			m_current_state = P_START_URI;
+			for (string::const_iterator it = uri.begin(); it != uri.end(); it++)
+			{
+				ch = *it;
+				switch (m_current_state)
+				{
+					case P_START_URI:
+						ch = std::tolower(ch);
+						switch (ch)
+						{
+							case 'h':
+								_changeState(P_ABSOLUTE_FORM), m_index = 1;
+								break;
+							case '/':
+								/* https://httpwg.org/specs/rfc9112.html#origin-form */
+								_changeState(P_ABSOLUTE_PATH);
+								break;
+							default:
+								throw (RequestHandler::Exception(BadRequest));
+						}
+						break;
+
+					case P_ABSOLUTE_FORM:
+						// verify the scheme (must be http://)
+						ch = std::tolower(*it);
+						if (ch != m_scheme[m_index])
+						{
+							if (m_scheme[m_index] == '\0')
+							{
+								m_uri_info.authority_host.push_back(ch);
+								_changeState(P_ABSOLUTE_FORM_HOST);
+							}
+							else
+								throw (RequestHandler::Exception(BadRequest));
+						}
+						else
+							m_index++;
+						break;
+
+					case P_ABSOLUTE_FORM_HOST:
+						ch = std::tolower(*it);
+						if (ch == ':')
+							_transitionState(P_SKIP_ZERO, P_ABSOLUTE_FORM_PORT);
+						else if (ch == '/')
+							_changeState(P_ABSOLUTE_PATH);
+						else
+							m_uri_info.authority_host.push_back(ch);
+						break;
+
+					case P_ABSOLUTE_FORM_PORT:
+						ch = *it;
+						if (!std::isdigit(ch))
+						{
+							if (m_uri_info.authority_host.length() == 0)
+								throw (RequestHandler::Exception(BadRequest));
+							if (ch == '/')
+								_changeState(P_ABSOLUTE_PATH);
+							else
+								throw (RequestHandler::Exception(BadRequest));
+						}
+						else
+						{
+							if (m_uri_info.authority_port.length() == 5)
+							{
+								if (std::atoi(m_uri_info.authority_port.c_str()) > 65565)
+									throw (RequestHandler::Exception(BadRequest));
+							}
+							else if (m_uri_info.authority_port.length() > 5)
+								throw (RequestHandler::Exception(BadRequest));
+							else
+								m_uri_info.authority_port.push_back(ch);
+						}
+					break;
+
+					case P_ABSOLUTE_PATH:
+						ch = *it;
+						if (ch == '?')
+							_changeState(P_QUERY);
+						else
+							m_uri_info.absolute_path.push_back(ch);
+					break;
+
+					case P_QUERY:
+						ch = *it;
+						m_uri_info.query.push_back(ch);
+					break;
+
+					case P_SKIP_ZERO:
+						ch = *it;
+						if (ch != '0')
+						{
+							m_uri_info.authority_port.push_back(ch);
+							_changeState(m_next_state);
+						}
+					break;
+
+					default:
+						;
+				}
+			}
+
+			//std::clog << "Abs path : " << m_uri_info.absolute_path << '\n';
+			//std::clog << "Query : " << m_uri_info.query << '\n';
+			if (m_current_state == P_ABSOLUTE_FORM || m_uri_info.absolute_path.find("../") != string::npos)
+				throw (RequestHandler::Exception(BadRequest));
+			m_uri_info.authority = m_uri_info.authority_host + ':' +  m_uri_info.authority_port;
+			//std::clog << "Authority: " << m_uri_info.authority << '\n';
+		}
+
 		void	RequestParser::_insertField()
 		{
 			std::pair<HeaderFieldMap::iterator, bool>	ret = m_info.header_fields.insert(m_buffer);
@@ -350,9 +477,9 @@ namespace ft
 				/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
 				if (ret.first->first == Field::Host().str())
 					throw (RequestHandler::Exception(BadRequest));
-				/* https://www.rfc-editor.org/rfc/rfc7230.html#section-3.2.2 */
+				/* https://httpwg.org/specs/rfc9110.html#fields.order */
 				ret.first->second
-					.append(",")
+					.append(", ")
 					.append(m_buffer.second);
 			}
 			m_buffer.first.clear();

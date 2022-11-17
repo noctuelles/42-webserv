@@ -4,24 +4,6 @@ server
 	server_name	localhost:8080;
 
 	location / {
-		root			www/a_website;
-		limit_except	GET;
-	}
-}
-
-server
-{
-	listen		127.0.0.1:8080;
-	server_name	127.0.0.1:8080;
-
-	location / {
 		root			www/main;
-		index			test.html;
-		limit_except	GET;
-	}
-
-	location /images/ {
-		root www/;
-		limit_except	GET;
 	}
 }

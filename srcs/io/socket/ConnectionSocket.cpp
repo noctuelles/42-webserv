@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 18:21:11 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/17 15:55:29 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,14 @@ namespace ft
 	{
 		using std::clog;
 
-		clog << inet_ntoa(m_peer_sockaddr.sin_addr) << " - - " << '[' << utils::getRFC822NowDate() << ']' << " \"" << m_request_handler.getRequestLine() << "\" " << m_request_handler.getStatusCode() << ' ' << m_sent_bytes << '\n';
+		// clog << inet_ntoa(m_peer_sockaddr.sin_addr) << " - - " << '[' << utils::getRFC822NowDate() << ']' << " \"" << m_request_handler.getAbsPath() << "\" " << m_request_handler.getStatusCode() << ' ' << m_sent_bytes << '\n';
 	}
 
 	int	ConnectionSocket::recv()
 	{
 		_updateLastActivity();
 		m_recv_bytes = ::recv(*this, m_recv_buff.data(), m_recv_buff.size(), 0);
+		std::cout << m_recv_buff.data() << '\n';
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
 		if (m_request_handler.fetchIncomingData(m_recv_buff, m_recv_bytes) == RequestHandler::PROCESSING_RESPONSE_HEADER)

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 18:22:03 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/17 15:13:49 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,8 @@ namespace ft
 			m_data_buff(ConnectionSocket::MaxSendBufferSize),
 			m_file_handle(),
 			m_header_info(),
-			m_header_parser(m_header_info),
+			m_uri_info(),
+			m_header_parser(m_header_info, m_uri_info),
 			m_status_code(OK)
 		{
 		}
@@ -77,6 +78,8 @@ namespace ft
 					{
 						_parseGeneralHeaderFields();
 
+						m_uri_info.absolute_path.insert(0, m_route->m_root);
+
 						(this->*m_method_init_fnct[m_header_info.method])();
 
 						_setState(FETCHING_REQUEST_BODY);
@@ -87,8 +90,8 @@ namespace ft
 					if (m_header_info.method != Get)
 					{
 					}
-
-					_setState(PROCESSING_RESPONSE_HEADER);
+					else
+						_setState(PROCESSING_RESPONSE_HEADER);
 				}
 			}
 			catch (const Exception& e)
@@ -139,6 +142,11 @@ namespace ft
 		const string&	RequestHandler::getRequestLine() const
 		{
 			return (m_header_info.request_line);
+		}
+
+		const string&	RequestHandler::getAbsPath() const
+		{
+			return (m_uri_info.absolute_path);
 		}
 
 		RequestHandler::~RequestHandler()
@@ -195,7 +203,6 @@ namespace ft
 					m_route = &**best_candidate;
 				else
 					m_route = &m_virtserv->m_default_route_options;
-				m_header_info.uri.insert(0, m_route->m_root);
 			}
 
 			// Route, virtual server, has been found. We can now see if the method is supported in this route.
