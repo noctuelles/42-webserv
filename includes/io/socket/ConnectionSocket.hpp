@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 18:30:45 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/19 00:00:33 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ namespace ft
 			};
 
 			ConnectionSocket(int fd, const VirtServInfo::VirtServMap& virt_serv_map);
+			const struct sockaddr_in&	getPeerSock() const;
 			virtual ~ConnectionSocket();
 
 			virtual int		recv();

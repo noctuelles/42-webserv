@@ -10,6 +10,7 @@
 #include "WebServ.hpp"
 #include "AutoIndex.hpp"
 #include "Traits.hpp"
+#include "StatusInfoPages.hpp"
 
 using namespace ft;
 

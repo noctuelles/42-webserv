@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:48:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/19 00:43:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,15 @@
 #include "FileUtils.hpp"
 #include "Http.hpp"
 #include <algorithm>
+#include <arpa/inet.h>
 #include <exception>
 #include <functional>
+#include <netinet/in.h>
 #include <string>
 #include <memory>
 #include <utility>
 #include <iostream>
+#include "Log.hpp"
 
 namespace ft
 {
@@ -39,6 +42,7 @@ namespace ft
 		{
 			m_socks.push_back(new ListeningSocket(it->first));
 			m_poller.add(m_socks.back()->getFd(), EPoll::Event::In(), m_socks.back());
+			::Log().get(INFO) << "Now listening on [" << ::inet_ntoa(it->first.sin_addr) << ':' << ::ntohs(it->first.sin_port) << "]...\n";
 		}
 	}
 

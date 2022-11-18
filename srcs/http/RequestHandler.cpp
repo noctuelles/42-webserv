@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/17 15:13:49 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/19 00:20:29 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "ConnectionSocket.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
+#include "Log.hpp"
 #include <ios>
 #include <utility>
 #include <vector>
@@ -80,6 +81,8 @@ namespace ft
 
 						m_uri_info.absolute_path.insert(0, m_route->m_root);
 
+						::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << '\n';
+
 						(this->*m_method_init_fnct[m_header_info.method])();
 
 						_setState(FETCHING_REQUEST_BODY);
@@ -96,6 +99,7 @@ namespace ft
 			}
 			catch (const Exception& e)
 			{
+				::Log().get(WARNING) << "Issuing a " << e.what() << " HTTP error.\n";
 				_setErrorState(PROCESSING_RESPONSE_HEADER, e.what());
 			}
 			return (m_state);

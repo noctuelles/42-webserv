@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 13:55:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 16:23:28 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/19 00:39:33 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,23 +29,26 @@ namespace ft
 
 				static const vector<StatusInfo>&	get()
 				{
-					if (!m_singleton)
-					{
-						m_singleton = new vector<StatusInfo>(MaxStatusCode);
+					static vector<StatusInfo>	vec(MaxStatusCode);
+					static bool					init = false;
 
-						(*m_singleton)[OK]					= HTTP_STATUS("200 OK");
-						(*m_singleton)[BadRequest]			= HTTP_ERRPAGE("400 Bad Request");
-						(*m_singleton)[Forbidden]			= HTTP_ERRPAGE("403 Forbidden");
-						(*m_singleton)[NotFound]			= HTTP_ERRPAGE("404 Not Found");
-						(*m_singleton)[MethodNotAllowed]	= HTTP_ERRPAGE("405 Method Not Allowed");
-						(*m_singleton)[RequestTimeout]		= HTTP_ERRPAGE("408 Request Timeout");
-						(*m_singleton)[ContentTooLarge]		= HTTP_ERRPAGE("413 Content Too Large");
-						(*m_singleton)[UriTooLong]			= HTTP_ERRPAGE("414 Uri Too Long");
-						(*m_singleton)[InternalServerError]	= HTTP_ERRPAGE("500 Internal Server Error");
-						(*m_singleton)[NotImplemented]		= HTTP_ERRPAGE("501 Not Implemented");
-						(*m_singleton)[VersionNotSupported]	= HTTP_ERRPAGE("505 HTTP Version Not Supported");
+					if (!init)
+					{
+						vec[OK]						= HTTP_STATUS("200 OK");
+						vec[BadRequest]				= HTTP_ERRPAGE("400 Bad Request");
+						vec[Forbidden]				= HTTP_ERRPAGE("403 Forbidden");
+						vec[NotFound]				= HTTP_ERRPAGE("404 Not Found");
+						vec[MethodNotAllowed]		= HTTP_ERRPAGE("405 Method Not Allowed");
+						vec[RequestTimeout]			= HTTP_ERRPAGE("408 Request Timeout");
+						vec[ContentTooLarge]		= HTTP_ERRPAGE("413 Content Too Large");
+						vec[UriTooLong]				= HTTP_ERRPAGE("414 Uri Too Long");
+						vec[InternalServerError]	= HTTP_ERRPAGE("500 Internal Server Error");
+						vec[NotImplemented]			= HTTP_ERRPAGE("501 Not Implemented");
+						vec[VersionNotSupported]	= HTTP_ERRPAGE("505 HTTP Version Not Supported");
+						init = true;
 					}
-					return (*m_singleton);
+
+					return (vec);
 				}
 
 			private:
@@ -53,8 +56,6 @@ namespace ft
 				StatusInfoPages();
 				StatusInfoPages(const StatusInfoPages& other);
 				StatusInfoPages	operator=(const StatusInfoPages& rhs);
-
-				static vector<StatusInfo>*	m_singleton;
 		};
 	}
 }

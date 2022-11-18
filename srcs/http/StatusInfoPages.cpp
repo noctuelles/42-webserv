@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 14:09:14 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 14:11:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/19 00:37:44 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,5 @@ namespace ft
 {
 	namespace http
 	{
-		vector<StatusInfo>* StatusInfoPages::m_singleton = NULL;
 	}
 }
