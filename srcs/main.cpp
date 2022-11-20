@@ -23,15 +23,6 @@ int main(int ac, char **av)
 		return -1;
 	}
 
-	StringArray sa;
-
-	sa.addEnvVar("REQUEST_METHOD", "GET");
-	sa.addEnvVar("QUERY_STRING", "name=Maurice&lastaname=Ravel");
-
-	std::cout << sa;
-
-	return 1;
-
 	WebServ	serv(av[1]);
 
 	try {
