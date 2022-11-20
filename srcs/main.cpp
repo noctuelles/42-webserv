@@ -11,6 +11,7 @@
 #include "AutoIndex.hpp"
 #include "Traits.hpp"
 #include "StatusInfoPages.hpp"
+#include "StringArray.hpp"
 
 using namespace ft;
 
@@ -21,6 +22,15 @@ int main(int ac, char **av)
 		std::cout << "Too many args. Usage: ./webserv /path/to/config/file\n";
 		return -1;
 	}
+
+	StringArray sa;
+
+	sa.addEnvVar("REQUEST_METHOD", "GET");
+	sa.addEnvVar("QUERY_STRING", "name=Maurice&lastaname=Ravel");
+
+	std::cout << sa;
+
+	return 1;
 
 	WebServ	serv(av[1]);
 
