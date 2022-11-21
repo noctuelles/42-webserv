@@ -10,8 +10,6 @@
 
 #include "Http.hpp"
 
-namespace ft {
-
 using std::string;
 using std::vector;
 using std::map;
@@ -39,11 +37,11 @@ struct VirtServ
 		}
 
 		string							m_location_match;
-		bitset<http::NbrAvailableMethod>	m_methods;
+		bitset<HTTP::NbrAvailableMethod>	m_methods;
 		string							m_cgi_extension;
 		string							m_root;
 		vector<string>					m_index_vec;
-		map<http::StatusCode, string>	m_error_page_map;
+		map<HTTP::StatusCode, string>	m_error_page_map;
 		short							m_autoindex;
 	};
 
@@ -55,9 +53,7 @@ struct VirtServ
 	vector<sockaddr_in>				m_sockaddr_vec;
 	vector<string>					m_server_name_vec;
 };
-
-} // namespace ft
-  
-std::ostream& operator<<(std::ostream& os, const ft::VirtServ& servinfo);
+ 
+std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo);
 
 #endif /* VIRTSERV_HPP */

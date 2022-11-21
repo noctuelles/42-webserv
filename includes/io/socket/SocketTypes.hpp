@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/12 19:36:33 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/28 14:49:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:35:40 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 # include "SimpleSocket.hpp"
 
-namespace ft
+namespace IO
 {
 	typedef SimpleSocket<struct sockaddr_in>	InternetSocket;
 }

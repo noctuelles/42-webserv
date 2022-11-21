@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 16:08:33 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 14:50:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:16:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,66 +23,62 @@
 #include "Utils.hpp"
 #include "RequestHandler.hpp"
 
-namespace ft
+namespace IO
 {
-	namespace io
+	size_t	getFileSize(const char *filename)
 	{
-		size_t	getFileSize(const char *filename)
+		struct stat	statbuf;
+		if (stat(filename, &statbuf) < 0)
+			throw (std::runtime_error("stat"));
+		return (statbuf.st_size);
+	}
+
+	bool	isADirectory(const char* filename)
+	{
+		struct stat	statbuf;
+
+		if (stat(filename, &statbuf) < 0)
+			throw (std::runtime_error("stat"));
+		return (S_ISDIR(statbuf.st_mode));
+	}
+
+	struct stat	statWrapper(const char* filename)
+	{
+		struct stat	stat_buf;
+
+		if (stat(filename, &stat_buf) < 0)
 		{
-			struct stat	statbuf;
-
-			if (stat(filename, &statbuf) < 0)
-				throw (std::runtime_error("stat"));
-			return (statbuf.st_size);
+			if (errno != EACCES)
+				throw (HTTP::RequestHandler::Exception(HTTP::InternalServerError));
 		}
+		return (stat_buf);
+	}
 
-		bool	isADirectory(const char* filename)
-		{
-			struct stat	statbuf;
+	std::string	getFileLastModifiedDate(const char* filename)
+	{
+		struct stat	sbuf;
 
-			if (stat(filename, &statbuf) < 0)
-				throw (std::runtime_error("stat"));
-			return (S_ISDIR(statbuf.st_mode));
-		}
+		if (stat(filename, &sbuf) < 0)
+			throw (std::runtime_error("stat"));
+		return (Utils::formatTimeToRFC822(std::gmtime(&sbuf.st_mtim.tv_sec)));
+	}
 
-		struct stat	statWrapper(const char* filename)
-		{
-			struct stat	stat_buf;
+	std::string	loadFileContent(const char* filename, size_t maxSize)
+	{
+		using namespace	std;
 
-			if (stat(filename, &stat_buf) < 0)
-			{
-				if (errno != EACCES)
-					throw (http::RequestHandler::Exception(http::InternalServerError));
-			}
-			return (stat_buf);
-		}
+		ifstream					ifs;
+		size_t						fileSize;
+		istreambuf_iterator<char>	it(ifs);
+		string						s;
 
-		std::string	getFileLastModifiedDate(const char* filename)
-		{
-			struct stat	sbuf;
-
-			if (stat(filename, &sbuf) < 0)
-				throw (std::runtime_error("stat"));
-			return (utils::formatTimeToRFC822(std::gmtime(&sbuf.st_mtim.tv_sec)));
-		}
-
-		std::string	loadFileContent(const char* filename, size_t maxSize)
-		{
-			using namespace	std;
-
-			ifstream					ifs;
-			size_t						fileSize;
-			istreambuf_iterator<char>	it(ifs);
-			string						s;
-
-			ifs.exceptions(ifstream::badbit | ifstream::failbit);
-			ifs.open(filename, ios_base::in);
-			fileSize = getFileSize(filename);
-			if (fileSize >= maxSize)
-				throw (logic_error("file too big"));
-			s.reserve(fileSize);
-			s.assign(it, istreambuf_iterator<char>());
-			return (s);
-		}
+		ifs.exceptions(ifstream::badbit | ifstream::failbit);
+		ifs.open(filename, ios_base::in);
+		fileSize = getFileSize(filename);
+		if (fileSize >= maxSize)
+			throw (logic_error("file too big"));
+		s.reserve(fileSize);
+		s.assign(it, istreambuf_iterator<char>());
+		return (s);
 	}
 }

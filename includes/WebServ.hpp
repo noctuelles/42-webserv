@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:48:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:53:49 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,63 +24,60 @@
 # include "FileUtils.hpp"
 # include "VirtServInfo.hpp"
 
-namespace ft
+class WebServ
 {
-	class WebServ
-	{
-		public:
+	public:
 
-			typedef std::vector<InternetSocket*>	InSockVector;
+		typedef std::vector<IO::InternetSocket*>	InSockVector;
 
-			static const size_t			MaxErrorPageSize		= 2097152; // 2MB
-			static const unsigned int	MaxPendingConnection	= 5;
-			static const time_t			ConnectionTimeout		= 20; // in seconds.
-			static const std::string	Version;
+		static const size_t			MaxErrorPageSize		= 2097152; // 2MB
+		static const unsigned int	MaxPendingConnection	= 5;
+		static const time_t			ConnectionTimeout		= 20; // in seconds.
+		static const std::string	Version;
 
-			WebServ(const char *config_filename);
-			~WebServ();
+		WebServ(const char *config_filename);
+		~WebServ();
 
-			void	addListener(in_port_t port);
-			void	run();
+		void	addListener(in_port_t port);
+		void	run();
 
-			const VirtServInfo&		getVirtServInfo() const { return m_virtserv_info; }
+		const VirtServInfo&		getVirtServInfo() const { return m_virtserv_info; }
 
-		private:
+	private:
 
-			static const int	TimeoutCheckOccurence = 1000;
+		static const int	TimeoutCheckOccurence = 1000;
 
-			struct DeleteAndNullifyTimeoutSocket : std::unary_function<InternetSocket*&, void>
+		struct DeleteAndNullifyTimeoutSocket : std::unary_function<IO::InternetSocket*&, void>
+		{
+			inline void	operator()(IO::InternetSocket*& ptr)
 			{
-				inline void	operator()(InternetSocket*& ptr)
+				if (ptr->isTimeout())
 				{
-					if (ptr->isTimeout())
-					{
-						delete ptr;
-						ptr = 0;
-					}
+					delete ptr;
+					ptr = 0;
 				}
-			};
+			}
+		};
 
-			struct DeleteObj
-			{
-				template <class T>
-					inline void	operator()(T* ptr)
-					{
-						delete ptr;
-					}
-			};
+		struct DeleteObj
+		{
+			template <class T>
+				inline void	operator()(T* ptr)
+				{
+					delete ptr;
+				}
+		};
 
-			EPoll				m_poller;
-			InSockVector		m_socks;
-			VirtServInfo		m_virtserv_info;
+		IO::EPoll				m_poller;
+		InSockVector		m_socks;
+		VirtServInfo		m_virtserv_info;
 
-			WebServ(const WebServ& other);
-			WebServ&	operator=(const WebServ& rhs);
+		WebServ(const WebServ& other);
+		WebServ&	operator=(const WebServ& rhs);
 
-			inline void	_addConnection(int fd);
-			inline void	_removeSocket(InternetSocket* ptr);
-			inline void	_removeTimeoutSocket();
-	};
-}
+		inline void	_addConnection(int fd);
+		inline void	_removeSocket(IO::InternetSocket* ptr);
+		inline void	_removeTimeoutSocket();
+};
 
 #endif

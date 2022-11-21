@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 12:38:42 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 13:05:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:37:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include <unistd.h>
 
-namespace ft
+namespace IO
 {
 	EPoll::EPoll()
 		: FileDescriptor(epoll_create(HintSize)),

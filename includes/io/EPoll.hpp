@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 11:53:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 13:35:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:37:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 # include "FileDescriptor.hpp"
 
-namespace ft
+namespace IO
 {
 	class EPoll : public FileDescriptor
 	{
@@ -117,4 +117,5 @@ namespace ft
 			bool							m_expand, m_shrink;
 	};
 }
+
 #endif

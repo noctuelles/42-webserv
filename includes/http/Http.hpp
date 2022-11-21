@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/19 18:42:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:13:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 # include <vector>
 # include <algorithm>
 
-# define HTTP_ERRPAGE(X) (ft::http::StatusInfo(\
+# define HTTP_ERRPAGE(X) (HTTP::StatusInfo(\
 				X, \
 					"<html>\n"\
 						"\t<head><title>"X"</title></head>\n"\
@@ -37,110 +37,107 @@
 						"\t</body>\n"\
 					"</html>\n"))
 
-# define HTTP_STATUS(X) (ft::http::StatusInfo(\
+# define HTTP_STATUS(X) (HTTP::StatusInfo(\
 				X, \
 				""))
 
-namespace ft
+namespace HTTP
 {
-	namespace http
+	using std::string;
+
+	typedef std::pair<ci_string, std::string>	HeaderField;
+	typedef std::map<ci_string, std::string>	HeaderFieldMap;
+	typedef std::vector<HeaderField>			HeaderFieldVector;
+
+	/* Supported status code. Vim users, press 'gx' to open links (with the cursor under the link obviously). */
+
+	typedef enum eStatusCode
 	{
-		using std::string;
+		OK							= 200,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-200-ok */
+		BadRequest					= 400,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-400-bad-request */
+		Forbidden					= 403,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-403-forbidden */
+		NotFound					= 404,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-408-request-timeout */
+		MethodNotAllowed			= 405,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-405-method-not-allowed */
+		RequestTimeout				= 408,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-408-request-timeout */
+		ContentTooLarge				= 413,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-413-content-too-large */
+		UnsupportedMediaType		= 415,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-415-unsupported-media-type */
+		UriTooLong					= 414,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-414-uri-too-long */
+		UnprocessableContent		= 422,
+		InternalServerError			= 500,
+		NotImplemented				= 501,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-501-not-implemented */
+		VersionNotSupported			= 505,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-505-http-version-not-suppor */
+		MaxStatusCode				= 600 	/* Not used, only a placeholder for allocating the right amount of size of memory. */
+	} StatusCode;
 
-		typedef std::pair<ci_string, std::string>	HeaderField;
-		typedef std::map<ci_string, std::string>	HeaderFieldMap;
-		typedef std::vector<HeaderField>			HeaderFieldVector;
+	/* Supported method */
 
-		/* Supported status code. Vim users, press 'gx' to open links (with the cursor under the link obviously). */
+	typedef enum eMethod
+	{
+		Get,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-get */
+		Post,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-post */
+		Delete,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-delete */
+		NbrAvailableMethod = 3,						/* Not used, only a placeholder. */
+		Err = 3							/* RESERVED */
+	} Method;
 
-		typedef enum eStatusCode
+	struct StatusInfo
+	{
+		StatusInfo()
+			: phrase(), page()
+		{}
+
+		StatusInfo(const std::string& phrase, const std::string& page_content)
+			: phrase(phrase), page(page_content)
 		{
-			OK							= 200,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-200-ok */
-			BadRequest					= 400,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-400-bad-request */
-			Forbidden					= 403,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-403-forbidden */
-			NotFound					= 404,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-408-request-timeout */
-			MethodNotAllowed			= 405,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-405-method-not-allowed */
-			RequestTimeout				= 408,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-408-request-timeout */
-			ContentTooLarge				= 413,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-413-content-too-large */
-			UnsupportedMediaType		= 415,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-415-unsupported-media-type */
-			UriTooLong					= 414,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-414-uri-too-long */
-			UnprocessableContent		= 422,
-			InternalServerError			= 500,
-			NotImplemented				= 501,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-501-not-implemented */
-			VersionNotSupported			= 505,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-505-http-version-not-suppor */
-			MaxStatusCode				= 600 	/* Not used, only a placeholder for allocating the right amount of size of memory. */
-		} StatusCode;
+		}
 
-		/* Supported method */
+		string	phrase;
+		string	page;
+	};
 
-		typedef enum eMethod
-		{
-			Get,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-get */
-			Post,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-post */
-			Delete,								/* https://www.rfc-editor.org/rfc/rfc9110.html#name-delete */
-			NbrAvailableMethod = 3,						/* Not used, only a placeholder. */
-			Err = 3							/* RESERVED */
-		} Method;
+	class Field
+	{
+		public:
 
-		struct StatusInfo
-		{
-			StatusInfo()
-				: phrase(), page()
+			operator	const ci_string&() const {return (m_str);}
+
+			static inline Field	Server()			{return Field("Server");}
+			static inline Field	Date()				{return Field("Date");}
+			static inline Field	ContentLenght()		{return Field("Content-Lenght");}
+			static inline Field	ContentType()		{return Field("Content-Type");}
+			static inline Field	Connection()		{return Field("Connection");}
+			static inline Field	Host()				{return Field("Host");}
+			static inline Field	SetCookie()			{return Field("Set-Cookie");}
+			static inline Field	Allow()				{return Field("Allow");}
+
+			inline const ci_string&	str() const
+			{
+				return (m_str);
+			}
+
+		private:
+
+			Field();
+			Field(const ci_string& field)
+				: m_str(field)
 			{}
 
-			StatusInfo(const std::string& phrase, const std::string& page_content)
-				: phrase(phrase), page(page_content)
-			{
-			}
+			ci_string	m_str;
+	};
 
-			string	phrase;
-			string	page;
-		};
-
-		class Field
+	struct IsHostField
+	{
+		inline bool	operator()(const HeaderFieldMap::value_type& val)
 		{
-			public:
+			if (val.first.compare(Field::Host()) == 0)
+				return (true);
+			return (false);
+		}
+	};
 
-				operator	const ci_string&() const {return (m_str);}
-
-				static inline Field	Server()			{return Field("Server");}
-				static inline Field	Date()				{return Field("Date");}
-				static inline Field	ContentLenght()		{return Field("Content-Lenght");}
-				static inline Field	ContentType()		{return Field("Content-Type");}
-				static inline Field	Connection()		{return Field("Connection");}
-				static inline Field	Host()				{return Field("Host");}
-				static inline Field	SetCookie()			{return Field("Set-Cookie");}
-				static inline Field	Allow()				{return Field("Allow");}
-
-				inline const ci_string&	str() const
-				{
-					return (m_str);
-				}
-
-			private:
-
-				Field();
-				Field(const ci_string& field)
-					: m_str(field)
-				{}
-
-				ci_string	m_str;
-		};
-
-		struct IsHostField
-		{
-			inline bool	operator()(const HeaderFieldMap::value_type& val)
-			{
-				if (val.first.compare(Field::Host()) == 0)
-					return (true);
-				return (false);
-			}
-		};
-
-		extern const char*	CRLF;
-		extern const char*	MethodTable[];
-		extern const char*	RFC822_DateFormat;
-	}
+	extern const char*	CRLF;
+	extern const char*	MethodTable[];
+	extern const char*	RFC822_DateFormat;
 }
 
 #endif

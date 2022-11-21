@@ -15,11 +15,9 @@
 #include "VirtServ.hpp"
 #include "less_sockaddr.hpp"
 
-namespace ft
-{
-	using std::vector;
-	using std::map;
-	using std::stringstream;
+using std::vector;
+using std::map;
+using std::stringstream;
 
 class VirtServInfo
 {
@@ -171,7 +169,5 @@ class VirtServInfo
 	void _parseLocationLimitExcept(VirtServInfo::configstream_iterator& it);
 	void _parseLocationCgiSetup(VirtServInfo::configstream_iterator& it); // I hereby protest against the existence of this function
 };
-
-} // namespace ft
 
 #endif /* VIRTSERVINFO_HPP */

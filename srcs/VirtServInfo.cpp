@@ -21,9 +21,6 @@
 #include "VirtServInfo.hpp"
 #include "Utils.hpp"
 
-namespace ft
-{
-
 using std::ifstream;
 using std::string;
 using std::vector;
@@ -289,11 +286,11 @@ void VirtServInfo::_parseLocationLimitExcept(VirtServInfo::configstream_iterator
 	for (++it; not it.is_delim() ; ++it)
 	{
 		if ( *it == "GET" )
-			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(http::Get);
+			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(HTTP::Get);
 		else if ( *it == "POST" )
-			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(http::Post);
+			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(HTTP::Post);
 		else if ( *it == "DELETE" )
-			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(http::Delete);
+			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(HTTP::Delete);
 		else
 			throw ConfigFileError("Invalid or unsupported method for limit_except directive in location block: Supported methods are \"GET\", \"POST\" and \"DELETE\"");
 	}
@@ -446,9 +443,9 @@ void VirtServInfo::_parseIndex(VirtServInfo::configstream_iterator& it)
 //	 Check if it's a valid status code ? Pb not worth it
 void VirtServInfo::_parseErrorPage(VirtServInfo::configstream_iterator& it)
 {
-	stack<http::StatusCode> codes;
+	stack<HTTP::StatusCode> codes;
 	for (++it; not it.is_delim() and (*it)[0] != '/'; ++it)
-		codes.push((http::StatusCode)xatoi(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
+		codes.push((HTTP::StatusCode)xatoi(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
 	if (it.is_delim())
 		throw ConfigFileError("Missing path to default error page file at the end of error_page directive in server block");
 	else if ((*it)[0] != '/')
@@ -488,5 +485,3 @@ void VirtServInfo::_parseCgiSetup(VirtServInfo::configstream_iterator& it)
 
 #undef BEFORE 
 #undef AFTER
-
-} // namespace ft

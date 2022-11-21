@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/10 16:06:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:38:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-namespace ft
+namespace IO
 {
 	ListeningSocket::ListeningSocket()
 		: InternetSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP)

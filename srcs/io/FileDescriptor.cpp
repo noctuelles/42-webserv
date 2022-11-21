@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 08:13:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/10/30 12:40:33 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:36:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <fcntl.h>
 #include <iostream>
 
-namespace ft
+namespace IO
 {
 	FileDescriptor::FileDescriptor(int fd)
 		: m_fd(fd), m_should_close(true)

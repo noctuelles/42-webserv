@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:53:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 15:42:25 by tpouget          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:38:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 # include "SocketTypes.hpp"
 
-namespace ft
+namespace IO
 {
 	class ListeningSocket : public InternetSocket // see SocketTypes.hpp
 	{

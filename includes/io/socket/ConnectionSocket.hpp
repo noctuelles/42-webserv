@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/20 20:53:50 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:55:31 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,10 @@
 # include "SocketTypes.hpp"
 # include "RequestHandler.hpp"
 
+using HTTP::RequestHandler;
 
-namespace ft
+namespace IO
 {
-	using http::RequestHandler;
-
 	class ConnectionSocket : public InternetSocket
 	{
 		public:

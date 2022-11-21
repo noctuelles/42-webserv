@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/20 17:41:50 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:10:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,192 +33,184 @@ using std::vector;
 using std::string;
 using std::ifstream;
 
-namespace ft
+namespace HTTP
 {
-	namespace http
+	class RequestHandler
 	{
-		class RequestHandler
-		{
-			public:
+		public:
 
-				enum State
-				{
-					FETCHING_REQUEST_HEADER,
-					FETCHING_REQUEST_BODY,
-					PROCESSING_RESPONSE_HEADER,
-					PROCESSING_RESPONSE_BODY,
-					DONE
-				};
+			enum State
+			{
+				FETCHING_REQUEST_HEADER,
+				FETCHING_REQUEST_BODY,
+				PROCESSING_RESPONSE_HEADER,
+				PROCESSING_RESPONSE_BODY,
+				DONE
+			};
 
-				typedef pair<const void*, size_t>	DataInfo;
+			typedef pair<const void*, size_t>	DataInfo;
 
-				class Exception
-				{
-					public:
+			class Exception
+			{
+				public:
 
-						Exception(StatusCode code) :
-							m_code(code)
-						{}
+					Exception(StatusCode code) :
+						m_code(code)
+					{}
 
-						StatusCode	what() const {return (m_code);}
+					StatusCode	what() const {return (m_code);}
 
-					private:
+				private:
 
-						StatusCode m_code;
-				};
+					StatusCode m_code;
+			};
 
-				struct io
-				{
-					static bool	isAReadableRegFile(const char* path);
-				};
+			RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
+			~RequestHandler();
 
-				RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
-				~RequestHandler();
+			State		fetchIncomingData(const std::vector<uint8_t>& data_buff, size_t recv_bytes);
+			State		prepareOutcomingData();
 
-				State		fetchIncomingData(const std::vector<uint8_t>& data_buff, size_t recv_bytes);
-				State		prepareOutcomingData();
+			void			setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
 
-				void			setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
+			DataInfo		getDataToSend() const;
+			StatusCode		getStatusCode() const;
+			const string&	getRequestLine() const;
+			const string&	getAbsPath()    const;
 
-				DataInfo		getDataToSend() const;
-				StatusCode		getStatusCode() const;
-				const string&	getRequestLine() const;
-				const string&	getAbsPath()    const;
+		private:
 
-			private:
+			/* ################################ Typedefs ################################ */
 
-				/* ################################ Typedefs ################################ */
+			typedef void (RequestHandler::*methodInitFnct)();
+			typedef void (RequestHandler::*methodHeaderFnct)(ResponseHeader&);
+			typedef void (RequestHandler::*methodSendFnct)();
 
-				typedef void (RequestHandler::*methodInitFnct)();
-				typedef void (RequestHandler::*methodHeaderFnct)(ResponseHeader&);
-				typedef void (RequestHandler::*methodSendFnct)();
+			/* ############################## Nested Class ############################## */
 
-				/* ############################## Nested Class ############################## */
+			class MatchingServerName : public std::unary_function<const std::vector<VirtServ*>::value_type, bool>
+			{
+				public:
 
-				class MatchingServerName : public std::unary_function<const std::vector<VirtServ*>::value_type, bool>
-				{
-					public:
+					MatchingServerName(const string& hostField)
+						: m_host_field(hostField) {}
 
-						MatchingServerName(const string& hostField)
-							: m_host_field(hostField) {}
-
-						inline bool	operator()(const vector<VirtServ*>::value_type ptr)
+					inline bool	operator()(const vector<VirtServ*>::value_type ptr)
+					{
+						for(vector<std::string>::const_iterator it = ptr->m_server_name_vec.begin();
+							it != ptr->m_server_name_vec.end();
+							++it)
 						{
-							for(vector<std::string>::const_iterator it = ptr->m_server_name_vec.begin();
-								it != ptr->m_server_name_vec.end();
-								++it)
-							{
-								if (*it == m_host_field)
-									return true;
-							}
-							return false;
+							if (*it == m_host_field)
+								return true;
 						}
+						return false;
+					}
 
-					private:
+				private:
 
-						const string&	m_host_field;
-				};
+					const string&	m_host_field;
+			};
 
-				class ValidIndexFile : public std::unary_function<const string&, bool>
-				{
-					public:
+			class ValidIndexFile : public std::unary_function<const string&, bool>
+			{
+				public:
 
-						ValidIndexFile(const string& prefix)
-							: m_prefix(prefix) {}
+					ValidIndexFile(const string& prefix)
+						: m_prefix(prefix) {}
 
-						bool operator()(const string& index)
+					bool operator()(const string& index)
+					{
+						struct stat	stat_buf;
+						string		path(m_prefix);
+
+						if (::stat(path.append(index).c_str(), &stat_buf) < 0)
 						{
-							struct stat	stat_buf;
-							string		path(m_prefix);
-
-							if (::stat(path.append(index).c_str(), &stat_buf) < 0)
-							{
-								if (errno != ENOENT)
-									throw (Exception(InternalServerError));
-							}
-							else if (!S_ISDIR(stat_buf.st_mode) && (stat_buf.st_mode & S_IRUSR))
-								return (true);
-							return (false);
+							if (errno != ENOENT)
+								throw (Exception(InternalServerError));
 						}
+						else if (!S_ISDIR(stat_buf.st_mode) && (stat_buf.st_mode & S_IRUSR))
+							return (true);
+						return (false);
+					}
 
-					private:
+				private:
 
-						const string	&m_prefix;
-				};
+					const string	&m_prefix;
+			};
 
-				static const methodInitFnct				m_method_init_fnct[http::NbrAvailableMethod];
-				static const methodHeaderFnct			m_method_header_fnct[http::NbrAvailableMethod + 1];
-				static const methodSendFnct				m_method_send_fnct[http::NbrAvailableMethod + 1];
+			static const methodInitFnct				m_method_init_fnct[HTTP::NbrAvailableMethod];
+			static const methodHeaderFnct			m_method_header_fnct[HTTP::NbrAvailableMethod + 1];
+			static const methodSendFnct				m_method_send_fnct[HTTP::NbrAvailableMethod + 1];
 
-				AutoIndexHandler					m_autoindex;
+			State								m_state;
+			const VirtServInfo::VirtServMap&	m_virtserv_map;
+			const VirtServ*						m_virtserv;
+			const VirtServ::RouteOptions*		m_route;
+			struct sockaddr_in					m_bounded_sock;
 
-				State								m_state;
-				const VirtServInfo::VirtServMap&	m_virtserv_map;
-				const VirtServ*						m_virtserv;
-				const VirtServ::RouteOptions*		m_route;
-				struct sockaddr_in					m_bounded_sock;
+			vector<uint8_t>				m_data_buff;
+			const void*					m_data_to_send;
+			size_t						m_data_to_send_size;
+			string						m_page_to_send;
 
-				vector<uint8_t>				m_data_buff;
-				const void*					m_data_to_send;
-				size_t						m_data_to_send_size;
-				string						m_page_to_send;
+			ifstream					m_file_handle;
+			RequestParser::HeaderInfo	m_header_info;
+			RequestParser::UriInfo		m_uri_info;
+			RequestParser				m_header_parser;
+			StatusCode					m_status_code;
+			string						m_ressource_path;
 
-				ifstream					m_file_handle;
-				RequestParser::HeaderInfo	m_header_info;
-				RequestParser::UriInfo		m_uri_info;
-				RequestParser				m_header_parser;
-				StatusCode					m_status_code;
-				string						m_ressource_path;
+			/* ############################ Private function ############################ */
 
-				/* ############################ Private function ############################ */
+			/* These functions allow us to describe different behavior for each method.
+			 *
+			 * *Init* functions are called when the request parsing is done : they setup invariants for the rest of the
+			 * sending process (ex: with GET, opening a file prior to reading).
+			 *
+			 * *Header* functions are called when the invariants are sucessfully established, and we can generate a correct
+			 * response header (ex: with GET, fill Content-Type and Content-Length header fields).
+			 *
+			 * *Send* functions are called when we're sending an (optionnal) body to the client.
+			 * They describe how we should send the content. */
 
-				/* These functions allow us to describe different behavior for each method.
-				 *
-				 * *Init* functions are called when the request parsing is done : they setup invariants for the rest of the
-				 * sending process (ex: with GET, opening a file prior to reading).
-				 *
-				 * *Header* functions are called when the invariants are sucessfully established, and we can generate a correct
-				 * response header (ex: with GET, fill Content-Type and Content-Length header fields).
-				 *
-				 * *Send* functions are called when we're sending an (optionnal) body to the client.
-				 * They describe how we should send the content. */
+			inline bool						_state(State state) {return (m_state == state);}
+			inline void						_setState(State state)
+			{
+				m_state = state;
+			}
 
-				inline bool						_state(State state) {return (m_state == state);}
-				inline void						_setState(State state)
-				{
-					m_state = state;
-				}
+			inline void	_setErrorState(State state, StatusCode code)
+			{
+				_setState(state);
+				m_status_code = code;
+				m_header_info.method = Err;
+			}
 
-				inline void	_setErrorState(State state, StatusCode code)
-				{
-					_setState(state);
-					m_status_code = code;
-					m_header_info.method = Err;
-				}
+			inline bool	_errorState() const
+			{
+				return (m_status_code != OK);
+			}
 
-				inline bool	_errorState() const
-				{
-					return (m_status_code != OK);
-				}
+			const vector<VirtServ*>&	_getBoundedVirtServ();
+			void						_parseGeneralHeaderFields();
 
-				const vector<VirtServ*>&	_getBoundedVirtServ();
-				void						_parseGeneralHeaderFields();
+			bool	_isAReadableRegFile(const char* path);
 
-				void	_methodInitGet();
-				void	_methodInitPost();
-				void	_methodInitDelete();
+			void	_methodInitGet();
+			void	_methodInitPost();
+			void	_methodInitDelete();
 
-				void	_methodHeaderGet(ResponseHeader& header);
-				void	_methodHeaderPost(ResponseHeader& header);
-				void	_methodHeaderDelete(ResponseHeader& header);
-				void	_methodHeaderError(ResponseHeader& header);
+			void	_methodHeaderGet(ResponseHeader& header);
+			void	_methodHeaderPost(ResponseHeader& header);
+			void	_methodHeaderDelete(ResponseHeader& header);
+			void	_methodHeaderError(ResponseHeader& header);
 
-				void	_methodSendGet();
-				void	_methodSendPost();
-				void	_methodSendDelete();
-				void	_methodSendError();
-		};
-	}
+			void	_methodSendGet();
+			void	_methodSendPost();
+			void	_methodSendDelete();
+			void	_methodSendError();
+	};
 }
 
 #endif

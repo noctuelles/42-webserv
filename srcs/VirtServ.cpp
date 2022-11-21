@@ -20,7 +20,7 @@ std::ostream& operator<<(std::ostream& os, vector<string>& vec)
 	return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const ft::VirtServ::RouteOptions& routeinfo)
+std::ostream& operator<<(std::ostream& os, const VirtServ::RouteOptions& routeinfo)
 {
 	os << "\t\t-------------------------\n";
 	os	<< "\t\turi:\t\t" ;
@@ -43,9 +43,9 @@ std::ostream& operator<<(std::ostream& os, const ft::VirtServ::RouteOptions& rou
 	os << '\n';
 
 	os	<< "\t\tmethods:\t";
-	os << (routeinfo.m_methods.test(ft::http::Get) ? " GET " : "");
-	os << (routeinfo.m_methods.test(ft::http::Post) ? " POST " : "");
-	os << (routeinfo.m_methods.test(ft::http::Delete) ? " DELETE " : "");
+	os << (routeinfo.m_methods.test(HTTP::Get) ? " GET " : "");
+	os << (routeinfo.m_methods.test(HTTP::Post) ? " POST " : "");
+	os << (routeinfo.m_methods.test(HTTP::Delete) ? " DELETE " : "");
 	os << '\n';
 
 	os	<< "\t\tcgi_setup:\t";
@@ -57,7 +57,7 @@ std::ostream& operator<<(std::ostream& os, const ft::VirtServ::RouteOptions& rou
 	return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const ft::VirtServ& servinfo)
+std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 {
 	os	<< "VIRTUAL SERVER: \n";
 
@@ -73,7 +73,7 @@ std::ostream& operator<<(std::ostream& os, const ft::VirtServ& servinfo)
 	os << '\n';
 
 	os	<< "\terror_page:\t\t";
-	for (map<ft::http::StatusCode, string>::const_iterator it = servinfo.m_default_route_options.m_error_page_map.begin();
+	for (map<HTTP::StatusCode, string>::const_iterator it = servinfo.m_default_route_options.m_error_page_map.begin();
 			it != servinfo.m_default_route_options.m_error_page_map.end(); ++it)
 	{
 		os << it->first <<": "<< it->second << '\t';
@@ -96,9 +96,9 @@ std::ostream& operator<<(std::ostream& os, const ft::VirtServ& servinfo)
 	os << '\n';
 
 	os	<< "\tmethods:\t";
-	os << (servinfo.m_default_route_options.m_methods.test(ft::http::Get) ? " GET " : "");
-	os << (servinfo.m_default_route_options.m_methods.test(ft::http::Post) ? " POST " : "");
-	os << (servinfo.m_default_route_options.m_methods.test(ft::http::Delete) ? " DELETE " : "");
+	os << (servinfo.m_default_route_options.m_methods.test(HTTP::Get) ? " GET " : "");
+	os << (servinfo.m_default_route_options.m_methods.test(HTTP::Post) ? " POST " : "");
+	os << (servinfo.m_default_route_options.m_methods.test(HTTP::Delete) ? " DELETE " : "");
 	os << '\n';
 
 	os	<< "\tcgi_setup:\t";

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 18:40:23 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/07 18:13:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:35:52 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # include <fcntl.h>
 # include <stdexcept>
 
-namespace ft
+namespace IO
 {
 	template <class T>
 		class SimpleSocket : public FileDescriptor

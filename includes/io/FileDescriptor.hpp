@@ -6,14 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 08:13:13 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/13 13:22:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:36:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FILEDESCRIPTOR_CLASS_HPP
 # define FILEDESCRIPTOR_CLASS_HPP
 
-namespace ft
+namespace IO
 {
 	class FileDescriptor
 	{

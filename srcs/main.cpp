@@ -13,8 +13,6 @@
 #include "StatusInfoPages.hpp"
 #include "StringArray.hpp"
 
-using namespace ft;
-
 int main(int ac, char **av)
 {
 	if (ac > 2)

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/19 00:46:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:35:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 #include <ctime>
 
-namespace ft
+namespace IO
 {
 	ConnectionSocket::ConnectionSocket(int fd, const VirtServInfo::VirtServMap& virt_serv_map)
 		: InternetSocket(fd),

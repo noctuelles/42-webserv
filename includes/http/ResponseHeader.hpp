@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/27 14:20:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/15 15:37:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 17:43:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,49 +17,46 @@
 # include <map>
 # include <string>
 
-namespace ft
+namespace HTTP
 {
-	namespace http
+	class ResponseHeader
 	{
-		class ResponseHeader
-		{
-			public:
+		public:
 
-				ResponseHeader();
-				ResponseHeader(const ResponseHeader& other);
-				~ResponseHeader();
+			ResponseHeader();
+			ResponseHeader(const ResponseHeader& other);
+			~ResponseHeader();
 
-				ResponseHeader&	operator=(const ResponseHeader& rhs);
+			ResponseHeader&	operator=(const ResponseHeader& rhs);
 
-				void			setReasonPhrase(const std::string& phrase);
+			void			setReasonPhrase(const std::string& phrase);
 
-				void			addField(const Field& field, const std::string& value = "");
-				void			removeField(const Field& field);
-				void			modifyField(const Field& field, const std::string& value);
+			void			addField(const Field& field, const std::string& value = "");
+			void			removeField(const Field& field);
+			void			modifyField(const Field& field, const std::string& value);
 
-				std::string&		searchField(const Field& field);
-				const std::string&	searchField(const Field& field) const;
+			std::string&		searchField(const Field& field);
+			const std::string&	searchField(const Field& field) const;
 
-				const char*			toCString() const;
-				const std::string&	toString() const;
+			const char*			toCString() const;
+			const std::string&	toString() const;
 
-				size_t				size() const;
+			size_t				size() const;
 
-			private:
+		private:
 
 
-				static const size_t	DefaultCacheSize = 2048;
-				HeaderFieldMap				m_header_field;
+			static const size_t	DefaultCacheSize = 2048;
+			HeaderFieldMap				m_header_field;
 
-				std::string					m_http_version;
-				std::string					m_reason_phrase;
+			std::string					m_http_version;
+			std::string					m_reason_phrase;
 
-				mutable std::string					m_cache;
-				mutable bool						m_build_cache;
+			mutable std::string					m_cache;
+			mutable bool						m_build_cache;
 
-				void		_buildCache() const;
-		};
-	}
+			void		_buildCache() const;
+	};
 }
 
 #endif
