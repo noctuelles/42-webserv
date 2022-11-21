@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:10:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 13:03:45 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/19 17:42:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ namespace ft
 {
 	namespace utils
 	{
-		extern size_t	DateBufferSize;
+		extern const size_t	DateBufferSize;
 
 		// Return an RFC 822-compliant date format.
 		std::string	getRFC822NowDate();

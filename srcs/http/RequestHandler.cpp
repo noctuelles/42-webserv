@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/19 01:00:15 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/20 17:42:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,17 +53,22 @@ namespace ft
 		};
 
 		RequestHandler::RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
+			m_autoindex(),
 			m_state(FETCHING_REQUEST_HEADER),
 			m_virtserv_map(virt_serv_map),
 			m_virtserv(NULL),
 			m_route(NULL),
 			m_bounded_sock(),
 			m_data_buff(ConnectionSocket::MaxSendBufferSize),
+			m_data_to_send(NULL),
+			m_data_to_send_size(0),
+			m_page_to_send(),
 			m_file_handle(),
 			m_header_info(),
 			m_uri_info(),
 			m_header_parser(m_header_info, m_uri_info),
-			m_status_code(OK)
+			m_status_code(OK),
+			m_ressource_path()
 		{
 		}
 
@@ -79,9 +84,10 @@ namespace ft
 					{
 						_parseGeneralHeaderFields();
 
-						m_uri_info.absolute_path.insert(0, m_route->m_root);
-
 						::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << '\n';
+
+						m_ressource_path = m_uri_info.absolute_path;
+						m_ressource_path.insert(0, m_route->m_root);
 
 						(this->*m_method_init_fnct[m_header_info.method])();
 

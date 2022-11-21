@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/17 14:32:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/20 17:41:50 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 # include "RequestParser.hpp"
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
+# include "AutoIndex.hpp"
 
 using std::pair;
 using std::vector;
@@ -149,6 +150,8 @@ namespace ft
 				static const methodHeaderFnct			m_method_header_fnct[http::NbrAvailableMethod + 1];
 				static const methodSendFnct				m_method_send_fnct[http::NbrAvailableMethod + 1];
 
+				AutoIndexHandler					m_autoindex;
+
 				State								m_state;
 				const VirtServInfo::VirtServMap&	m_virtserv_map;
 				const VirtServ*						m_virtserv;
@@ -158,12 +161,14 @@ namespace ft
 				vector<uint8_t>				m_data_buff;
 				const void*					m_data_to_send;
 				size_t						m_data_to_send_size;
+				string						m_page_to_send;
 
 				ifstream					m_file_handle;
 				RequestParser::HeaderInfo	m_header_info;
 				RequestParser::UriInfo		m_uri_info;
 				RequestParser				m_header_parser;
 				StatusCode					m_status_code;
+				string						m_ressource_path;
 
 				/* ############################ Private function ############################ */
 

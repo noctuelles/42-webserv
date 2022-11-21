@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <cstring>
 #include <ctime>
 #include <dirent.h>
 #include <iomanip>
@@ -59,6 +60,8 @@ struct AutoIndexFile
 
 	static bool compByDate(const AutoIndexFile& lhs, const AutoIndexFile& rhs)
 	{
+		if (lhs.name == "..")
+			return (true);
 		if (lhs.is_a_dir && !rhs.is_a_dir)
 			return (true);
 		if (!lhs.is_a_dir && rhs.is_a_dir)
@@ -70,6 +73,8 @@ struct AutoIndexFile
 
 	static bool compBySize(const AutoIndexFile& lhs, const AutoIndexFile& rhs)
 	{
+		if (lhs.name == "..")
+			return (true);
 		if (lhs.is_a_dir && !rhs.is_a_dir)
 			return (true);
 		if (!lhs.is_a_dir && rhs.is_a_dir)
@@ -81,6 +86,8 @@ struct AutoIndexFile
 
 	static bool	compByName(const AutoIndexFile& lhs, const AutoIndexFile& rhs)
 	{
+		if (lhs.name == "..")
+			return (true);
 		if (lhs.is_a_dir && !rhs.is_a_dir)
 			return (true);
 		if (!lhs.is_a_dir && rhs.is_a_dir)
@@ -137,10 +144,10 @@ void	scan_cwd(list<AutoIndexFile>& file_list, const string& path)
 
 		if (fstatat(::dirfd(dir), curr_dir->d_name, &sbuf, 0) < 0)
 			throw (std::runtime_error("::stat"));
+		if (::strcmp(curr_dir->d_name, ".") == 0)
+			continue ;
 		if (!(sbuf.st_mode & S_IRUSR))
 			continue ;
-		if (curr_dir->d_name[0] == '.')
-				continue ;
 		switch (sbuf.st_mode & S_IFMT)
 		{
 			case S_IFDIR:
@@ -163,7 +170,7 @@ int main(int argc, char**argv)
 	try
 	{
 		scan_cwd(curr_cwd,argv[1]);
-		curr_cwd.sort(AutoIndexFile::compBySize);
+		curr_cwd.sort(AutoIndexFile::compByDate);
 	}
 	catch (std::exception& e)
 	{

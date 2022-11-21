@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 16:10:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/19 18:42:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ namespace ft
 			ContentTooLarge				= 413,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-413-content-too-large */
 			UnsupportedMediaType		= 415,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-415-unsupported-media-type */
 			UriTooLong					= 414,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-414-uri-too-long */
+			UnprocessableContent		= 422,
 			InternalServerError			= 500,
 			NotImplemented				= 501,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-501-not-implemented */
 			VersionNotSupported			= 505,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-505-http-version-not-suppor */

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/17 14:29:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/20 17:45:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,20 @@ namespace ft
 	{
 		void	RequestHandler::_methodHeaderGet(ResponseHeader& header)
 		{
-			size_t	fileSize = ::ft::io::getFileSize(m_uri_info.absolute_path.c_str());
-
 			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
-			header.addField(Field::ContentLenght(), utils::integralToString(fileSize));
-			header.addField(Field::ContentType(), getMimeFromFileExtension(m_uri_info.absolute_path.c_str()));
+			if (m_page_to_send.empty())
+			{
+				size_t	fileSize = ::ft::io::getFileSize(m_ressource_path.c_str());
+
+				header.addField(Field::ContentLenght(), utils::integralToString(fileSize));
+				header.addField(Field::ContentType(), getMimeFromFileExtension(m_ressource_path.c_str()));
+			}
+			else
+			{
+				header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+				header.addField(Field::ContentLenght(), utils::integralToString(m_page_to_send.size()));
+				header.addField(Field::ContentType(), MIME::TextHtml());
+			}
 		}
 
 		void	RequestHandler::_methodHeaderPost(ResponseHeader& header)

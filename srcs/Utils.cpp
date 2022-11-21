@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/09 12:59:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/19 17:42:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ namespace ft
 {
 	namespace utils
 	{
-		size_t	DateBufferSize = 1024;
+		size_t	const DateBufferSize = 1024;
 
 		std::string	getRFC822NowDate()
 		{

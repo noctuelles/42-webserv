@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/16 18:33:29 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/20 16:48:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,23 @@ namespace ft
 	{
 		void	RequestHandler::_methodSendGet()
 		{
-			m_file_handle.read(reinterpret_cast<char *>(m_data_buff.data()), m_data_buff.size());
-
-			m_data_to_send = m_data_buff.data();
-			m_data_to_send_size = m_file_handle.gcount();
-
-			if (m_file_handle.eof())
+			if (m_page_to_send.empty())
 			{
-				m_file_handle.close();
+				m_file_handle.read(reinterpret_cast<char *>(m_data_buff.data()), m_data_buff.size());
+
+				m_data_to_send = m_data_buff.data();
+				m_data_to_send_size = m_file_handle.gcount();
+
+				if (m_file_handle.eof())
+				{
+					m_file_handle.close();
+					m_state = DONE;
+				}
+			}
+			else
+			{
+				m_data_to_send = m_page_to_send.c_str();
+				m_data_to_send_size = m_page_to_send.size();
 				m_state = DONE;
 			}
 		}
