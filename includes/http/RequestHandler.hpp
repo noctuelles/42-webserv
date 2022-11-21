@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:10:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:26:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,13 @@ namespace HTTP
 				PROCESSING_RESPONSE_HEADER,
 				PROCESSING_RESPONSE_BODY,
 				DONE
+			};
+
+			enum Type
+			{
+				FILE,
+				CGI,
+				AUTOINDEX
 			};
 
 			typedef pair<const void*, size_t>	DataInfo;
@@ -144,6 +151,7 @@ namespace HTTP
 			static const methodSendFnct				m_method_send_fnct[HTTP::NbrAvailableMethod + 1];
 
 			State								m_state;
+			Type								m_request_type;
 			const VirtServInfo::VirtServMap&	m_virtserv_map;
 			const VirtServ*						m_virtserv;
 			const VirtServ::RouteOptions*		m_route;

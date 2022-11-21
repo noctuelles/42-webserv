@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:45:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:16:45 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:21:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,24 +25,24 @@ namespace HTTP
 {
 	namespace AutoIndex
 	{
-		File::File(const string& path, const string& name, time_t last_modif, bool is_a_dir, off_t size) :
+		FileInfo::FileInfo(const string& path, const string& name, time_t last_modif, bool is_a_dir, off_t size) :
 			name_info(std::make_pair(path, name)),
 			last_modified(std::make_pair(last_modif, Utils::formatTimeToRFC822(std::gmtime(&last_modif)))),
-			size(std::make_pair(size, getFileUnits(size))),
+			size(std::make_pair(size, getFileInfoUnits(size))),
 			is_a_dir(is_a_dir)
 		{
 			if (is_a_dir)
 				this->size.second = "-";
 		}
 
-		File::File() :
+		FileInfo::FileInfo() :
 			name_info(),
 			last_modified(),
 			size(),
 			is_a_dir()
 		{}
 
-		std::string	File::getFileUnits(off_t size)
+		std::string	FileInfo::getFileInfoUnits(off_t size)
 		{
 			static const char*	unit[5] = {"B", "KB", "MB", "GB", "TB"};
 			size_t				i = 0;
@@ -79,7 +79,7 @@ namespace HTTP
 			return (ptr);
 		}
 
-		static const string	generateHTML(const std::list<File>& files, const string& req_uri)
+		static const string	generateHTML(const std::list<FileInfo>& files, const string& req_uri)
 		{
 			std::stringstream	ss;
 
@@ -96,7 +96,7 @@ namespace HTTP
 				<< "			</tr>\n"
 				<< "			<tr><th colspan=\"5\"><hr></th></tr>\n";
 
-			for (std::list<File>::const_iterator it = files.begin(); it != files.end(); it++)
+			for (std::list<FileInfo>::const_iterator it = files.begin(); it != files.end(); it++)
 			{
 				ss << "			<tr>\n"
 					<<"				<td valign=\"top\"><img src=\"/images/";
@@ -123,16 +123,16 @@ namespace HTTP
 		const string	generatePage(const vector<VirtServ::RouteOptions>& routes, const VirtServ::RouteOptions& curr_route,
 				const string& req_uri, const string& path, const string& query)
 		{
-			Dir				dir(path.c_str());
-			struct dirent*	dir_stream = NULL;
-			std::list<File>	files;
-			File			parent_dir;
-			cmpFnct			cmp_fnct = &File::compByName;
+			Dir					dir(path.c_str());
+			struct dirent*		dir_stream = NULL;
+			std::list<FileInfo>	files;
+			FileInfo			parent_dir;
+			cmpFnct				cmp_fnct = &FileInfo::compByName;
 
 			if (query.compare("byDate") == 0)
-				cmp_fnct = &File::compByDate;
+				cmp_fnct = &FileInfo::compByDate;
 			else if (query.compare("bySize") == 0)
-				cmp_fnct = &File::compBySize;
+				cmp_fnct = &FileInfo::compBySize;
 
 			// Read the whole directory, sort the list.
 
@@ -159,19 +159,19 @@ namespace HTTP
 							vector<char>	creq_uri(req_uri.begin(), req_uri.end());
 							creq_uri.push_back('\0');
 
-							parent_dir = File(::dirname(creq_uri.data()), "Parent Directory", sbuf.st_ctim.tv_sec, true);
+							parent_dir = FileInfo(::dirname(creq_uri.data()), "Parent Directory", sbuf.st_ctim.tv_sec, true);
 						}
 						else
 						{
 							string	path = req_uri + dir_stream->d_name;
 
 							path.push_back('/');
-							files.push_back(File(path, dir_stream->d_name, sbuf.st_ctim.tv_sec, true));
+							files.push_back(FileInfo(path, dir_stream->d_name, sbuf.st_ctim.tv_sec, true));
 						}
 					}
 					break;
 					case S_IFREG:
-						files.push_back(File(req_uri + dir_stream->d_name, dir_stream->d_name, sbuf.st_ctim.tv_sec, false, sbuf.st_size));
+						files.push_back(FileInfo(req_uri + dir_stream->d_name, dir_stream->d_name, sbuf.st_ctim.tv_sec, false, sbuf.st_size));
 					break;
 					default:
 						;
@@ -187,7 +187,7 @@ namespace HTTP
 				files.push_front(parent_dir);
 			else
 			{
-			
+				//TODO:...
 			}
 			return (generateHTML(files, req_uri));
 		}

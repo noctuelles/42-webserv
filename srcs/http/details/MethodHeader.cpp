@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:59:03 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:31:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,14 @@ namespace HTTP
 	void	RequestHandler::_methodHeaderGet(ResponseHeader& header)
 	{
 		header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
-		if (m_page_to_send.empty())
+		if (m_request_type == FILE)
 		{
 			size_t	fileSize = IO::getFileSize(m_ressource_path.c_str());
 
 			header.addField(Field::ContentLenght(), Utils::integralToString(fileSize));
 			header.addField(Field::ContentType(), getMimeFromFileExtension(m_ressource_path.c_str()));
 		}
-		else
+		else if (m_request_type == AUTOINDEX)
 		{
 			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
 			header.addField(Field::ContentLenght(), Utils::integralToString(m_page_to_send.size()));

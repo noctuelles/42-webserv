@@ -6,10 +6,11 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:11:41 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:33:29 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "AutoIndex.hpp"
 #include "RequestHandler.hpp"
 #include "FileUtils.hpp"
 #include <algorithm>
@@ -39,8 +40,8 @@ namespace HTTP
 			}
 			else // autoindex
 			{
-				// yes i know.
-				throw (Exception(NotImplemented));
+				m_request_type = AUTOINDEX;
+				m_page_to_send = AutoIndex::generatePage(m_virtserv->m_routes_vec, *m_route, m_uri_info.absolute_path, m_ressource_path, m_uri_info.query);
 			}
 		}
 		else

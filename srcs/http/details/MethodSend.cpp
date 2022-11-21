@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:59:42 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:32:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ namespace HTTP
 {
 	void	RequestHandler::_methodSendGet()
 	{
-		if (m_page_to_send.empty())
+		if (m_request_type == FILE)
 		{
 			m_file_handle.read(reinterpret_cast<char *>(m_data_buff.data()), m_data_buff.size());
 
@@ -33,7 +33,7 @@ namespace HTTP
 				m_state = DONE;
 			}
 		}
-		else
+		else if (m_request_type == AUTOINDEX)
 		{
 			m_data_to_send = m_page_to_send.c_str();
 			m_data_to_send_size = m_page_to_send.size();

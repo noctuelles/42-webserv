@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:33:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:05:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:20:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,9 @@ namespace HTTP
 {
 	namespace AutoIndex
 	{
-		struct File
+		struct FileInfo
 		{
-			static bool compByDate(const File& lhs, const File& rhs)
+			static bool compByDate(const FileInfo& lhs, const FileInfo& rhs)
 			{
 				if (lhs.is_a_dir && !rhs.is_a_dir)
 					return (true);
@@ -42,7 +42,7 @@ namespace HTTP
 				return (false);
 			}
 
-			static bool compBySize(const File& lhs, const File& rhs)
+			static bool compBySize(const FileInfo& lhs, const FileInfo& rhs)
 			{
 				if (lhs.is_a_dir && !rhs.is_a_dir)
 					return (true);
@@ -53,7 +53,7 @@ namespace HTTP
 				return (false);
 			}
 
-			static bool	compByName(const File& lhs, const File& rhs)
+			static bool	compByName(const FileInfo& lhs, const FileInfo& rhs)
 			{
 				if (lhs.is_a_dir && !rhs.is_a_dir)
 					return (true);
@@ -64,12 +64,12 @@ namespace HTTP
 				return (false);
 			}
 
-			File(const string& path, const string& name, time_t last_modif, bool is_a_dir, off_t size = 0);
-			File();
+			FileInfo(const string& path, const string& name, time_t last_modif, bool is_a_dir, off_t size = 0);
+			FileInfo();
 
 			// size: size of the file in bytes.
 			// returns a string containing the file unit and size.
-			std::string	getFileUnits(off_t size);
+			std::string	getFileInfoUnits(off_t size);
 
 			std::pair<string, string>	name_info;
 			std::pair<time_t, string>	last_modified;
@@ -78,7 +78,7 @@ namespace HTTP
 
 		};
 
-		typedef bool (*cmpFnct)(const File&, const File&);
+		typedef bool (*cmpFnct)(const FileInfo&, const FileInfo&);
 
 		struct Dir
 		{

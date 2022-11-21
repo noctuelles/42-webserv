@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:58:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/21 18:26:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ namespace HTTP
 
 	RequestHandler::RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
 		m_state(FETCHING_REQUEST_HEADER),
+		m_request_type(FILE),
 		m_virtserv_map(virt_serv_map),
 		m_virtserv(NULL),
 		m_route(NULL),
