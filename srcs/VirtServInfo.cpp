@@ -318,7 +318,7 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	if (*it != "}")
 		throw ConfigFileError("Invalid token in location block");
 	++it;
-		
+
 	// Get parent root directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_root.empty() )
 		m_virtserv_vec.back().m_routes_vec.back().m_root = m_virtserv_vec.back().m_default_route_options.m_root;
@@ -331,9 +331,9 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	// Get cgi_setup if none defined
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.empty() )
 		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_default_route_options.m_cgi_extension;
-	// Get cgi_setup if none defined
-	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.empty() )
-		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_default_route_options.m_cgi_extension;
+	// Get error_page_map if none defined
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_error_page_map.empty() )
+		m_virtserv_vec.back().m_routes_vec.back().m_error_page_map = m_virtserv_vec.back().m_default_route_options.m_error_page_map;
 	// Put all methods to true if 0
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_methods == 0 )
 		m_virtserv_vec.back().m_routes_vec.back().m_methods.set();
@@ -344,6 +344,8 @@ void VirtServInfo::_parseLocationCgiSetup(VirtServInfo::configstream_iterator& i
 {
 	// Can only have one argument
 	++it;
+	if ((*it)[0] != '.')
+		throw ConfigFileError("cgi_setup directive in location block must start with a '.'");
 	m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = *it;
 	++it;
 	if (*it != ";")
