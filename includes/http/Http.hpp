@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:13:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/22 23:45:33 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,8 @@ namespace HTTP
 			static inline Field	Server()			{return Field("Server");}
 			static inline Field	Date()				{return Field("Date");}
 			static inline Field	ContentLenght()		{return Field("Content-Lenght");}
+			static inline Field	ContentDisposition()		{return Field("Content-Disposition");}
+			static inline Field	ContentTransferEncoding()	{return Field("Content-Transfer-Encoding");}
 			static inline Field	ContentType()		{return Field("Content-Type");}
 			static inline Field	Connection()		{return Field("Connection");}
 			static inline Field	Host()				{return Field("Host");}

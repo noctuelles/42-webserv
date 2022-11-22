@@ -8,9 +8,4 @@ server
 		autoindex on;
 		allowed_methods GET POST;
 	}
-
-	location /js/ {
-		autoindex on;
-		allowed_methods  POST;
-	}
 }

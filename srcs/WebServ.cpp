@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:14:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/22 23:02:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ void	WebServ::run()
 				{
 					case ConnectionSocket::READING:
 						break;
-					case ConnectionSocket::WRITING:
+					case ConnectionSocket::FETCH_SEND_DATA:
 						m_poller.modify(*inSockPtr, EPoll::Event::Out(), inSockPtr);
 						break;
 					case ConnectionSocket::DISCONNECT:

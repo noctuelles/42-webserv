@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 14:49:19 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:41:05 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/22 23:42:26 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,11 @@ namespace HTTP
 			const std::string&	toStr() const
 			{
 				return (str);
+			}
+
+			bool operator==(const MIME& rhs)
+			{
+				return (str == rhs.str);
 			}
 
 		private:

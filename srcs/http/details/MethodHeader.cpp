@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:31:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/22 23:51:52 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,16 @@ namespace HTTP
 		header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
 		if (m_request_type == FILE)
 		{
-			size_t	fileSize = IO::getFileSize(m_ressource_path.c_str());
+			MIME	mime = getMimeFromFileExtension(m_ressource_path.c_str());
+			size_t		fileSize = IO::getFileSize(m_ressource_path.c_str());
 
 			header.addField(Field::ContentLenght(), Utils::integralToString(fileSize));
-			header.addField(Field::ContentType(), getMimeFromFileExtension(m_ressource_path.c_str()));
+			header.addField(Field::ContentType(), mime);
+			if (mime == MIME::ApplicationOctetStream())
+			{
+				header.addField(Field::ContentDisposition(), string("attachment; filename=\"").append(::basename(m_ressource_path.c_str())).append("\""));
+				header.addField(Field::ContentTransferEncoding(), "binary");
+			}
 		}
 		else if (m_request_type == AUTOINDEX)
 		{
