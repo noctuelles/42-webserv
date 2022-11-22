@@ -166,7 +166,7 @@ class VirtServInfo
 	void _parseLocationIndex(VirtServInfo::configstream_iterator& it);
 	void _parseLocationAutoindex(VirtServInfo::configstream_iterator& it);
 	void _parseLocationRoot(VirtServInfo::configstream_iterator& it);
-	void _parseLocationLimitExcept(VirtServInfo::configstream_iterator& it);
+	void _parseLocationAllowedMethods(VirtServInfo::configstream_iterator& it);
 	void _parseLocationCgiSetup(VirtServInfo::configstream_iterator& it); // I hereby protest against the existence of this function
 };
 

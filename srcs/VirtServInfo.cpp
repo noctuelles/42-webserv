@@ -17,6 +17,7 @@
 #include <vector>
 #include <stack>
 
+#include "Http.hpp"
 #include "VirtServ.hpp"
 #include "VirtServInfo.hpp"
 #include "Utils.hpp"
@@ -67,7 +68,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_location_block_dispatch_tab
     {"root", &VirtServInfo::_parseLocationRoot},
     {"autoindex", &VirtServInfo::_parseLocationAutoindex},
     {"index", &VirtServInfo::_parseLocationIndex},
-    {"limit_except", &VirtServInfo::_parseLocationLimitExcept},
+    {"allowed_methods", &VirtServInfo::_parseLocationAllowedMethods},
     {"cgi_setup", &VirtServInfo::_parseLocationCgiSetup},
 };
 
@@ -281,16 +282,19 @@ void VirtServInfo::_parseLocationIndex(VirtServInfo::configstream_iterator& it)
 		++it;
 }
 
-void VirtServInfo::_parseLocationLimitExcept(VirtServInfo::configstream_iterator& it)
+void VirtServInfo::_parseLocationAllowedMethods(VirtServInfo::configstream_iterator& it)
 {
+	std::bitset<HTTP::NbrAvailableMethod>& allowed_methods = m_virtserv_vec.back().m_routes_vec.back().m_methods;
+
+	allowed_methods = static_cast<size_t>(0);
 	for (++it; not it.is_delim() ; ++it)
 	{
 		if ( *it == "GET" )
-			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(HTTP::Get);
+			allowed_methods.set(HTTP::Get);
 		else if ( *it == "POST" )
-			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(HTTP::Post);
+			allowed_methods.set(HTTP::Post);
 		else if ( *it == "DELETE" )
-			m_virtserv_vec.back().m_routes_vec.back().m_methods.set(HTTP::Delete);
+			allowed_methods.set(HTTP::Delete);
 		else
 			throw ConfigFileError("Invalid or unsupported method for limit_except directive in location block: Supported methods are \"GET\", \"POST\" and \"DELETE\"");
 	}
