@@ -11,11 +11,14 @@
 /* ************************************************************************** */
 
 #include "AutoIndex.hpp"
+#include "Http.hpp"
 #include "RequestHandler.hpp"
 #include "FileUtils.hpp"
+#include "StringArray.hpp"
 #include <algorithm>
 #include <iostream>
 #include <sys/stat.h>
+#include <unistd.h>
 
 using std::find_if;
 
@@ -46,8 +49,40 @@ namespace HTTP
 		}
 		else
 		{
-			if (!_isAReadableRegFile(m_ressource_path.c_str()))
-				throw (Exception(NotFound));
+			if (m_route->m_cgi_extension != "")
+			{
+				if (Utils::suffixMatch(m_uri_info.absolute_path, m_route->m_cgi_extension))
+				{
+					int input_pipe[2];
+					int output_pipe[2];
+					if ( pipe(input_pipe) == -1 )
+						throw std::runtime_error("pipe");
+					if ( pipe(output_pipe) == -1 )
+						throw std::runtime_error("pipe");
+					int cpid;
+					if ( (cpid = fork()) == -1 )
+						throw std::runtime_error("pipe");
+					else if (cpid == 0) // In child process
+					{
+						StringArray sa;
+
+						dup2(input_pipe[0], STDIN_FILENO); close(input_pipe[0]); // Replace stdin with input_pipe reading end
+						close(input_pipe[1]); // Close input_pipe writing end;
+
+						dup2(output_pipe[1], STDOUT_FILENO); close(output_pipe[1]); // Replace stdout with output_pipe writing end
+						close(output_pipe[0]); // Close output_pipe reading end;
+
+						//execve("script_name", &"script_name", sa,getData());
+						// Check errno for if not executable
+						std::cout << "Content-type: text/html\r\n\r\n";
+						std::cout << "<html><head>CGI youpi</head><body>CGI youpi !</body></html>\r\n\r\n";
+						return;
+					}
+					m_request_type = CGI;
+				}
+			}
+			else if (not _isAReadableRegFile(m_uri_info.absolute_path.c_str()))
+				throw (Exception(Forbidden));
 		}
 
 		m_file_handle.open(m_ressource_path.c_str(), ios::in | ios::binary);

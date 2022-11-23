@@ -23,6 +23,7 @@ namespace Utils
 	// Return an RFC 822-compliant date format.
 	std::string	getRFC822NowDate();
 	std::string	formatTimeToRFC822(struct tm* ptrTm);
+	bool		suffixMatch(std::string str, std::string ending);
 
 	template <class T>
 		inline std::string	integralToString(T val)
