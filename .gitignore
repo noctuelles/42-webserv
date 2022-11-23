@@ -13,4 +13,5 @@ build
 tags
 tags.lock
 compile_commands.json
+Session.vim
 

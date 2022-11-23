@@ -14,6 +14,7 @@
 #include "Http.hpp"
 #include <ctime>
 #include <stdexcept>
+#include <string>
 
 namespace Utils
 {
@@ -39,5 +40,10 @@ namespace Utils
 		if (length == 0)
 			throw (std::logic_error("std::strftime"));
 		return (std::string(buffer, length));
+	}
+
+	bool		suffixMatch(std::string str, std::string ending)
+	{
+		return not str.compare(str.length() - ending.length(), ending.length(), ending);
 	}
 }
