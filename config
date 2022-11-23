@@ -1,0 +1,11 @@
+server
+{
+	listen		8080;
+	server_name	localhost:8080 192.168.1.28:8080;
+	root		www/a_website;
+
+	location / {
+		autoindex on;
+		allowed_methods GET POST;
+	}
+}
