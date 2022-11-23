@@ -43,28 +43,45 @@ namespace HTTP
 		argv.push_back('\0');
 
 		m_cargv.push_back(argv.data());
-		m_cargv.push_back(NULL);
 	}
 
 	void	CGIScriptHandler::start()
 	{
-		Utils::FdPair		fds = Utils::pipe();
+		int parent_to_child[2] = {-1, -1};
+		int	child_to_parent[2] = {-1, -1};
+
+		if (pipe(parent_to_child) < 0)
+			throw (RequestHandler::Exception(InternalServerError));
+		if (pipe(child_to_parent) < 0)
+			throw (RequestHandler::Exception(InternalServerError));
+
+		m_cenv.push_back(NULL);
+		m_cargv.push_back(NULL);
 
 		m_proc_pid = ::fork();
 		if (m_proc_pid < 0)
 			throw (RequestHandler::Exception(InternalServerError));
 		else if (m_proc_pid == 0)
 		{
-			if (::dup2(fds.second, STDOUT_FILENO) < 0)
-				;
-			if (::dup2(fds.first, STDIN_FILENO) < 0)
-				;
+			::close(child_to_parent[0]);
+			::close(parent_to_child[1]);
+			if (::dup2(child_to_parent[1], STDOUT_FILENO) < 0)
+				throw (std::runtime_error("::dup2"));
+			if (::dup2(parent_to_child[0], STDIN_FILENO) < 0)
+				throw (std::runtime_error("::dup2"));
+			::close(child_to_parent[1]);
+			::close(parent_to_child[0]);
+
 			::execve(m_cgi_path.c_str(), m_cargv.data(), m_cenv.data());
 
-			throw (RequestHandler::Exception(InternalServerError));
+			throw (std::runtime_error("::execve"));
 		}
 		else
 		{
+			::close(parent_to_child[0]);
+			::close(child_to_parent[1]);
+			m_write_fd = parent_to_child[1];
+			m_read_fd = child_to_parent[0];
 		}
 	}
 }

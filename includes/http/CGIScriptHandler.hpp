@@ -60,6 +60,8 @@ namespace HTTP
 
 		std::vector<char *>	m_cenv;
 		std::vector<char *>	m_cargv;
+		int					m_write_fd;
+		int					m_read_fd;
 	};
 }
 
