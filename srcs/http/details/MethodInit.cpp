@@ -53,11 +53,9 @@ namespace HTTP
 			{
 				if (Utils::suffixMatch(m_uri_info.absolute_path, m_route->m_cgi_extension))
 				{
-					int input_pipe[2];
-					int output_pipe[2];
-					if ( pipe(input_pipe) == -1 )
+					if ( pipe(m_cgi_input_pipe) == -1 )
 						throw std::runtime_error("pipe");
-					if ( pipe(output_pipe) == -1 )
+					if ( pipe(m_cgi_output_pipe) == -1 )
 						throw std::runtime_error("pipe");
 					int cpid;
 					if ( (cpid = fork()) == -1 )
@@ -66,11 +64,11 @@ namespace HTTP
 					{
 						StringArray sa;
 
-						dup2(input_pipe[0], STDIN_FILENO); close(input_pipe[0]); // Replace stdin with input_pipe reading end
-						close(input_pipe[1]); // Close input_pipe writing end;
+						dup2(m_cgi_input_pipe[0], STDIN_FILENO); close(m_cgi_input_pipe[0]); // Replace stdin with m_cgi_input_pipe reading end
+						close(m_cgi_input_pipe[1]); // Close m_cgi_input_pipe writing end;
 
-						dup2(output_pipe[1], STDOUT_FILENO); close(output_pipe[1]); // Replace stdout with output_pipe writing end
-						close(output_pipe[0]); // Close output_pipe reading end;
+						dup2(m_cgi_output_pipe[1], STDOUT_FILENO); close(m_cgi_output_pipe[1]); // Replace stdout with m_cgi_output_pipe writing end
+						close(m_cgi_output_pipe[0]); // Close m_cgi_output_pipe reading end;
 
 						//execve("script_name", &"script_name", sa,getData());
 						// Check errno for if not executable

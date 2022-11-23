@@ -39,6 +39,18 @@ namespace HTTP
 			m_data_to_send_size = m_page_to_send.size();
 			m_state = DONE;
 		}
+		else if (m_request_type == CGI)
+		{
+			char buffer[512];
+			int r;
+
+			r = read(m_cgi_output_pipe[0], buffer, 512);
+			if (r < 1)
+				_setState(DONE);
+			buffer[r] = 0;
+			m_data_to_send = buffer;
+			m_data_to_send_size = r;
+		}
 	}
 
 	void	RequestHandler::_methodSendPost()

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
+#include "CGIScriptHandler.hpp"
 #include "ConnectionSocket.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
@@ -61,6 +62,8 @@ namespace HTTP
 		m_data_to_send(NULL),
 		m_data_to_send_size(0),
 		m_page_to_send(),
+		m_cgi_input_pipe(),
+		m_cgi_output_pipe(),
 		m_file_handle(),
 		m_header_info(),
 		m_uri_info(),

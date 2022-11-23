@@ -27,6 +27,7 @@
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
 # include "AutoIndex.hpp"
+# include "CGIScriptHandler.hpp"
 
 using std::pair;
 using std::vector;
@@ -161,6 +162,9 @@ namespace HTTP
 			const void*					m_data_to_send;
 			size_t						m_data_to_send_size;
 			string						m_page_to_send;
+
+			int 						m_cgi_input_pipe[2];
+			int 						m_cgi_output_pipe[2];
 
 			ifstream					m_file_handle;
 			RequestParser::HeaderInfo	m_header_info;
