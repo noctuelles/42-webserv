@@ -204,6 +204,7 @@ namespace HTTP
 			void						_parseGeneralHeaderFields();
 
 			bool	_isAReadableRegFile(const char* path);
+			bool	_isAExecutableRegFile(const char* path);
 
 			void	_methodInitGet();
 			void	_methodInitPost();

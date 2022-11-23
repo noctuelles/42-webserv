@@ -28,4 +28,18 @@ namespace HTTP
 			return (true);
 		return (false);
 	}
+
+	bool	RequestHandler::_isAExecutableRegFile(const char* path)
+	{
+		struct stat	stat_buf;
+
+		if (::stat(path, &stat_buf) < 0)
+		{
+			if (errno != ENOENT)
+				throw (Exception(InternalServerError));
+		}
+		else if (!S_ISDIR(stat_buf.st_mode) && (stat_buf.st_mode & S_IXUSR))
+			return (true);
+		return (false);
+	}
 }
