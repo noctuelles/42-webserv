@@ -68,4 +68,21 @@ namespace IO
 		if (fcntl(m_fd, F_SETFL, flags) < 0)
 			throw (std::runtime_error("fcntl(F_SETFL)"));
 	}
+
+	/* Set the current socket to a blocking socket if <blocking> is true.
+	 * If <blocking> is false, set the current socket to a non-blocking state. */
+	void	FileDescriptor::setBlockingMode(bool blocking) const
+	{
+		setFdFlags(blocking ? (getFdFlags() & ~O_NONBLOCK) : (getFdFlags() | O_NONBLOCK));
+	}
+
+	bool	FileDescriptor::isBlocking() const
+	{
+		return !(static_cast<bool>(getFdFlags() & O_NONBLOCK));
+	}
+
+	void	FileDescriptor::setCloseOnExecMode(bool blocking) const
+	{
+		setFdFlags(blocking ? (getFdFlags() & ~O_CLOEXEC) : (getFdFlags() | O_CLOEXEC));
+	}
 }
