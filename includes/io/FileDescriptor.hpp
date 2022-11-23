@@ -29,6 +29,9 @@ namespace IO
 			int		getFd() const;
 			int		getFdFlags() const;
 			void	setFdFlags(int flags) const;
+			void	setBlockingMode(bool blocking) const;
+			bool	isBlocking() const;
+			void	setCloseOnExecMode(bool blocking) const;
 
 		protected:
 

@@ -32,6 +32,7 @@ namespace IO
 		m_sent_bytes(0)
 	{
 		this->setBlockingMode(false);
+		this->setCloseOnExecMode(true);
 		m_len = sizeof(struct sockaddr_in);
 		if (getsockname(fd, reinterpret_cast<struct sockaddr*>(&m_sockaddr), &m_len) < 0)
 			throw (std::runtime_error("::getsockname"));

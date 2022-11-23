@@ -91,18 +91,6 @@ namespace IO
 					setSockOpt(SO_REUSEADDR, static_cast<void *>(&optval), sizeof(int));
 				}
 
-				/* Set the current socket to a blocking socket if <blocking> is true.
-				 * If <blocking> is false, set the current socket to a non-blocking state. */
-				void	setBlockingMode(bool blocking) const
-				{
-					setFdFlags(blocking ? (getFdFlags() & ~O_NONBLOCK) : (getFdFlags() | O_NONBLOCK));
-				}
-
-				bool	isBlocking() const
-				{
-					return !(static_cast<bool>(getFdFlags() & O_NONBLOCK));
-				}
-
 				virtual int	recv() = 0;
 				virtual int	send() = 0;
 
