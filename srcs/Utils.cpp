@@ -6,12 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:47:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/23 13:08:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Utils.hpp"
 #include "Http.hpp"
+#include "RequestHandler.hpp"
 #include <ctime>
 #include <stdexcept>
 
@@ -39,5 +40,14 @@ namespace Utils
 		if (length == 0)
 			throw (std::logic_error("std::strftime"));
 		return (std::string(buffer, length));
+	}
+
+	FdPair	pipe()
+	{
+		int	fd[2];
+
+		if (::pipe(fd) < 0)
+			throw (HTTP::RequestHandler::Exception(HTTP::InternalServerError));
+		return (std::make_pair(IO::FileDescriptor(fd[0]), IO::FileDescriptor(fd[1])));
 	}
 }

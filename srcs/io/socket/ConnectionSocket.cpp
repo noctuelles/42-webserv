@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:31:39 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/23 12:52:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,6 @@ namespace IO
 			size_t	data_remaining = m_to_send.second - m_sent_bytes;
 
 			_updateLastActivity();
-			//::Log().get(INFO) << data_remaining << " remaining bytes to send.\n";
 			sent_bytes = ::send(*this, static_cast<const uint8_t*>(m_to_send.first) + m_sent_bytes, data_remaining, MSG_NOSIGNAL);
 			if (sent_bytes < 0)
 				return (DISCONNECT);
@@ -95,7 +94,6 @@ namespace IO
 				m_sent_bytes += static_cast<size_t>(sent_bytes); // safe: sent_bytes is a positive integer.
 				if (m_sent_bytes == m_to_send.second) // eq. to: if (data_remaining == sent_bytes)
 				{
-					//::Log().get(INFO) << "Sending completed, sended " << m_sent_bytes << " in total.\n";
 					m_sent_bytes = 0;
 					m_state = m_next_state;
 				}
