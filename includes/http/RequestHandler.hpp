@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:26:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/24 14:08:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
 # include "AutoIndex.hpp"
+# include "CGIScriptHandler.hpp"
 
 using std::pair;
 using std::vector;
@@ -168,6 +169,7 @@ namespace HTTP
 			RequestParser				m_header_parser;
 			StatusCode					m_status_code;
 			string						m_ressource_path;
+			CGIScriptHandler			m_cgi_handler;
 
 			/* ############################ Private function ############################ */
 

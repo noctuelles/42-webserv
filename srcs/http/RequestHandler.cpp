@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:59:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/24 14:09:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,8 @@ namespace HTTP
 		m_uri_info(),
 		m_header_parser(m_header_info, m_uri_info),
 		m_status_code(OK),
-		m_ressource_path()
+		m_ressource_path(),
+		m_cgi_handler("php-cgi")
 	{
 	}
 
