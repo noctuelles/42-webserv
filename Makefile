@@ -1,10 +1,13 @@
 ###################
 ##  VARIABLES   ##
 ##################
+
 DEFAULT_CONFIG	= config
+
 DEBUG			= -DDEBUG
 
 ## Our beloved address sanitizer
+## Just uncomment this line to deactivate
 ASAN_FLAG		=  -fsanitize=address
 
 MAKEFLAGS		+= --no-builtin-rules
@@ -41,15 +44,10 @@ DEFINES			= ${DEBUG} -DDEFAULT_CONFIG=\"$(DEFAULT_CONFIG)\"
 CPPFLAGS		+= $(INCLUDE_FLAGS) $(IMACROS_FLAGS) $(DEFINES) -MMD #output .d dependencies rules to be included
 
 ## Compile flags
-CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -O2
-ifdef DEBUG
-CXXFLAGS		+= -Wno-unused
-else
-CXXFLAGS		+= -Werror 
-endif
+CXXFLAGS		= -Wall -Wextra -std=c++98 -g3
 
 ## Link flags
-LDFLAGS			=	#-fsanitize=address
+LDFLAGS			=
 LDLIBS			=
 
 
@@ -64,11 +62,11 @@ all:			$(NAME)
 # Reminder :			LDFLAGS (-L) always come before oject files !
 $(NAME):				$(PATH/OBJECTS)
 						@echo -e '\e[032mLinking...\e[0m'
-						${CXX} -o $@ ${LDFLAGS} $^ ${LDLIBS}
+						${CXX} -o $@ ${ASAN_FLAG} ${LDFLAGS} $^ ${LDLIBS}
 
 $(OBJS_DIR)/%.o:		$(SRCS_DIR)/%.cpp Makefile
 						@mkdir -p $(dir $@)
-						${CXX} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
+						${CXX} ${ASAN_FLAG} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
 clean:
 						$(RM) $(OBJS_DIR)
 

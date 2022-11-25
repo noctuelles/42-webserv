@@ -60,7 +60,7 @@ void	WebServ::run()
 	assert(!m_socks.empty());
 	while (true)
 	{
-		if (!m_poller.waitForEvents(TimeoutCheckOccurence))
+		if (!m_poller.waitForEvents(-1))
 			_removeTimeoutSocket();
 		for (EPoll::iterator it = m_poller.begin(); it != m_poller.end(); it++)
 		{

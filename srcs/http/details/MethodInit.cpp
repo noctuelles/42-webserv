@@ -16,6 +16,7 @@
 #include "FileUtils.hpp"
 #include "StringArray.hpp"
 #include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -59,7 +60,7 @@ namespace HTTP
 						throw std::runtime_error("pipe");
 					int cpid;
 					if ( (cpid = fork()) == -1 )
-						throw std::runtime_error("pipe");
+						throw std::runtime_error("fork");
 					else if (cpid == 0) // In child process
 					{
 						StringArray sa;
@@ -70,13 +71,16 @@ namespace HTTP
 						dup2(m_cgi_output_pipe[1], STDOUT_FILENO); close(m_cgi_output_pipe[1]); // Replace stdout with m_cgi_output_pipe writing end
 						close(m_cgi_output_pipe[0]); // Close m_cgi_output_pipe reading end;
 
+						// Setup env here 
 						//execve("script_name", &"script_name", sa,getData());
 						// Check errno for if not executable
+						close(m_cgi_input_pipe[0]);
 						std::cout << "Content-type: text/html\r\n\r\n";
 						std::cout << "<html><head>CGI youpi</head><body>CGI youpi !</body></html>\r\n\r\n";
-						return;
+						exit(42);
 					}
 					m_request_type = CGI;
+					return;
 				}
 			}
 			else if (not _isAReadableRegFile(m_uri_info.absolute_path.c_str()))
