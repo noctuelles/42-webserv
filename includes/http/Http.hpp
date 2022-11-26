@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:10:44 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 22:41:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,12 @@ namespace HTTP
 		HeaderFieldMap	header_field;
 	};
 
+	struct ContentInfo
+	{
+		std::string	value;
+		std::map<string, string>	param;
+	};
+
 	class Field
 	{
 		public:
@@ -168,6 +174,7 @@ namespace HTTP
 	};
 
 	extern const char*	CRLF;
+	extern const char	TokenMap[256];
 	extern const char*	MethodTable[];
 	extern const char*	RFC822_DateFormat;
 	extern const char*	HttpSlash;

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 18:00:00 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:34:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 23:06:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ namespace HTTP
 			};
 
 			HeaderParser();
+			~HeaderParser();
 			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it);
 
 		private:

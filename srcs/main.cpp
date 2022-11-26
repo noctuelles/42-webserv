@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "FileUtils.hpp"
-#include "RequestParser.hpp"
 #include "ResponseHeader.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"

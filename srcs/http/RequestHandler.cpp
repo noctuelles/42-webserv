@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:36:48 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 23:33:13 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "ConnectionSocket.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
+#include "FieldParser.hpp"
 #include "Log.hpp"
 #include <ios>
 #include <utility>
@@ -100,6 +101,12 @@ namespace HTTP
 			{
 				if (m_header_info.method != Get)
 				{
+					ContentInfo i = FieldParser()("caca    ; prout=machin    ; tructruc=much    ");
+
+					std::cout << i.value << '\n';
+
+					for (std::map<string, string>::iterator it = i.param.begin(); it != i.param.end(); it++)
+						std::cout << it->first << ' ' << it->second << '\n';
 				}
 				else
 					_setState(PROCESSING_RESPONSE_HEADER);

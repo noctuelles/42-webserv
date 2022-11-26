@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:44:44 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 18:38:01 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 23:07:41 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,9 @@ namespace HTTP
 			{
 				ST_HEADER_FIELD_NAME,
 				ST_HEADER_FIELD_VALUE,
+				ST_VALUE,
+				ST_PARAM_KEY,
+				ST_PARAM_VALUE,
 				ST_CRLF,
 				ST_WS,
 				ST_OWS,
@@ -35,6 +38,7 @@ namespace HTTP
 			};
 
 			HeaderFieldParser();
+			~HeaderFieldParser();
 			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it);
 
 		private:

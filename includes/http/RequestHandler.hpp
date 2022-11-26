@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:38:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:41:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,16 +15,15 @@
 
 # include <cstring>
 # include <exception>
-#include <functional>
+# include <functional>
 # include <vector>
-#include <sys/stat.h>
 # include <list>
 # include <fstream>
+# include <sys/stat.h>
 # include "Http.hpp"
 # include "HeaderParser.hpp"
 # include "ResponseHeader.hpp"
 # include "SocketTypes.hpp"
-# include "RequestParser.hpp"
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
 # include "AutoIndex.hpp"

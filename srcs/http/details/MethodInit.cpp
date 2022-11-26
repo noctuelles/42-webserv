@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/24 14:34:05 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:41:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,33 +45,12 @@ namespace HTTP
 			else // autoindex
 			{
 				m_request_type = AUTOINDEX;
-				m_page_to_send = AutoIndex::generatePage(m_virtserv->m_routes_vec, *m_route, m_uri_info.absolute_path, m_ressource_path, m_uri_info.query);
+				m_page_to_send = AutoIndex::generatePage(m_virtserv->m_routes_vec, *m_route, m_header_info.uri.absolute_path, m_ressource_path, m_header_info.uri.query);
 			}
 		}
 		else
 		{
-			string::size_type	i = m_ressource_path.rfind('.');
-
-			if (i != string::npos)
-			{
-				if (m_ressource_path.compare(i, 4, ".php") == 0)
-				{
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::GatewayInterface(), CGIScriptHandler::GatewayInterfaceVer);
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::ScriptName(), m_header_info.uri);
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::ServerName(), m_virtserv->m_server_name_vec[0]);
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::ServerProtocol(), "HTTP/1.1");
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::ServerPort(), "8080");
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::ServerSoftware(), "8080");
-
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::RemoteAddr(), "192.168.1.1");
-
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::RequestMethod(), HTTP::MethodTable[m_header_info.method]);
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::QueryString(), m_uri_info.query);
-
-					m_cgi_handler.addMetaVar(CGIScriptHandler::MetaVariable::PathInfo(), ::dirname(m_ressource_path.c_str()));
-				}
-			}
-			else if (!_isAReadableRegFile(m_ressource_path.c_str()))
+			if (!_isAReadableRegFile(m_ressource_path.c_str()))
 				throw (Exception(NotFound));
 		}
 

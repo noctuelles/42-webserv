@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 18:06:36 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:21:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 23:07:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@ namespace HTTP
 		Parser(ST_START_REQUEST_LINE),
 		m_index(0),
 		m_hfield_parser()
+	{}
+
+	HeaderParser::~HeaderParser()
 	{}
 
 	Buffer::const_iterator	HeaderParser::operator()(const Buffer& buff, Buffer::const_iterator it)
@@ -158,6 +161,19 @@ namespace HTTP
 				it++;
 				if (++m_nbr_parsed >= MaxHeaderSize)
 					throw (RequestHandler::Exception(BadRequest));
+			}
+		}
+		if (m_current_state == ST_DONE)
+		{
+			/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
+
+			try
+			{
+				m_data.header_field.at(Field::Host());
+			}
+			catch (const std::logic_error& e)
+			{
+				throw (RequestHandler::Exception(BadRequest));
 			}
 		}
 		return (it);

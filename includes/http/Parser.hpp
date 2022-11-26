@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:41:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 18:32:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 23:14:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,11 @@ namespace HTTP
 					m_eat(true)
 				{}
 
-				virtual ~Parser();
+				virtual ~Parser()
+				{}
 
 				virtual			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it) = 0;
+
 				int				getState() const		{return (m_current_state);			}
 				int				nextState() const		{return (m_next_state);				}
 				int				previousState() const	{return (m_previous_state);		}
@@ -42,16 +44,15 @@ namespace HTTP
 				size_t			getNbrCharParsed() const	{return (m_nbr_parsed);}
 
 				static inline bool		isVChar(unsigned char ch)	{return (ch > ' ' && ch < 0x7F);	}
-				static inline bool		isTknChar(unsigned char ch)	{return (m_token[ch] != 0);			}
+				static inline bool		isTknChar(unsigned char ch)	{return (toTknChar(ch) != 0);			}
 				static inline bool		isWS(unsigned char ch)		{return (ch == ' ' || ch == '\t');	}
 				static inline bool		isCRLF(unsigned char ch)	{return (ch == '\r' || ch == '\n');	}
-				static unsigned char	toTknChar(unsigned char ch)	{return (m_token[ch]);}
+				static unsigned char	toTknChar(unsigned char ch)	{return (TokenMap[ch]);}
 
 			protected:
 
 				virtual void	changeState(int new_state) = 0;
 
-				static const char	m_token[256];
 				int					m_previous_state, m_current_state, m_next_state;
 				std::string			m_ws_buffer;
 				T					m_data;
