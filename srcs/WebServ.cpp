@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:02:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/23 18:52:29 by tpouget          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,8 @@ const std::string	WebServ::Version("webserv/0.1");
 WebServ::WebServ(const char *config_filename)
 	: m_poller(),
 	m_socks(),
-	m_virtserv_info(config_filename)
+	m_virtserv_info(config_filename),
+	m_should_run(true)
 {
 	// Init listening_sockets and add them to watchlist
 	VirtServInfo::iterator it  = m_virtserv_info.begin();
@@ -53,12 +54,12 @@ void	WebServ::addListener(in_port_t port)
 	m_poller.add(*ptr, IO::EPoll::Event::In(), ptr); // CAN THROW
 }
 
-void	WebServ::run()
+int	WebServ::run()
 {
 	using namespace IO;
 
 	assert(!m_socks.empty());
-	while (true)
+	while (m_should_run)
 	{
 		if (!m_poller.waitForEvents(-1))
 			_removeTimeoutSocket();
@@ -68,38 +69,46 @@ void	WebServ::run()
 
 			if (it->events & EPOLLHUP || it->events & EPOLLERR)
 			{ _removeSocket(inSockPtr); continue; }
-			if (it->events & EPOLLIN)
+			try
 			{
-				int ret;
-
-				switch ((ret = inSockPtr->recv()))
+				if (it->events & EPOLLIN)
 				{
-					case ConnectionSocket::READING:
-						break;
-					case ConnectionSocket::FETCH_SEND_DATA:
-						m_poller.modify(*inSockPtr, EPoll::Event::Out(), inSockPtr);
-						break;
-					case ConnectionSocket::DISCONNECT:
-						_removeSocket(inSockPtr);
-						break;
-					default:
-						_addConnection(ret);
+					int ret;
+
+					switch ((ret = inSockPtr->recv()))
+					{
+						case ConnectionSocket::READING:
+							break;
+						case ConnectionSocket::FETCH_SEND_DATA:
+							m_poller.modify(*inSockPtr, EPoll::Event::Out(), inSockPtr);
+							break;
+						case ConnectionSocket::DISCONNECT:
+							_removeSocket(inSockPtr);
+							break;
+						default:
+							_addConnection(ret);
+					}
+				}
+				else if (it->events & EPOLLOUT)
+				{
+					switch (inSockPtr->send())
+					{
+						case ConnectionSocket::DISCONNECT:
+							_removeSocket(inSockPtr);
+							break;
+						case ConnectionSocket::READING:
+							// Keep-alive...
+							break;
+					}
 				}
 			}
-			else if (it->events & EPOLLOUT)
+			catch (const std::runtime_error& err)
 			{
-				switch (inSockPtr->send())
-				{
-					case ConnectionSocket::DISCONNECT:
-						_removeSocket(inSockPtr);
-						break;
-					case ConnectionSocket::READING:
-						// Keep-alive...
-						break;
-				}
+				return (-1);
 			}
 		}
 	}
+	return (0);
 }
 
 WebServ::~WebServ()

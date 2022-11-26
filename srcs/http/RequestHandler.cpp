@@ -6,16 +6,15 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:59:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/24 14:09:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
-#include "CGIScriptHandler.hpp"
-#include "ConnectionSocket.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
 #include "Log.hpp"
+#include "ConnectionSocket.hpp"
 #include <ios>
 #include <utility>
 #include <vector>
@@ -57,7 +56,8 @@ namespace HTTP
 		m_virtserv_map(virt_serv_map),
 		m_virtserv(NULL),
 		m_route(NULL),
-		m_bounded_sock(),
+		m_bound_sock(),
+		m_peer_sock(),
 		m_data_buff(IO::ConnectionSocket::MaxSendBufferSize),
 		m_data_to_send(NULL),
 		m_data_to_send_size(0),
@@ -69,7 +69,8 @@ namespace HTTP
 		m_uri_info(),
 		m_header_parser(m_header_info, m_uri_info),
 		m_status_code(OK),
-		m_ressource_path()
+		m_ressource_path(),
+		m_cgi_handler()
 	{
 	}
 
@@ -135,9 +136,14 @@ namespace HTTP
 		return (m_state);
 	}
 
-	void	RequestHandler::setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock)
+	void	RequestHandler::setBoundInterface(const struct sockaddr_in& bound_sock)
 	{
-		m_bounded_sock = bounded_sock;
+		m_bound_sock = bound_sock;
+	}
+
+	void	RequestHandler::setPeerInterface(const struct sockaddr_in& peer_sock)
+	{
+		m_peer_sock = peer_sock;
 	}
 
 	RequestHandler::DataInfo	RequestHandler::getDataToSend() const
@@ -160,20 +166,17 @@ namespace HTTP
 		return (m_uri_info.absolute_path);
 	}
 
-	RequestHandler::~RequestHandler()
-	{}
-
 	/* ############################ Private function ############################ */
 
-	const vector<VirtServ*>&	RequestHandler::_getBoundedVirtServ()
+	const vector<VirtServ*>&	RequestHandler::_getBoundVirtServ()
 	{
-		VirtServInfo::VirtServMap::const_iterator	it = m_virtserv_map.find(m_bounded_sock);
+		VirtServInfo::VirtServMap::const_iterator	it = m_virtserv_map.find(m_bound_sock);
 
 		if (it != m_virtserv_map.end())
 			return (it->second);
 		else
 		{
-			sockaddr_in	tmp_sock = m_bounded_sock;
+			sockaddr_in	tmp_sock = m_bound_sock;
 
 			tmp_sock.sin_addr.s_addr = INADDR_ANY;
 			return (m_virtserv_map.at(tmp_sock));
@@ -184,7 +187,7 @@ namespace HTTP
 	{
 		// First, get the correct virtual server by parsing the Host field.
 		{
-			const vector<VirtServ*>&				virt_serv	=  _getBoundedVirtServ();
+			const vector<VirtServ*>&				virt_serv	=  _getBoundVirtServ();
 			const string&							host		= m_header_info.header_fields.at(Field::Host());
 			const vector<VirtServ*>::const_iterator	it			= std::find_if(virt_serv.begin(), virt_serv.end(), MatchingServerName(host));
 

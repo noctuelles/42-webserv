@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/23 13:08:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/24 12:00:39 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,5 +55,13 @@ namespace Utils
 		if (::pipe(fd) < 0)
 			throw (HTTP::RequestHandler::Exception(HTTP::InternalServerError));
 		return (std::make_pair(IO::FileDescriptor(fd[0]), IO::FileDescriptor(fd[1])));
+	}
+
+	std::vector<char>	getCStr(const std::string& str)
+	{
+		std::vector<char>	cstr(str.begin(), str.end());
+
+		cstr.push_back('\0');
+		return (cstr);
 	}
 }

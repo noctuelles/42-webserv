@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:26:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/24 14:08:47 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,12 +74,12 @@ namespace HTTP
 			};
 
 			RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
-			~RequestHandler();
 
 			State		fetchIncomingData(const std::vector<uint8_t>& data_buff, size_t recv_bytes);
 			State		prepareOutcomingData();
 
-			void			setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
+			void			setBoundInterface(const struct sockaddr_in& bound_sock);
+			void			setPeerInterface(const struct sockaddr_in& peer_sock);
 
 			DataInfo		getDataToSend() const;
 			StatusCode		getStatusCode() const;
@@ -156,7 +156,8 @@ namespace HTTP
 			const VirtServInfo::VirtServMap&	m_virtserv_map;
 			const VirtServ*						m_virtserv;
 			const VirtServ::RouteOptions*		m_route;
-			struct sockaddr_in					m_bounded_sock;
+			struct sockaddr_in					m_bound_sock;
+			struct sockaddr_in					m_peer_sock;
 
 			vector<uint8_t>				m_data_buff;
 			const void*					m_data_to_send;
@@ -172,6 +173,7 @@ namespace HTTP
 			RequestParser				m_header_parser;
 			StatusCode					m_status_code;
 			string						m_ressource_path;
+			CGIScriptHandler			m_cgi_handler;
 
 			/* ############################ Private function ############################ */
 
@@ -204,7 +206,7 @@ namespace HTTP
 				return (m_status_code != OK);
 			}
 
-			const vector<VirtServ*>&	_getBoundedVirtServ();
+			const vector<VirtServ*>&	_getBoundVirtServ();
 			void						_parseGeneralHeaderFields();
 
 			bool	_isAReadableRegFile(const char* path);

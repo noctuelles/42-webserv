@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:53:49 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/23 18:52:31 by tpouget          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ class WebServ
 		~WebServ();
 
 		void	addListener(in_port_t port);
-		void	run();
+		int		run();
 
 		const VirtServInfo&		getVirtServInfo() const { return m_virtserv_info; }
 
@@ -68,9 +68,10 @@ class WebServ
 				}
 		};
 
-		IO::EPoll				m_poller;
+		IO::EPoll			m_poller;
 		InSockVector		m_socks;
 		VirtServInfo		m_virtserv_info;
+		bool				m_should_run;
 
 		WebServ(const WebServ& other);
 		WebServ&	operator=(const WebServ& rhs);

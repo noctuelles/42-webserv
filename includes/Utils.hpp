@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:10:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/23 13:08:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/24 12:04:33 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,21 @@
 
 # include <sstream>
 # include <string>
+# include <vector>
 # include "FileDescriptor.hpp"
 
 namespace Utils
 {
 	extern const size_t	DateBufferSize;
 	typedef std::pair<IO::FileDescriptor, IO::FileDescriptor>	FdPair;
+	typedef std::vector<char>	CStr;
 
 	// Return an RFC 822-compliant date format.
 	std::string	getRFC822NowDate();
 	std::string	formatTimeToRFC822(struct tm* ptrTm);
 	bool		suffixMatch(std::string str, std::string ending);
 	FdPair	pipe();
+	std::vector<char>	getCStr(const std::string& str);
 
 	template <class T>
 		inline std::string	integralToString(T val)

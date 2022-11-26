@@ -16,6 +16,7 @@
 #include "Log.hpp"
 
 #include <ctime>
+#include <netinet/in.h>
 
 namespace IO
 {
@@ -26,7 +27,7 @@ namespace IO
 		m_state(READING),
 		m_next_state(),
 		m_peer_sockaddr(),
-		m_to_send(),
+		m_to_send(std::make_pair(&m_peer_sockaddr, sizeof(sockaddr_in))),
 		m_recv_buff(MaxRecvBufferSize),
 		m_recv_bytes(0),
 		m_sent_bytes(0)
@@ -38,7 +39,8 @@ namespace IO
 			throw (std::runtime_error("::getsockname"));
 		if (getpeername(fd, reinterpret_cast<struct sockaddr*>(&m_peer_sockaddr), &m_len) < 0)
 			throw (std::runtime_error("::getpeername"));
-		m_request_handler.setConnectionBoundedSocket(m_sockaddr);
+		m_request_handler.setBoundInterface(m_sockaddr);
+		m_request_handler.setPeerInterface(m_peer_sockaddr);
 	}
 
 	const struct sockaddr_in&	ConnectionSocket::getPeerSock() const

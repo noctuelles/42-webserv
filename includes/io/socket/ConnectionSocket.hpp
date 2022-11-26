@@ -20,6 +20,7 @@
 # include <fstream>
 
 # include "SocketTypes.hpp"
+# include "VirtServInfo.hpp"
 # include "RequestHandler.hpp"
 
 using HTTP::RequestHandler;

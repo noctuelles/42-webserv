@@ -3,7 +3,12 @@
 
 # include <sys/types.h>
 # include <string>
-#include <vector>
+# include <poll.h>
+# include <vector>
+
+# include "Http.hpp"
+
+using std::string;
 
 namespace HTTP
 {
@@ -11,55 +16,41 @@ namespace HTTP
 	{
 	public:
 
-		static const std::string	GatewayInterfaceVer;
+		static const string	GatewayInterfaceVer;
+		static const size_t			Timeout = 5000;
 
-		class MetaVariable
-		{
-			public:
+		CGIScriptHandler();
+		CGIScriptHandler(const string& cgi_path);
 
-				operator const std::string&() const {return (m_str);}
+		void	addMetaVar(const string& var, const string& value);
+		void	addArg(const string& arg);
 
-				/* https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.3 */
-				static inline MetaVariable	ContentType()		{return (MetaVariable("CONTENT_TYPE"));}
-				/* https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.2 */
-				static inline MetaVariable	ContentLenght()		{return (MetaVariable("CONTENT_LENGTH"));}
-				/* https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.4 */
-				static inline MetaVariable	GatewayInterface()	{return (MetaVariable("GATEWAY_INTERFACE"));}
-				/* https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.5 */
-				static inline MetaVariable	PathInfo()			{return (MetaVariable("PATH_INFO"));}
-				/* https://datatracker.ietf.org/doc/html/rfc3875#section-4.1.6 */
-				static inline MetaVariable	PathTranslated()	{return (MetaVariable("PATH_TRANSLATED"));}
+		void						start(Method m);
+		std::vector<unsigned char>	read();
+		void						write();
 
-				const std::string&	str() const {return (m_str);}
-
-			private:
-
-				MetaVariable();
-				MetaVariable(const std::string& name);
-
-				std::string	m_str;
-		};
-
-		CGIScriptHandler(const std::string& cgi_path);
-		~CGIScriptHandler();
-
-		void	setMetaVariable(const MetaVariable& var, const std::string& value);
-		void	setScriptPath(const std::string& path);
-		void	start();
-		size_t	read();
+		void	setScriptPath(const string& path);
 
 	private:
 
 		CGIScriptHandler(const CGIScriptHandler& other);
 		CGIScriptHandler operator=(const CGIScriptHandler& rhs);
 
-		std::string			m_cgi_path;
-		std::string			m_script_path;
+		string			m_cgi_path;
+		string			m_script_path;
 		pid_t				m_proc_pid;
+
 		std::vector<std::vector<char> >	m_env;
+		std::vector<std::vector<char> >	m_argv;
 
 		std::vector<char *>	m_cenv;
 		std::vector<char *>	m_cargv;
+
+		struct pollfd		m_fds[2];
+		int					m_write_fd;
+		int					m_read_fd;
+
+		std::vector<char>	_buildMetaVar(const string& var, const string& value);
 	};
 }
 

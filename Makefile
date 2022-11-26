@@ -12,9 +12,9 @@ ASAN_FLAG		=  -fsanitize=address
 
 MAKEFLAGS		+= --no-builtin-rules
 
-CXX				= clang++-14 -gdwarf-4
 CXX				= g++-12
 CXX				= c++
+CXX				= clang++-14 -gdwarf-4
 
 SHELL			= bash
 
@@ -81,3 +81,4 @@ print_name:
 -include $(OBJS/DEPS)
 
 .PHONY:			all clean fclean re print_name
+.DELETE_ON_ERROR:
