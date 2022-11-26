@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:09 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:42:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 16:32:46 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,23 +97,12 @@ namespace HTTP
 
 			struct UriInfo
 			{
-				enum Form
-				{
-					ORIGIN_FORM,
-					ABSOLUTE_FORM
-				};
-
 				UriInfo()
-					: authority(), authority_host(), authority_port(), absolute_path("/"), query(), fragment()
+					: absolute_path("/"), query()
 				{}
-
-				string	authority;
-				string	authority_host;
-				string	authority_port;
 
 				string	absolute_path;
 				string	query;
-				string	fragment;
 			};
 
 			enum State
@@ -144,8 +133,8 @@ namespace HTTP
 			RequestParser(HeaderInfo& header_info, UriInfo& uri_info);
 			~RequestParser();
 
-			bool	parseHeader(const std::vector<uint8_t>& buffer, size_t recv_bytes);
-			void	parseURI(const string& uri);
+			Buffer::const_iterator	parseHeader(const Buffer& buff);
+
 
 #ifndef NDEBUG
 			void	report();
@@ -198,6 +187,7 @@ namespace HTTP
 			}
 
 			void	_insertField();
+			void	_parseURI(const string& uri);
 	};
 }
 

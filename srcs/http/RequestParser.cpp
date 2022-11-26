@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/24 17:32:07 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:14:49 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 16:38:40 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,16 +109,15 @@ namespace HTTP
 	/* Using a simple state machine to parse the request.
 	 * That is: no memory allocation, no system call... */
 
-	bool	RequestParser::parseHeader(const std::vector<uint8_t>& buffer, size_t recv_bytes)
+	Buffer::const_iterator	RequestParser::parseHeader(const Buffer& buffer)
 	{
 		unsigned char							ch = 0;
 		std::vector<uint8_t>::const_iterator	it = buffer.begin();
 
-		while (m_current_state != P_DONE && recv_bytes--)
+		while (it != buffer.end() && m_current_state != P_DONE)
 		{
 			ch = *it;
-			if (m_header_size++ >= MaxHeaderSize)
-				throw (RequestHandler::Exception(BadRequest));
+
 			switch (m_current_state)
 			{
 				case P_START_REQUEST_LINE:
@@ -161,7 +160,7 @@ namespace HTTP
 					{
 						case ' ':
 						case '\t':
-							this->parseURI(m_info.uri);
+							this->_parseURI(m_info.uri);
 							_transitionState(P_OWS, P_HTTP), m_index = 0;
 							break;
 						/* https://httpwg.org/specs/rfc9112.html#request.target */
@@ -323,9 +322,15 @@ namespace HTTP
 			};
 
 			if (!m_eat)
-				m_eat = true, recv_bytes++, m_header_size--;
+				m_eat = true;
 			else
+			{
+				if (m_header_size++ >= MaxHeaderSize)
+					throw (RequestHandler::Exception(BadRequest));
 				it++;
+			}
+
+			return (it);
 		}
 
 		if (m_current_state == P_DONE)
@@ -353,7 +358,7 @@ namespace HTTP
 			return (false);
 	}
 
-	void	RequestParser::parseURI(const string& uri)
+	void	RequestParser::_parseURI(const string& uri)
 	{
 		char	ch = 0;
 
@@ -367,9 +372,6 @@ namespace HTTP
 					ch = std::tolower(ch);
 					switch (ch)
 					{
-						case 'h':
-							_changeState(P_ABSOLUTE_FORM), m_index = 1;
-							break;
 						case '/':
 							/* https://httpwg.org/specs/rfc9112.html#origin-form */
 							_changeState(P_ABSOLUTE_PATH);
@@ -378,58 +380,6 @@ namespace HTTP
 							throw (RequestHandler::Exception(BadRequest));
 					}
 					break;
-
-				case P_ABSOLUTE_FORM:
-					// verify the scheme (must be http://)
-					ch = std::tolower(*it);
-					if (ch != m_scheme[m_index])
-					{
-						if (m_scheme[m_index] == '\0')
-						{
-							m_uri_info.authority_host.push_back(ch);
-							_changeState(P_ABSOLUTE_FORM_HOST);
-						}
-						else
-							throw (RequestHandler::Exception(BadRequest));
-					}
-					else
-						m_index++;
-					break;
-
-				case P_ABSOLUTE_FORM_HOST:
-					ch = std::tolower(*it);
-					if (ch == ':')
-						_transitionState(P_SKIP_ZERO, P_ABSOLUTE_FORM_PORT);
-					else if (ch == '/')
-						_changeState(P_ABSOLUTE_PATH);
-					else
-						m_uri_info.authority_host.push_back(ch);
-					break;
-
-				case P_ABSOLUTE_FORM_PORT:
-					ch = *it;
-					if (!std::isdigit(ch))
-					{
-						if (m_uri_info.authority_host.length() == 0)
-							throw (RequestHandler::Exception(BadRequest));
-						if (ch == '/')
-							_changeState(P_ABSOLUTE_PATH);
-						else
-							throw (RequestHandler::Exception(BadRequest));
-					}
-					else
-					{
-						if (m_uri_info.authority_port.length() == 5)
-						{
-							if (std::atoi(m_uri_info.authority_port.c_str()) > 65565)
-								throw (RequestHandler::Exception(BadRequest));
-						}
-						else if (m_uri_info.authority_port.length() > 5)
-							throw (RequestHandler::Exception(BadRequest));
-						else
-							m_uri_info.authority_port.push_back(ch);
-					}
-				break;
 
 				case P_ABSOLUTE_PATH:
 					ch = *it;
@@ -444,15 +394,6 @@ namespace HTTP
 					m_uri_info.query.push_back(ch);
 				break;
 
-				case P_SKIP_ZERO:
-					ch = *it;
-					if (ch != '0')
-					{
-						m_uri_info.authority_port.push_back(ch);
-						_changeState(m_next_state);
-					}
-				break;
-
 				default:
 					;
 			}
@@ -462,7 +403,6 @@ namespace HTTP
 		//std::clog << "Query : " << m_uri_info.query << '\n';
 		if (m_current_state == P_ABSOLUTE_FORM || m_uri_info.absolute_path.find("../") != string::npos)
 			throw (RequestHandler::Exception(BadRequest));
-		m_uri_info.authority = m_uri_info.authority_host + ':' +  m_uri_info.authority_port;
 		//std::clog << "Authority: " << m_uri_info.authority << '\n';
 	}
 

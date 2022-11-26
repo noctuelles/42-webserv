@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:45:33 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 18:22:28 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ namespace HTTP
 	typedef std::pair<ci_string, std::string>	HeaderField;
 	typedef std::map<ci_string, std::string>	HeaderFieldMap;
 	typedef std::vector<HeaderField>			HeaderFieldVector;
+
+	typedef std::vector<uint8_t>				Buffer;
 
 	/* Supported status code. Vim users, press 'gx' to open links (with the cursor under the link obviously). */
 
@@ -93,6 +95,35 @@ namespace HTTP
 
 		string	phrase;
 		string	page;
+	};
+
+
+	struct UriInfo
+	{
+		UriInfo()
+			: absolute_path("/"), query()
+		{}
+
+		string	absolute_path;
+		string	query;
+	};
+
+	struct HeaderInfo
+	{
+		HeaderInfo() :
+			method(),
+			ver_major(),
+			ver_minor(),
+			uri(),
+			request_line(),
+			header_field()
+		{}
+
+		Method			method;
+		int				ver_major, ver_minor;
+		UriInfo			uri;
+		std::string		request_line;
+		HeaderFieldMap	header_field;
 	};
 
 	class Field
