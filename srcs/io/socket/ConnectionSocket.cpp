@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/23 12:52:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:27:05 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,11 @@ namespace IO
 	int	ConnectionSocket::recv()
 	{
 		_updateLastActivity();
+		m_recv_buff.resize(MaxRecvBufferSize);
 		m_recv_bytes = ::recv(*this, m_recv_buff.data(), m_recv_buff.size(), 0);
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
+		m_recv_buff.resize(m_recv_bytes);
 		if (m_request_handler.fetchIncomingData(m_recv_buff, m_recv_bytes) == RequestHandler::PROCESSING_RESPONSE_HEADER)
 			m_state = FETCH_SEND_DATA;
 		return (m_state);

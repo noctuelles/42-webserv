@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:54:42 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 17:54:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:18:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,12 +141,21 @@ namespace HTTP
 				default:
 					;
 			}
+			if (!m_eat)
+				m_eat = true;
+			else
+			{
+				it++;
+				if (++m_nbr_parsed >= MaxHeaderField)
+					throw (RequestHandler::Exception(BadRequest));
+			}
 		}
 		return (it);
 	}
 
 	void	HeaderFieldParser::transitionState(int new_state, int next_state, callBackFnct f)
 	{
+		m_previous_state = m_current_state;
 		changeState(new_state);
 		m_next_state = next_state;
 		m_f = f;
@@ -164,6 +173,9 @@ namespace HTTP
 
 		if (!ret.second)
 		{
+			/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
+			if (ret.first->first == Field::Host().str())
+				throw (RequestHandler::Exception(BadRequest));
 			/* https://httpwg.org/specs/rfc9110.html#fields.order */
 			ret.first->second
 				.append(", ")

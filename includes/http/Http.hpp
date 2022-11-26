@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 18:22:28 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:10:44 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,8 +104,7 @@ namespace HTTP
 			: absolute_path("/"), query()
 		{}
 
-		string	absolute_path;
-		string	query;
+		std::string	absolute_path, query;
 	};
 
 	struct HeaderInfo
@@ -171,6 +170,7 @@ namespace HTTP
 	extern const char*	CRLF;
 	extern const char*	MethodTable[];
 	extern const char*	RFC822_DateFormat;
+	extern const char*	HttpSlash;
 }
 
 #endif

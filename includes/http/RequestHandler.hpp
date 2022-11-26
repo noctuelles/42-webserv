@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/24 14:08:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:31:58 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include <list>
 # include <fstream>
 # include "Http.hpp"
+# include "HeaderParser.hpp"
 # include "ResponseHeader.hpp"
 # include "SocketTypes.hpp"
 # include "RequestParser.hpp"
@@ -76,7 +77,7 @@ namespace HTTP
 			RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
 			~RequestHandler();
 
-			State		fetchIncomingData(const std::vector<uint8_t>& data_buff, size_t recv_bytes);
+			State		fetchIncomingData(const Buffer& buff);
 			State		prepareOutcomingData();
 
 			void			setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
@@ -164,12 +165,11 @@ namespace HTTP
 			string						m_page_to_send;
 
 			ifstream					m_file_handle;
-			RequestParser::HeaderInfo	m_header_info;
-			RequestParser::UriInfo		m_uri_info;
-			RequestParser				m_header_parser;
+			HeaderParser				m_header_parser;
+			HeaderInfo					m_header_info;
+
 			StatusCode					m_status_code;
 			string						m_ressource_path;
-			CGIScriptHandler			m_cgi_handler;
 
 			/* ############################ Private function ############################ */
 

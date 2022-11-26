@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 18:06:36 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 18:37:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:21:02 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@ namespace HTTP
 {
 	HeaderParser::HeaderParser() :
 		Parser(ST_START_REQUEST_LINE),
+		m_index(0),
 		m_hfield_parser()
-	{
-	}
+	{}
 
 	Buffer::const_iterator	HeaderParser::operator()(const Buffer& buff, Buffer::const_iterator it)
 	{
@@ -70,7 +70,7 @@ namespace HTTP
 					{
 						case ' ':
 						case '\t':
-							this->_parseURI(m_data.request_line);
+							this->parseURI(m_data.request_line);
 							transitionState(ST_OWS, ST_HTTP), m_index = 0;
 							break;
 						/* https://httpwg.org/specs/rfc9112.html#request.target */
@@ -85,10 +85,13 @@ namespace HTTP
 				break;
 
 				case ST_HTTP:
-					if (ch != m_http[m_index])
+					if (ch != HttpSlash[m_index])
 					{
-						if (m_http[m_index] == '\0')
-							_dontEat(), _changeState(P_HTTP_MAJOR_VER);
+						if (HttpSlash[m_index] == '\0')
+						{
+							m_eat = false;
+							changeState(ST_HTTP_MAJOR_VER);
+						}
 						else
 							throw (RequestHandler::Exception(BadRequest));
 					} else m_index++;
@@ -125,7 +128,10 @@ namespace HTTP
 					it = m_hfield_parser(buff, it);
 					m_eat = false;
 					if (m_hfield_parser.getState() == HeaderFieldParser::ST_DONE)
+					{
 						m_data.header_field = m_hfield_parser.get();
+						changeState(ST_DONE);
+					}
 				break;
 
 				case ST_CRLF:
@@ -135,7 +141,7 @@ namespace HTTP
 							throw (RequestHandler::Exception(BadRequest));
 						changeState(m_next_state);
 					}
-					break;
+				break;
 
 				case ST_OWS:
 					if (!isWS(ch))
@@ -150,21 +156,66 @@ namespace HTTP
 			else
 			{
 				it++;
-				m_nbr_parsed++;
+				if (++m_nbr_parsed >= MaxHeaderSize)
+					throw (RequestHandler::Exception(BadRequest));
 			}
-			if (m_nbr_parsed >= MaxHeaderSize)
-				throw (RequestHandler::Exception(BadRequest));
 		}
 		return (it);
 	}
 
+	void	HeaderParser::parseURI(const string& uri)
+	{
+		char	ch = 0;
+
+		m_current_state = ST_START_URI;
+		for (string::const_iterator it = uri.begin(); it != uri.end(); it++)
+		{
+			ch = *it;
+			switch (m_current_state)
+			{
+				case ST_START_URI:
+					ch = std::tolower(ch);
+					switch (ch)
+					{
+						case '/':
+							/* https://httpwg.org/specs/rfc9112.html#origin-form */
+							changeState(ST_ABSOLUTE_PATH);
+							break;
+						default:
+							throw (RequestHandler::Exception(BadRequest));
+					}
+					break;
+
+				case ST_ABSOLUTE_PATH:
+					ch = *it;
+					if (ch == '?')
+						changeState(ST_QUERY);
+					else
+						m_data.uri.absolute_path.push_back(ch);
+				break;
+
+				case ST_QUERY:
+					ch = *it;
+					m_data.uri.query.push_back(ch);
+				break;
+
+				default:
+					;
+			}
+		}
+	}
+
+
 	void	HeaderParser::transitionState(int new_state, int next_state)
 	{
-
+		m_previous_state = m_current_state;
+		changeState(new_state);
+		m_next_state = next_state;
 	}
 
 	void	HeaderParser::changeState(int new_state)
 	{
-
+		m_previous_state = m_current_state;
+		m_current_state = new_state;
 	}
 }

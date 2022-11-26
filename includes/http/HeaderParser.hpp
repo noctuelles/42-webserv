@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 18:00:00 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 18:38:31 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:34:02 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,12 @@
 
 namespace HTTP
 {
-	class HeaderParser : private Parser<HeaderInfo>
+	class HeaderParser : public Parser<HeaderInfo>
 	{
 		public:
 
 			static const size_t	MaxUriSize = 1024;
-			static const size_t	MaxHeaderSize = HeaderFieldParser::MaxHeaderField + MaxUriSize;
+			static const size_t	MaxHeaderSize = MaxUriSize + 30;
 
 			static const int	MajorVersionSupported = 1;
 			static const int	MinorVersionSupported = 1;
@@ -38,6 +38,11 @@ namespace HTTP
 				ST_HTTP_DOT,
 				ST_HTTP_MINOR_VER,
 				ST_PARSE_HEADER_FIELD,
+
+				ST_START_URI,
+				ST_ABSOLUTE_PATH,
+				ST_QUERY,
+
 				ST_CRLF,
 				ST_WS,
 				ST_OWS,
@@ -49,6 +54,7 @@ namespace HTTP
 
 		private:
 
+			void	parseURI(const string& uri);
 			void	transitionState(int new_state, int next_state);
 			void	changeState(int new_state);
 

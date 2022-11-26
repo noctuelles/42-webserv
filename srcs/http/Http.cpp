@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:43:06 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:40:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 20:57:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 namespace HTTP
 {
 	const char*	CRLF = "\r\n";
+
+	const char*	HttpSlash = "HTTP/";
 
 	const char*	MethodTable[] =
 	{
