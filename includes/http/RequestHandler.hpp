@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:31:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/26 21:38:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
 # include "AutoIndex.hpp"
-# include "CGIScriptHandler.hpp"
 
 using std::pair;
 using std::vector;
