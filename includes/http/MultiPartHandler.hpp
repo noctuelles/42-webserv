@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 15:49:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 16:08:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 19:01:55 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,19 @@ namespace HTTP
 				ST_PARSE_HEADER_FIELD,
 				ST_FILE_ENTRY,
 				ST_FILE_CONTENT,
+				ST_FILE_CONTENT_ENDING_CRLF,
+				ST_FILE_CONTENT_ENDING_DASH1,
+				ST_FILE_CONTENT_ENDING_DASH2,
+				ST_FILE_CONTENT_ENDING_BOUND,
+				ST_FILE_CONTENT_END,
+				ST_END_DASH1,
+				ST_END_DASH2,
 				ST_CRLF,
 				ST_DONE
 			};
 
 			MultiPartHandler(const std::string& ressource_path, size_t content_lenght, const std::string& boundary);
+			~MultiPartHandler();
 
 			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it);
 
@@ -43,8 +51,11 @@ namespace HTTP
 
 			void	transitionState(int new_state, int next_state);
 			void	changeState(int new_state);
+			Buffer::const_iterator	restoreState(int state);
 			void	initFileWriting();
 			void	writeDataBatch(Buffer::const_iterator end);
+
+			Buffer::const_iterator	checkEnd(const Buffer& buff, Buffer::const_iterator it);
 
 			HeaderFieldParser			m_hfield_parser;
 			size_t						m_content_lenght;
@@ -52,6 +63,7 @@ namespace HTTP
 			std::string					m_boundary;
 			std::string::const_iterator	cmp_it;
 			Buffer::const_iterator		m_start_it;
+			Buffer::const_iterator		m_saved_it;
 
 			std::ofstream				m_ofile_handle;
 	};

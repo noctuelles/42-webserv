@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 15:49:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 16:08:35 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 19:03:26 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,12 @@ namespace HTTP
 		cmp_it(m_boundary.begin()),
 		m_ofile_handle()
 	{}
+
+	MultiPartHandler::~MultiPartHandler()
+	{
+		if (m_ofile_handle.is_open())
+			m_ofile_handle.close();
+	}
 
 	Buffer::const_iterator	MultiPartHandler::operator()(const Buffer& buff, Buffer::const_iterator it)
 	{
@@ -67,17 +73,91 @@ namespace HTTP
 						m_data.header_field = m_hfield_parser.get();
 						m_eat = false;
 						initFileWriting();
-						changeState(ST_FILE_ENTRY);
+						m_start_it = it;
+						changeState(ST_FILE_CONTENT);
 					}
 					break;
 
-				case ST_FILE_ENTRY:
-					m_eat = false;
-					m_start_it = it;
-					changeState(ST_FILE_CONTENT);
+				case ST_FILE_CONTENT:
+					if (isCRLF(*it))
+					{
+						m_eat = false;
+						m_saved_it = it;
+					}
+
 					break;
 
-				case ST_FILE_CONTENT:
+				case ST_FILE_CONTENT_ENDING_CRLF:
+					if (*it != '\r')
+					{
+						if (*it != '\n')
+							restoreState(ST_FILE_CONTENT);
+						else
+							changeState(ST_FILE_CONTENT_ENDING_DASH1);
+					}
+					break;
+
+				case ST_FILE_CONTENT_ENDING_DASH1:
+					if (*it != '-')
+						restoreState(ST_FILE_CONTENT);
+					else
+						changeState(ST_FILE_CONTENT_ENDING_DASH2);
+					break;
+
+				case ST_FILE_CONTENT_ENDING_DASH2:
+					if (*it != '-')
+						restoreState(ST_FILE_CONTENT);
+					else
+					{
+						cmp_it = m_boundary.begin();
+						changeState(ST_FILE_CONTENT_ENDING_BOUND);
+					}
+					break;
+
+				case ST_FILE_CONTENT_ENDING_BOUND:
+					if (cmp_it == m_boundary.end())
+					{
+						if (isCRLF(*it) || *it == '-')
+						{
+							m_eat = false;
+							changeState(ST_FILE_CONTENT_END);
+						}
+						else
+							restoreState(ST_FILE_CONTENT);
+					}
+					else if(*it != *cmp_it)
+						restoreState(ST_FILE_CONTENT);
+					else
+						cmp_it++;
+					break;
+
+				case ST_FILE_CONTENT_END:
+					if (isCRLF(*it))
+					{
+						m_eat = false;
+						transitionState(ST_CRLF, ST_CHECK_BOUND_DASH1);
+					}
+					else if (*it == '-')
+					{
+						m_eat = false;
+						changeState(ST_END_DASH1);
+					}
+					writeDataBatch(m_saved_it);
+					m_ofile_handle.close();
+					break;
+
+				case ST_END_DASH1:
+					if (*it != '-')
+						throw (RequestHandler::Exception(BadRequest));
+					else
+						changeState(ST_END_DASH2);
+					break;
+
+				case ST_END_DASH2:
+					if (*it != '-')
+						throw (RequestHandler::Exception(BadRequest));
+					else
+						changeState(ST_DONE);
 					break;
 
 				case ST_CRLF:
@@ -100,7 +180,8 @@ namespace HTTP
 
 		if (m_current_state == ST_FILE_CONTENT)
 		{
-
+			writeDataBatch(it);
+			m_current_state = ST_DONE;
 		}
 		return (it);
 	}
@@ -143,5 +224,12 @@ namespace HTTP
 	{
 		m_previous_state = m_current_state;
 		m_current_state = new_state;
+	}
+
+	Buffer::const_iterator	MultiPartHandler::restoreState(int state)
+	{
+		m_eat = false;
+		changeState(state);
+		return (m_saved_it);
 	}
 }

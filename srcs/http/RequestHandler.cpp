@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 16:09:46 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 18:28:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,8 +106,10 @@ namespace HTTP
 			{
 				if (m_header_info.method == Post)
 				{
-					it = (*m_multipart_handler)(buff, it);
+					(*m_multipart_handler)(buff, it);
 
+					if (m_multipart_handler->getState() == MultiPartHandler::ST_DONE)
+						_setState(PROCESSING_RESPONSE_HEADER);
 				}
 				else
 					_setState(PROCESSING_RESPONSE_HEADER);
@@ -171,8 +173,8 @@ namespace HTTP
 
 	RequestHandler::~RequestHandler()
 	{
-		if (!m_multipart_parser)
-			delete (m_multipart_parser);
+		if (!m_multipart_handler)
+			delete (m_multipart_handler);
 	}
 
 	/* ############################ Private function ############################ */
