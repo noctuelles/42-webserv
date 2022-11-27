@@ -12,14 +12,22 @@
 
 #include "RequestHandler.hpp"
 #include "Utils.hpp"
+#include "VirtServInfo.hpp"
 #include "WebServ.hpp"
 #include "Log.hpp"
 #include "ConnectionSocket.hpp"
+#include <arpa/inet.h>
 #include <ios>
+#include <netinet/in.h>
+#include <string>
 #include <utility>
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 
 using std::make_pair;
 using std::vector;
@@ -138,12 +146,16 @@ namespace HTTP
 
 	void	RequestHandler::setBoundInterface(const struct sockaddr_in& bound_sock)
 	{
+		stringstream ss;
 		m_bound_sock = bound_sock;
+		ss << ntohs(bound_sock.sin_port);
+		m_server_port_str = ss.str();
 	}
 
 	void	RequestHandler::setPeerInterface(const struct sockaddr_in& peer_sock)
 	{
 		m_peer_sock = peer_sock;
+		m_remote_addr_str = inet_ntoa(peer_sock.sin_addr);
 	}
 
 	RequestHandler::DataInfo	RequestHandler::getDataToSend() const

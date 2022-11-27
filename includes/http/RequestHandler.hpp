@@ -16,6 +16,7 @@
 # include <cstring>
 # include <exception>
 #include <functional>
+#include <string>
 # include <vector>
 #include <sys/stat.h>
 # include <list>
@@ -158,6 +159,8 @@ namespace HTTP
 			const VirtServ::RouteOptions*		m_route;
 			struct sockaddr_in					m_bound_sock;
 			struct sockaddr_in					m_peer_sock;
+			string								m_server_port_str;
+			string								m_remote_addr_str;
 
 			vector<uint8_t>				m_data_buff;
 			const void*					m_data_to_send;

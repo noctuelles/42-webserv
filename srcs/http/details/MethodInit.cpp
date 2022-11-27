@@ -24,6 +24,7 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <netinet/in.h>
+#include <string>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <libgen.h>
@@ -61,43 +62,20 @@ namespace HTTP
 			{
 				if (Utils::suffixMatch(m_uri_info.absolute_path, m_route->m_cgi_extension)) // Does the end of the URL match the extension defined ?
 				{
-					if ( pipe(m_cgi_input_pipe) == -1 )
-						throw std::runtime_error("pipe");
-					if ( pipe(m_cgi_output_pipe) == -1 )
-						throw std::runtime_error("pipe");
-					int cpid;
-					if ( (cpid = fork()) == -1 )
-						throw std::runtime_error("fork");
-					else if (cpid == 0) // In child process
-					{
-						m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
-						m_cgi_handler.addMetaVar("SCRIPT_NAME", m_ressource_path.c_str());
-						m_cgi_handler.addMetaVar("SERVER_NAME", m_header_info.header_fields.at(Field::Host()));
-						m_cgi_handler.addMetaVar("SERVER_PROTOCOL", "HTTP/1.1");
-						m_cgi_handler.addMetaVar("REQUEST_METHOD", HTTP::MethodTable[m_header_info.method]);
-						m_cgi_handler.addMetaVar("QUERY_STRING", m_uri_info.query);
-						m_cgi_handler.addMetaVar("PATH_INFO", m_ressource_path.c_str());
-						m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);
-
-						m_cgi_handler.addMetaVar("SERVER_PORT", "8080"); // ?
-						m_cgi_handler.addMetaVar("REMOTE_ADDRESS", "192.168.1.1"); // ??
-
-						
-						dup2(m_cgi_input_pipe[0], STDIN_FILENO); close(m_cgi_input_pipe[0]); // Replace stdin with m_cgi_input_pipe reading end
-						close(m_cgi_input_pipe[1]); // Close m_cgi_input_pipe writing end;
-
-						dup2(m_cgi_output_pipe[1], STDOUT_FILENO); close(m_cgi_output_pipe[1]); // Replace stdout with m_cgi_output_pipe writing end
-						close(m_cgi_output_pipe[0]); // Close m_cgi_output_pipe reading end;
-
-						// Setup env here 
-						//execve("script_name", &"script_name", sa,getData());
-						// Check errno for if not executable
-						close(m_cgi_input_pipe[0]);
-						std::cout << "Content-type: text/html\r\n\r\n";
-						std::cout << "<html><head>CGI youpi</head><body>CGI youpi !</body></html>\r\n\r\n";
-						exit(42);
-					}
 					m_request_type = CGI;
+
+					m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
+					m_cgi_handler.addMetaVar("SCRIPT_NAME", m_ressource_path.c_str());
+					m_cgi_handler.addMetaVar("SERVER_NAME", m_header_info.header_fields.at(Field::Host()));
+					m_cgi_handler.addMetaVar("SERVER_PROTOCOL", "HTTP/1.1");
+					m_cgi_handler.addMetaVar("REQUEST_METHOD", HTTP::MethodTable[m_header_info.method]);
+					m_cgi_handler.addMetaVar("QUERY_STRING", m_uri_info.query);
+					m_cgi_handler.addMetaVar("PATH_INFO", m_ressource_path.c_str());
+					m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);
+					m_cgi_handler.addMetaVar("SERVER_PORT", m_server_port_str);
+					m_cgi_handler.addMetaVar("REMOTE_ADDRESS", m_remote_addr_str); 
+
+					m_cgi_handler.start(HTTP::Get);
 					return;
 				}
 			}
