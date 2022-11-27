@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 13:48:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 16:11:41 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,7 @@ namespace HTTP
 		std::string	cgiExt = ".php";
 
 		if (m_ressource_path.compare(m_ressource_path.length() - cgiExt.length(), cgiExt.length(), cgiExt) == 0)
-		{
 			throw (Exception(NotImplemented));
-		}
 		else
 		{
 			// Check if this is a correct directory and that we've write permissions.
@@ -109,7 +107,7 @@ namespace HTTP
 					throw (Exception(BadRequest));
 			}
 
-			m_multipart_parser = new MultiPartParser(clen, ctype.value);
+			m_multipart_handler = new MultiPartHandler(m_ressource_path, clen, boundary->second);
 		}
 	}
 

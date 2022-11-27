@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 13:59:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 16:09:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 # include "Http.hpp"
 # include "HeaderParser.hpp"
 # include "ResponseHeader.hpp"
-# include "MultiPartParser.hpp"
+# include "MultiPartHandler.hpp"
 # include "SocketTypes.hpp"
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
@@ -168,7 +168,7 @@ namespace HTTP
 			ofstream					m_ofile_handle;
 			HeaderParser				m_header_parser;
 			HeaderInfo					m_header_info;
-			MultiPartParser*			m_multipart_parser;
+			MultiPartHandler*			m_multipart_handler;
 
 			StatusCode					m_status_code;
 			string						m_ressource_path;

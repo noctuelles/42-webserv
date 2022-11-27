@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 14:02:11 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 16:09:46 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ namespace HTTP
 		m_ofile_handle(),
 		m_header_parser(),
 		m_header_info(),
-		m_multipart_parser(NULL),
+		m_multipart_handler(NULL),
 		m_status_code(OK),
 		m_ressource_path()
 	{
@@ -76,13 +76,13 @@ namespace HTTP
 
 	RequestHandler::State	RequestHandler::fetchIncomingData(const Buffer& buff)
 	{
-		Buffer::const_iterator	it;
+		Buffer::const_iterator	it = buff.begin();
 
 		try
 		{
 			if (_state(FETCHING_REQUEST_HEADER))
 			{
-				it = m_header_parser(buff, buff.begin());
+				it = m_header_parser(buff, it);
 
 				if (m_header_parser.getState() == HeaderParser::ST_DONE)
 				{
@@ -90,9 +90,6 @@ namespace HTTP
 					_parseGeneralHeaderFields();
 
 					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << '\n';
-
-					for (HeaderFieldMap::const_iterator it = m_header_info.header_field.begin(); it != m_header_info.header_field.end(); it++)
-						std::cout << it->first << " : " << it->second << '\n';
 
 					m_ressource_path = m_header_info.uri.absolute_path;
 					m_ressource_path.erase(0, m_route->m_location_match.length());
@@ -109,7 +106,8 @@ namespace HTTP
 			{
 				if (m_header_info.method == Post)
 				{
-					(*m_multipart_parser)(buff, it);
+					it = (*m_multipart_handler)(buff, it);
+
 				}
 				else
 					_setState(PROCESSING_RESPONSE_HEADER);
