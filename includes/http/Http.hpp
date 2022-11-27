@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 22:41:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 00:19:13 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,6 +123,13 @@ namespace HTTP
 		UriInfo			uri;
 		std::string		request_line;
 		HeaderFieldMap	header_field;
+	};
+
+	struct MultiPartInfo
+	{
+		HeaderFieldMap	header_field;
+
+		std::pair<Buffer::const_iterator, Buffer::const_iterator>	data_it;
 	};
 
 	struct ContentInfo
