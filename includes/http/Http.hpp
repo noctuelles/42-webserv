@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 00:19:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 13:48:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ namespace HTTP
 
 			static inline Field	Server()			{return Field("Server");}
 			static inline Field	Date()				{return Field("Date");}
-			static inline Field	ContentLenght()		{return Field("Content-Lenght");}
+			static inline Field	ContentLength()		{return Field("Content-Length");}
 			static inline Field	ContentDisposition()		{return Field("Content-Disposition");}
 			static inline Field	ContentTransferEncoding()	{return Field("Content-Transfer-Encoding");}
 			static inline Field	ContentType()		{return Field("Content-Type");}
@@ -154,6 +154,7 @@ namespace HTTP
 			static inline Field	Host()				{return Field("Host");}
 			static inline Field	SetCookie()			{return Field("Set-Cookie");}
 			static inline Field	Allow()				{return Field("Allow");}
+			static inline Field	TransferEncoding()	{return Field("Transfer-Encoding");}
 
 			inline const ci_string&	str() const
 			{

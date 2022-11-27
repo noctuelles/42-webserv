@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:41:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 13:59:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # include "Http.hpp"
 # include "HeaderParser.hpp"
 # include "ResponseHeader.hpp"
+# include "MultiPartParser.hpp"
 # include "SocketTypes.hpp"
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
@@ -32,6 +33,7 @@ using std::pair;
 using std::vector;
 using std::string;
 using std::ifstream;
+using std::ofstream;
 
 namespace HTTP
 {
@@ -163,8 +165,10 @@ namespace HTTP
 			string						m_page_to_send;
 
 			ifstream					m_file_handle;
+			ofstream					m_ofile_handle;
 			HeaderParser				m_header_parser;
 			HeaderInfo					m_header_info;
+			MultiPartParser*			m_multipart_parser;
 
 			StatusCode					m_status_code;
 			string						m_ressource_path;

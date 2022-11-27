@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:51:52 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 13:51:50 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ namespace HTTP
 			MIME	mime = getMimeFromFileExtension(m_ressource_path.c_str());
 			size_t		fileSize = IO::getFileSize(m_ressource_path.c_str());
 
-			header.addField(Field::ContentLenght(), Utils::integralToString(fileSize));
+			header.addField(Field::ContentLength(), Utils::integralToString(fileSize));
 			header.addField(Field::ContentType(), mime);
 			if (mime == MIME::ApplicationOctetStream())
 			{
@@ -39,7 +39,7 @@ namespace HTTP
 		else if (m_request_type == AUTOINDEX)
 		{
 			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
-			header.addField(Field::ContentLenght(), Utils::integralToString(m_page_to_send.size()));
+			header.addField(Field::ContentLength(), Utils::integralToString(m_page_to_send.size()));
 			header.addField(Field::ContentType(), MIME::TextHtml());
 		}
 	}
@@ -58,7 +58,7 @@ namespace HTTP
 	{
 		header.setReasonPhrase(StatusInfoPages::get()[m_status_code].phrase);
 		header.addField(Field::ContentType(), MIME::TextHtml());
-		header.addField(Field::ContentLenght(), Utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));
+		header.addField(Field::ContentLength(), Utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));
 		if (m_status_code == MethodNotAllowed)
 		{
 			string	allowed_method;

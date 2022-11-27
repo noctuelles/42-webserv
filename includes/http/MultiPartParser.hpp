@@ -24,16 +24,17 @@ namespace HTTP
 
 			MultiPartParser(size_t content_lenght, const std::string& boundary);
 
-			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it) = 0;
+			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it);
 
 		private:
 
 			void	transitionState(int new_state, int next_state);
 			void	changeState(int new_state);
 
-			HeaderFieldParser	m_hfield_parser;
+			HeaderFieldParser			m_hfield_parser;
+			size_t						m_content_lenght;
+			std::string					m_boundary;
 			std::string::const_iterator	cmp_it;
-			std::string	m_boundary;
 	};
 }
 

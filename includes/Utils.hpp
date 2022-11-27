@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:10:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/24 12:04:33 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 12:21:08 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,16 @@ namespace Utils
 		inline std::string	integralToString(T val)
 		{
 			return (static_cast<std::ostringstream &>(std::ostringstream() << std::dec << val).str());
+		}
+
+	template <class T>
+		inline T	stringToIntegral(const std::string& str)
+		{
+			std::stringstream	ss(str);
+			T					ret;
+
+			ss >> ret;
+			return (ret);
 		}
 
 	template <class T>

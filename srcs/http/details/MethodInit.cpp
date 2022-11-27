@@ -6,14 +6,17 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:41:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 13:48:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "AutoIndex.hpp"
 #include "Http.hpp"
+#include "MIME.hpp"
 #include "RequestHandler.hpp"
+#include "FieldParser.hpp"
 #include "FileUtils.hpp"
+#include "Utils.hpp"
 #include "WebServ.hpp"
 #include <algorithm>
 #include <arpa/inet.h>
@@ -61,6 +64,53 @@ namespace HTTP
 
 	void	RequestHandler::_methodInitPost()
 	{
+		std::string	cgiExt = ".php";
+
+		if (m_ressource_path.compare(m_ressource_path.length() - cgiExt.length(), cgiExt.length(), cgiExt) == 0)
+		{
+			throw (Exception(NotImplemented));
+		}
+		else
+		{
+			// Check if this is a correct directory and that we've write permissions.
+			mode_t	file_mode = IO::getFileMode(m_ressource_path.c_str());
+
+			if (!((file_mode & S_IFMT) & S_IFDIR && file_mode & S_IWUSR))
+				throw (Exception(Forbidden));
+
+			const HeaderFieldMap::const_iterator	content_type = m_header_info.header_field.find(Field::ContentType());
+			const HeaderFieldMap::const_iterator	content_len = m_header_info.header_field.find(Field::ContentLength());
+			const HeaderFieldMap::const_iterator	transfer_enc = m_header_info.header_field.find(Field::TransferEncoding());
+
+			// Check the existance of borth ContentType and ContentLenght header (does not support chunked request).
+			if (content_type == m_header_info.header_field.end())
+				throw (Exception(BadRequest));
+			if (content_len == m_header_info.header_field.end())
+			{ 
+				if (transfer_enc != m_header_info.header_field.end())
+					throw (Exception(NotImplemented));
+				else
+					throw (Exception(BadRequest));
+			}
+
+			ContentInfo										ctype = FieldParser()(content_type->second);
+			const std::map<string, string>::const_iterator	boundary = ctype.param.find("boundary");
+			size_t											clen = Utils::stringToIntegral<size_t>(content_len->second);
+
+			// Only support multipart/form-data for uploading with POST
+			if (ctype.value != MIME::MultipartFormData().toStr())
+				throw (Exception(NotImplemented));
+			// Check if the boundary exist and is not empty
+			if (boundary == ctype.param.end())
+				throw (Exception(BadRequest));
+			else
+			{
+				if (boundary->second.length() == 0)
+					throw (Exception(BadRequest));
+			}
+
+			m_multipart_parser = new MultiPartParser(clen, ctype.value);
+		}
 	}
 
 	void	RequestHandler::_methodInitDelete()

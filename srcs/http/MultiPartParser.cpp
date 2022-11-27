@@ -3,8 +3,20 @@
 
 namespace HTTP
 {
+
+	MultiPartParser::MultiPartParser(size_t content_lenght, const std::string& boundary) :
+		Parser(ST_CHECK_BOUND_DASH1),
+		m_hfield_parser(),
+		m_content_lenght(content_lenght),
+		m_boundary(boundary),
+		cmp_it(m_boundary.begin())
+	{}
+
 	Buffer::const_iterator	MultiPartParser::operator()(const Buffer& buff, Buffer::const_iterator it)
 	{
+		if (m_current_state == ST_FILE_CONTENT)
+			m_data.data_it.first = it;
+
 		while (it != buff.end() && m_current_state != ST_DONE)
 		{
 			switch (m_current_state)
@@ -58,7 +70,24 @@ namespace HTTP
 				default:
 					;
 			}
+			if (!m_eat)
+				m_eat = true;
+			else
+				it++;
 		}
 		return (it);
+	}
+
+	void	MultiPartParser::transitionState(int new_state, int next_state)
+	{
+		m_previous_state = m_current_state;
+		changeState(new_state);
+		m_next_state = next_state;
+	}
+
+	void	MultiPartParser::changeState(int new_state)
+	{
+		m_previous_state = m_current_state;
+		m_current_state = new_state;
 	}
 }

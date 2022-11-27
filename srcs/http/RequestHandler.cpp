@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 23:33:13 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 14:02:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,10 @@ namespace HTTP
 		m_data_to_send_size(0),
 		m_page_to_send(),
 		m_file_handle(),
+		m_ofile_handle(),
 		m_header_parser(),
 		m_header_info(),
+		m_multipart_parser(NULL),
 		m_status_code(OK),
 		m_ressource_path()
 	{
@@ -89,8 +91,14 @@ namespace HTTP
 
 					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << '\n';
 
+					for (HeaderFieldMap::const_iterator it = m_header_info.header_field.begin(); it != m_header_info.header_field.end(); it++)
+						std::cout << it->first << " : " << it->second << '\n';
+
 					m_ressource_path = m_header_info.uri.absolute_path;
+					m_ressource_path.erase(0, m_route->m_location_match.length());
 					m_ressource_path.insert(0, m_route->m_root);
+
+					::Log().get(INFO) << "Ressource resolved to " << '"' << m_ressource_path << '"' << '\n';
 
 					(this->*m_method_init_fnct[m_header_info.method])();
 
@@ -99,14 +107,9 @@ namespace HTTP
 			}
 			if (_state(FETCHING_REQUEST_BODY))
 			{
-				if (m_header_info.method != Get)
+				if (m_header_info.method == Post)
 				{
-					ContentInfo i = FieldParser()("caca    ; prout=machin    ; tructruc=much    ");
-
-					std::cout << i.value << '\n';
-
-					for (std::map<string, string>::iterator it = i.param.begin(); it != i.param.end(); it++)
-						std::cout << it->first << ' ' << it->second << '\n';
+					(*m_multipart_parser)(buff, it);
 				}
 				else
 					_setState(PROCESSING_RESPONSE_HEADER);
@@ -169,7 +172,10 @@ namespace HTTP
 	}
 
 	RequestHandler::~RequestHandler()
-	{}
+	{
+		if (!m_multipart_parser)
+			delete (m_multipart_parser);
+	}
 
 	/* ############################ Private function ############################ */
 

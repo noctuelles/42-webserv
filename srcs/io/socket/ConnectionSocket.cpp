@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 21:42:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 13:34:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ namespace IO
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
 		m_recv_buff.resize(m_recv_bytes);
+		std::cout << m_recv_buff.data() << '\n';
 		if (m_request_handler.fetchIncomingData(m_recv_buff) == RequestHandler::PROCESSING_RESPONSE_HEADER)
 			m_state = FETCH_SEND_DATA;
 		return (m_state);

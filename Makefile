@@ -11,7 +11,7 @@ MAKEFLAGS		+= --no-builtin-rules
 
 CXX				= clang++-14 -gdwarf-4
 CXX				= g++-12
-CXX				= 	c++
+CXX				= g++	
 
 SHELL			= bash
 
