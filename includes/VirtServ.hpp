@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <bitset>
@@ -17,6 +18,7 @@ using std::bitset;
 
 using std::string;
 using std::vector;
+using std::pair;
 
 struct VirtServ
 {
@@ -29,6 +31,7 @@ struct VirtServ
 			, m_index_vec()
 			, m_error_page_map()
 			, m_autoindex(-1)
+			, m_upload_store()
 		{}
 
 		bool	operator<(const RouteOptions& rhs)
@@ -43,6 +46,7 @@ struct VirtServ
 		vector<string>					m_index_vec;
 		map<HTTP::StatusCode, string>	m_error_page_map;
 		short							m_autoindex;
+		pair<string, string>			m_upload_store;
 	};
 
 	VirtServ() : m_default_route_options("/"), m_max_body_size(), m_routes_vec(), m_sockaddr_vec(), m_server_name_vec() {}

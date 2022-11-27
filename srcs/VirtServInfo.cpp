@@ -56,6 +56,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_server_block_dispatch_table
     {"error_page", &VirtServInfo::_parseErrorPage},
     {"client_max_body_size", &VirtServInfo::_parseClientMaxBodySize},
     {"cgi_setup", &VirtServInfo::_parseCgiSetup},
+    {"upload_store", &VirtServInfo::_parseUploadStore},
 };
 
 // Range constructor
@@ -69,7 +70,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_location_block_dispatch_tab
     {"autoindex", &VirtServInfo::_parseLocationAutoindex},
     {"index", &VirtServInfo::_parseLocationIndex},
     {"allowed_methods", &VirtServInfo::_parseLocationAllowedMethods},
-    {"cgi_setup", &VirtServInfo::_parseLocationCgiSetup},
+    {"upload_store", &VirtServInfo::_parseLocationUploadStore},
 };
 
 // Range constructor
@@ -338,6 +339,9 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	// Put all methods to true if 0
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_methods == 0 )
 		m_virtserv_vec.back().m_routes_vec.back().m_methods.set();
+	// Inherit upload_store if none
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_upload_store.first.empty() )
+		m_virtserv_vec.back().m_routes_vec.back().m_upload_store = m_virtserv_vec.back().m_default_route_options.m_upload_store;
 	// Check for end delimiter
 }
 
@@ -353,6 +357,23 @@ void VirtServInfo::_parseLocationCgiSetup(VirtServInfo::configstream_iterator& i
 		throw ConfigFileError("missing ; after cgi_setup directive in location block");
 	else
 		++it;
+}
+
+void VirtServInfo::_parseLocationUploadStore(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_routes_vec.back().m_upload_store.first = *it; // upload dir
+	++it;
+	// Optional executable name
+	if (*it != ";")
+	{
+		m_virtserv_vec.back().m_routes_vec.back().m_upload_store.second = *it; // executable name
+		++it;
+	}
+	if (*it != ";")
+		throw ConfigFileError("missing ; after upload_store directive in location block");
+	++it;
 }
 
 static int xatoi(const string& str, const char *info)
@@ -485,6 +506,23 @@ void VirtServInfo::_parseCgiSetup(VirtServInfo::configstream_iterator& it)
 		throw ConfigFileError("missing ; after cgi_setup directive in server block");
 	else
 		++it;
+}
+
+void VirtServInfo::_parseUploadStore(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_default_route_options.m_upload_store.first = *it; // upload dir
+	++it;
+	// Optional executable name
+	if (*it != ";")
+	{
+		m_virtserv_vec.back().m_default_route_options.m_upload_store.second = *it; // executable name
+		++it;
+	}
+	if (*it != ";")
+		throw ConfigFileError("missing ; after upload_store directive in server block");
+	++it;
 }
 
 #undef BEFORE 
