@@ -75,6 +75,7 @@ namespace HTTP
 					m_cgi_handler.addMetaVar("SERVER_PORT", m_server_port_str);
 					m_cgi_handler.addMetaVar("REMOTE_ADDRESS", m_remote_addr_str); 
 
+					m_cgi_handler.addArg(m_ressource_path);
 					m_cgi_handler.start(HTTP::Get);
 					return;
 				}

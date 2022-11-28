@@ -11,12 +11,14 @@
 /* ************************************************************************** */
 
 #include "RequestHandler.hpp"
+#include "DataInfo.hpp"
 #include "Utils.hpp"
 #include "VirtServInfo.hpp"
 #include "WebServ.hpp"
 #include "Log.hpp"
 #include "ConnectionSocket.hpp"
 #include <arpa/inet.h>
+#include <cstddef>
 #include <ios>
 #include <netinet/in.h>
 #include <string>
@@ -67,11 +69,8 @@ namespace HTTP
 		m_bound_sock(),
 		m_peer_sock(),
 		m_data_buff(IO::ConnectionSocket::MaxSendBufferSize),
-		m_data_to_send(NULL),
-		m_data_to_send_size(0),
+		m_data_pair(),
 		m_page_to_send(),
-		m_cgi_input_pipe(),
-		m_cgi_output_pipe(),
 		m_file_handle(),
 		m_header_info(),
 		m_uri_info(),
@@ -80,6 +79,8 @@ namespace HTTP
 		m_ressource_path(),
 		m_cgi_handler()
 	{
+		m_data_pair.first = NULL;
+		m_data_pair.second = 0;
 	}
 
 	/* We gather the data */
@@ -134,8 +135,7 @@ namespace HTTP
 			(this->*m_method_header_fnct[m_header_info.method])(respHeader);
 
 			std::memcpy(m_data_buff.data(), respHeader.toCString(), respHeader.size()); // changed later.
-			m_data_to_send = m_data_buff.data();
-			m_data_to_send_size = respHeader.size();
+			m_data_pair = make_pair(m_data_buff.data(), respHeader.size());
 
 			_setState(PROCESSING_RESPONSE_BODY);
 		}
@@ -158,9 +158,9 @@ namespace HTTP
 		m_remote_addr_str = inet_ntoa(peer_sock.sin_addr);
 	}
 
-	RequestHandler::DataInfo	RequestHandler::getDataToSend() const
+	DataInfo	RequestHandler::getDataToSend() const
 	{
-		return (make_pair(m_data_to_send, m_data_to_send_size));
+		return (m_data_pair);
 	}
 
 	StatusCode	RequestHandler::getStatusCode() const

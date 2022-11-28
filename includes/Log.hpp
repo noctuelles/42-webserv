@@ -1,3 +1,6 @@
+#ifndef LOG_HPP
+#define LOG_HPP
+
 #include <ostream>
 #include <sstream>
 #include <vector>
@@ -76,3 +79,5 @@ class Log
 
 
 };
+
+#endif /* LOG_HPP */

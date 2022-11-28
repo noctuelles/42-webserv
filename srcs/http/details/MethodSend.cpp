@@ -10,11 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "CGIScriptHandler.hpp"
 #include "FileUtils.hpp"
 #include "RequestHandler.hpp"
 #include "StatusInfoPages.hpp"
 
 #include <iostream>
+#include <utility>
+
+using std::make_pair;
 
 namespace HTTP
 {
@@ -24,8 +28,7 @@ namespace HTTP
 		{
 			m_file_handle.read(reinterpret_cast<char *>(m_data_buff.data()), m_data_buff.size());
 
-			m_data_to_send = m_data_buff.data();
-			m_data_to_send_size = m_file_handle.gcount();
+			m_data_pair = make_pair(m_data_buff.data(), m_file_handle.gcount());
 
 			if (m_file_handle.eof())
 			{
@@ -35,27 +38,25 @@ namespace HTTP
 		}
 		else if (m_request_type == AUTOINDEX)
 		{
-			m_data_to_send = m_page_to_send.c_str();
-			m_data_to_send_size = m_page_to_send.size();
+			m_data_pair = make_pair(m_page_to_send.c_str(), m_page_to_send.size());
 			m_state = DONE;
 		}
 		else if (m_request_type == CGI)
 		{
-			char buffer[512];
-			int r;
-
-			r = read(m_cgi_output_pipe[0], buffer, 512);
-			if (r < 1)
+			m_data_pair = m_cgi_handler.read();
+			if (m_data_pair.second == 0) 
 				_setState(DONE);
-			buffer[r] = 0;
-			m_data_to_send = buffer;
-			m_data_to_send_size = r;
 		}
 	}
 
 	void	RequestHandler::_methodSendPost()
 	{
-
+		if (m_request_type == CGI)
+		{
+			m_data_pair = m_cgi_handler.read();
+			if (m_data_pair.second == 0)
+				_setState(DONE);
+		}
 	}
 
 	void	RequestHandler::_methodSendDelete()
@@ -66,8 +67,7 @@ namespace HTTP
 	void	RequestHandler::_methodSendError()
 	{
 		// TODO: la page d'erreur custom.
-		m_data_to_send = StatusInfoPages::get()[m_status_code].page.c_str();
-		m_data_to_send_size = StatusInfoPages::get()[m_status_code].page.size();
+		m_data_pair = make_pair(StatusInfoPages::get()[m_status_code].page.c_str(), StatusInfoPages::get()[m_status_code].page.size() );
 		m_state = DONE;
 	}
 }

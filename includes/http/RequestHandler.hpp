@@ -29,8 +29,8 @@
 # include "VirtServInfo.hpp"
 # include "AutoIndex.hpp"
 # include "CGIScriptHandler.hpp"
+# include "DataInfo.hpp"
 
-using std::pair;
 using std::vector;
 using std::string;
 using std::ifstream;
@@ -56,8 +56,6 @@ namespace HTTP
 				CGI,
 				AUTOINDEX
 			};
-
-			typedef pair<const void*, size_t>	DataInfo;
 
 			class Exception
 			{
@@ -163,12 +161,8 @@ namespace HTTP
 			string								m_remote_addr_str;
 
 			vector<uint8_t>				m_data_buff;
-			const void*					m_data_to_send;
-			size_t						m_data_to_send_size;
+			DataInfo					m_data_pair;
 			string						m_page_to_send;
-
-			int 						m_cgi_input_pipe[2];
-			int 						m_cgi_output_pipe[2];
 
 			ifstream					m_file_handle;
 			RequestParser::HeaderInfo	m_header_info;

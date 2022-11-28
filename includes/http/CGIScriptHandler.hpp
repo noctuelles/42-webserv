@@ -1,14 +1,17 @@
 #ifndef CGISCRIPTHANDLER_HPP
 # define CGISCRIPTHANDLER_HPP
 
+# include <cstddef>
 # include <sys/types.h>
 # include <string>
 # include <poll.h>
 # include <vector>
 
+# include "DataInfo.hpp"
 # include "Http.hpp"
 
 using std::string;
+using std::vector;;
 
 namespace HTTP
 {
@@ -18,15 +21,17 @@ namespace HTTP
 
 		static const string	GatewayInterfaceVer;
 		static const size_t			Timeout = 5000;
+		static const size_t			BufferSize = 512;
 
 		CGIScriptHandler();
+		~CGIScriptHandler();
 		CGIScriptHandler(const string& cgi_path);
 
 		void	addMetaVar(const string& var, const string& value);
 		void	addArg(const string& arg);
 
 		void						start(Method m);
-		std::vector<unsigned char>	read();
+		DataInfo					read();
 		void						write();
 
 		void	setScriptPath(const string& path);
@@ -38,7 +43,7 @@ namespace HTTP
 
 		string			m_cgi_path;
 		string			m_script_path;
-		pid_t				m_proc_pid;
+		pid_t			m_cgi_pid;
 
 		std::vector<std::vector<char> >	m_env;
 		std::vector<std::vector<char> >	m_argv;
@@ -47,11 +52,15 @@ namespace HTTP
 		std::vector<char *>	m_cargv;
 
 		struct pollfd		m_fds[2];
-		int					m_write_fd;
-		int					m_read_fd;
+		int&				m_write_fd;
+		int&				m_read_fd;
 
-		std::vector<char>	_buildMetaVar(const string& var, const string& value);
+		vector<char>		m_read_buffer;
+		vector<char>		m_post_data;
+		size_t				m_post_data_sent;
+
+		vector<char>	_buildMetaVar(const string& var, const string& value);
 	};
 }
 
-#endif
+#endif /* CGISCRIPTHANDLER_HPP */

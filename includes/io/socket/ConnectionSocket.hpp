@@ -22,6 +22,7 @@
 # include "SocketTypes.hpp"
 # include "VirtServInfo.hpp"
 # include "RequestHandler.hpp"
+# include "DataInfo.hpp"
 
 using HTTP::RequestHandler;
 
@@ -63,7 +64,7 @@ namespace IO
 			State				m_state;
 			State				m_next_state;
 			struct sockaddr_in	m_peer_sockaddr;
-			RequestHandler::DataInfo	m_to_send;
+			DataInfo			m_to_send;
 			DataBuffer			m_recv_buff;
 			ssize_t				m_recv_bytes;
 			size_t				m_sent_bytes;
