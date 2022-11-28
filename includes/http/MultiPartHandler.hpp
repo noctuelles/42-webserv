@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 15:49:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 15:51:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 18:57:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,10 @@ namespace HTTP
 				ST_START_BOUND,
 				ST_PARSE_HEADER_FIELD,
 				ST_FILE_CONTENT,
-				ST_END_BOUND,
+				ST_FILE_BOUND,
+				ST_FILE_BOUND_END,
+				ST_FILE_BOUND_END_DASH1,
+				ST_FILE_BOUND_END_DASH2,
 				ST_CRLF,
 				ST_DONE
 			};
@@ -43,7 +46,6 @@ namespace HTTP
 
 			void	transitionState(int new_state, int next_state);
 			void	changeState(int new_state);
-			Buffer::const_iterator	restoreState(int state);
 			void	initFileWriting();
 			void	writeDataBatch(Buffer::const_iterator begin, Buffer::const_iterator end);
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/28 14:41:45 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 15:14:38 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 18:41:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,28 +15,31 @@
 
 namespace HTTP
 {
-	BoundaryParser::BoundaryParser(const std::string& boundary) :
+	BoundaryParser::BoundaryParser(const std::string& boundary, bool crlf_prefix) :
 		Parser(ST_DASH1),
 		m_boundary(boundary),
 		m_cmp_it(m_boundary.begin())
-	{}
+	{
+		if (crlf_prefix)
+			transitionState(ST_CRLF, ST_DASH1);
+	}
 
 	Buffer::const_iterator	BoundaryParser::operator()(const Buffer& buff, Buffer::const_iterator it)
 	{
-		while (it != buff.end() && m_current_state < ST_DONE_CRLF)
+		while (it != buff.end() && m_current_state != ST_DONE)
 		{
 			switch (m_current_state)
 			{
 				case ST_DASH1:
 					if (*it != '-')
-						throw (RequestHandler::Exception(BadRequest));
+						throw (Exception(it));
 					else
 						changeState(ST_DASH2);
 					break;
 
 				case ST_DASH2:
 					if (*it != '-')
-						throw (RequestHandler::Exception(BadRequest));
+						throw (Exception(it));
 					else
 						changeState(ST_BOUNDARY);
 					break;
@@ -46,10 +49,10 @@ namespace HTTP
 					if (m_cmp_it == m_boundary.end())
 					{
 						m_eat = false;
-						changeState(ST_ENDING);
+						changeState(ST_DONE);
 					}
 					else if (*m_cmp_it != *it)
-						throw (RequestHandler::Exception(BadRequest));
+						throw (Exception(it));
 					else
 					{
 						m_data.push_back(*it);
@@ -57,32 +60,17 @@ namespace HTTP
 					}
 					break;
 
-				case ST_ENDING:
-					if (isCRLF(*it))
-					{
-						m_eat = false;
-						transitionState(ST_CRLF, ST_DONE_CRLF);
-					}
-					else if (*it == '-')
-						changeState(ST_ENDING_DASH);
-					else
-						throw (RequestHandler::Exception(BadRequest));
-					break;
-
-				case ST_ENDING_DASH:
-					if (*it != '-')
-						throw (RequestHandler::Exception(BadRequest));
-					else
-						changeState(ST_DONE_DASH);
-
 				case ST_CRLF:
 					if (*it != '\r')
 					{
 						if (*it != '\n')
-							throw (RequestHandler::Exception(BadRequest));
+							throw (Exception(it));
+						else m_data.push_back(*it);
 						changeState(m_next_state);
 					}
+					else m_data.push_back(*it);
 					break;
+
 			}
 			if (!m_eat)
 				m_eat = true;

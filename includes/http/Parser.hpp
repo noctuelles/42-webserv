@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:41:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 23:14:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 18:40:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,15 @@ namespace HTTP
 
 				virtual ~Parser()
 				{}
+
+				struct Exception
+				{
+					Exception(Buffer::const_iterator it) :
+						m_it(it)
+					{}
+
+					Buffer::const_iterator m_it;
+				};
 
 				virtual			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it) = 0;
 

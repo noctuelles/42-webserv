@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/28 14:41:46 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 15:08:29 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 18:27:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,11 @@ namespace HTTP
 				ST_DASH1,
 				ST_DASH2,
 				ST_BOUNDARY,
-				ST_ENDING,
-				ST_ENDING_DASH,
 				ST_CRLF,
-				ST_DONE_CRLF,
-				ST_DONE_DASH
+				ST_DONE
 			};
 
-			BoundaryParser(const std::string& boundary);
+			BoundaryParser(const std::string& boundary, bool crlf_prefix = false);
 
 			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it);
 
