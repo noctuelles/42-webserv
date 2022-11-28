@@ -1,1 +1,2 @@
-break /home/plouvel/42-webserv/srcs/io/socket/ConnectionSocket.cpp:66
+break HTTP::CGIScriptHandler::read()
+break HTTP::CGIScriptHandler::start(HTTP::eMethod)
