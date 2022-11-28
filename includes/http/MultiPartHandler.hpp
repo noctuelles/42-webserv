@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 15:49:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 19:01:55 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 15:51:23 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <fstream>
 # include "Parser.hpp"
 # include "HeaderFieldParser.hpp"
+# include "BoundaryParser.hpp"
 
 namespace HTTP
 {
@@ -25,19 +26,10 @@ namespace HTTP
 
 			enum State
 			{
-				ST_CHECK_BOUND_DASH1,
-				ST_CHECK_BOUND_DASH2,
-				ST_CHECK_BOUND,
+				ST_START_BOUND,
 				ST_PARSE_HEADER_FIELD,
-				ST_FILE_ENTRY,
 				ST_FILE_CONTENT,
-				ST_FILE_CONTENT_ENDING_CRLF,
-				ST_FILE_CONTENT_ENDING_DASH1,
-				ST_FILE_CONTENT_ENDING_DASH2,
-				ST_FILE_CONTENT_ENDING_BOUND,
-				ST_FILE_CONTENT_END,
-				ST_END_DASH1,
-				ST_END_DASH2,
+				ST_END_BOUND,
 				ST_CRLF,
 				ST_DONE
 			};
@@ -53,17 +45,17 @@ namespace HTTP
 			void	changeState(int new_state);
 			Buffer::const_iterator	restoreState(int state);
 			void	initFileWriting();
-			void	writeDataBatch(Buffer::const_iterator end);
+			void	writeDataBatch(Buffer::const_iterator begin, Buffer::const_iterator end);
 
 			Buffer::const_iterator	checkEnd(const Buffer& buff, Buffer::const_iterator it);
 
 			HeaderFieldParser			m_hfield_parser;
+			BoundaryParser				m_boundary_parser;
 			size_t						m_content_lenght;
 			const std::string&			m_ressource_path;
 			std::string					m_boundary;
-			std::string::const_iterator	cmp_it;
-			Buffer::const_iterator		m_start_it;
-			Buffer::const_iterator		m_saved_it;
+
+			Buffer::const_iterator		m_data_it;
 
 			std::ofstream				m_ofile_handle;
 	};

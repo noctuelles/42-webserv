@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 18:28:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 12:58:46 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ namespace HTTP
 
 	RequestHandler::RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
 		m_state(FETCHING_REQUEST_HEADER),
-		m_request_type(FILE),
+		m_request_type(),
 		m_virtserv_map(virt_serv_map),
 		m_virtserv(NULL),
 		m_route(NULL),
@@ -106,10 +106,16 @@ namespace HTTP
 			{
 				if (m_header_info.method == Post)
 				{
-					(*m_multipart_handler)(buff, it);
+					if (m_request_type == FILE_UPLOAD)
+					{
+						(*m_multipart_handler)(buff, it);
 
-					if (m_multipart_handler->getState() == MultiPartHandler::ST_DONE)
-						_setState(PROCESSING_RESPONSE_HEADER);
+						if (m_multipart_handler->getState() == MultiPartHandler::ST_DONE)
+						{
+							delete (m_multipart_handler);
+							_setState(PROCESSING_RESPONSE_HEADER);
+						}
+					}
 				}
 				else
 					_setState(PROCESSING_RESPONSE_HEADER);

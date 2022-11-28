@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 14:38:03 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 13:37:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "WebServ.hpp"
 #include "Log.hpp"
 
+#include <cctype>
 #include <ctime>
 
 namespace IO
@@ -60,7 +61,21 @@ namespace IO
 		m_recv_buff.resize(m_recv_bytes);
 		::Log().get(INFO) << "Received " << m_recv_bytes << " bytes.\n";
 		for (HTTP::Buffer::const_iterator it = m_recv_buff.begin(); it != m_recv_buff.end(); it++)
-			std::cout << *it;
+		{
+			if (std::isspace(*it))
+			{
+				if (*it == '\r')
+					std::cout << "\\r";
+				else if (*it == '\n')
+					std::cout << "\\n" << *it;
+				else if (*it == ' ')
+					std::cout << " ";
+			}
+			else if (std::isprint(*it))
+				std::cout << *it;
+			else
+				std::cout << '#';
+		}
 		if (m_request_handler.fetchIncomingData(m_recv_buff) == RequestHandler::PROCESSING_RESPONSE_HEADER)
 			m_state = FETCH_SEND_DATA;
 		return (m_state);

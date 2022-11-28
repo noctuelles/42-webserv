@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 16:11:41 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 11:49:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ namespace HTTP
 			{
 				m_request_type = AUTOINDEX;
 				m_page_to_send = AutoIndex::generatePage(m_virtserv->m_routes_vec, *m_route, m_header_info.uri.absolute_path, m_ressource_path, m_header_info.uri.query);
+				return ;
 			}
 		}
 		else
@@ -60,6 +61,7 @@ namespace HTTP
 		m_file_handle.open(m_ressource_path.c_str(), ios::in | ios::binary);
 		if (!m_file_handle.is_open()) // at this point, the program MUST be able to open the file.
 			throw (RequestHandler::Exception(InternalServerError));
+		m_request_type = FILE;
 	}
 
 	void	RequestHandler::_methodInitPost()
@@ -67,7 +69,10 @@ namespace HTTP
 		std::string	cgiExt = ".php";
 
 		if (m_ressource_path.compare(m_ressource_path.length() - cgiExt.length(), cgiExt.length(), cgiExt) == 0)
+		{
 			throw (Exception(NotImplemented));
+			m_request_type = CGI;
+		}
 		else
 		{
 			// Check if this is a correct directory and that we've write permissions.
@@ -108,6 +113,7 @@ namespace HTTP
 			}
 
 			m_multipart_handler = new MultiPartHandler(m_ressource_path, clen, boundary->second);
+			m_request_type = FILE_UPLOAD;
 		}
 	}
 

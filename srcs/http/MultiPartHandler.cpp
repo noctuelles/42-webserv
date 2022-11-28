@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 15:49:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 19:03:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/28 16:01:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,34 +36,30 @@ namespace HTTP
 
 	Buffer::const_iterator	MultiPartHandler::operator()(const Buffer& buff, Buffer::const_iterator it)
 	{
+		if (m_current_state == ST_FILE_CONTENT)
+			m_start_it = it;
 		while (it != buff.end() && m_current_state != ST_DONE)
 		{
 			switch (m_current_state)
 			{
-				case ST_CHECK_BOUND_DASH1:
-					if (*it != '-')
-						throw (RequestHandler::Exception(BadRequest));
-					else
-						changeState(ST_CHECK_BOUND_DASH2);
-					break;
-				case ST_CHECK_BOUND_DASH2:
-					if (*it != '-')
-						throw (RequestHandler::Exception(BadRequest));
-					else
-						changeState(ST_CHECK_BOUND);
-					break;
-				case ST_CHECK_BOUND:
-					if (cmp_it == m_boundary.end())
+				case ST_BOUND: 
+					try
 					{
-						if (!isCRLF(*it)) // Boundary doesn't match.
-							throw (RequestHandler::Exception(BadRequest));
-						m_eat = false;
-						transitionState(ST_CRLF, ST_PARSE_HEADER_FIELD);
+						it = m_boundary_parser(buff, it);
 					}
-					else if(*it != *cmp_it)
+					catch (...)
+					{
+						throw;
+					}
+					if (m_boundary_parser.getState() == BoundaryParser::ST_DONE_CRLF)
+					{
+						BoundaryParser	tmp(m_boundary);
+
+						m_eat = false;
+						std::swap(m_boundary_parser, tmp);
+					}
+					else if (m_boundary_parser.getState() == BoundaryParser::ST_DONE_DASH)
 						throw (RequestHandler::Exception(BadRequest));
-					else
-						cmp_it++;
 					break;
 
 				case ST_PARSE_HEADER_FIELD:
@@ -73,7 +69,7 @@ namespace HTTP
 						m_data.header_field = m_hfield_parser.get();
 						m_eat = false;
 						initFileWriting();
-						m_start_it = it;
+						m_data_it = it;
 						changeState(ST_FILE_CONTENT);
 					}
 					break;
@@ -81,83 +77,36 @@ namespace HTTP
 				case ST_FILE_CONTENT:
 					if (isCRLF(*it))
 					{
+						BoundaryParser	tmp(m_boundary);
+
+						std::swap(m_boundary_parser, tmp);
+
 						m_eat = false;
-						m_saved_it = it;
-					}
-
-					break;
-
-				case ST_FILE_CONTENT_ENDING_CRLF:
-					if (*it != '\r')
-					{
-						if (*it != '\n')
-							restoreState(ST_FILE_CONTENT);
-						else
-							changeState(ST_FILE_CONTENT_ENDING_DASH1);
+						writeDataBatch(m_data_it, it);
+						changeState(ST_END_BOUND);
 					}
 					break;
 
-				case ST_FILE_CONTENT_ENDING_DASH1:
-					if (*it != '-')
-						restoreState(ST_FILE_CONTENT);
-					else
-						changeState(ST_FILE_CONTENT_ENDING_DASH2);
-					break;
-
-				case ST_FILE_CONTENT_ENDING_DASH2:
-					if (*it != '-')
-						restoreState(ST_FILE_CONTENT);
-					else
-					{
-						cmp_it = m_boundary.begin();
-						changeState(ST_FILE_CONTENT_ENDING_BOUND);
-					}
-					break;
-
-				case ST_FILE_CONTENT_ENDING_BOUND:
-					if (cmp_it == m_boundary.end())
-					{
-						if (isCRLF(*it) || *it == '-')
+				case ST_END_BOUND:
+						try
 						{
-							m_eat = false;
-							changeState(ST_FILE_CONTENT_END);
+							it = m_boundary_parser(buff, it);
+
+							if (m_boundary_parser.getState() == BoundaryParser::ST_DONE_CRLF)
+							{
+								HeaderFieldParser	tmp;
+
+								m_ofile_handle.close();
+								std::swap(m_hfield_parser, tmp);
+
+								m_eat = false;
+								changeState(ST_PARSE_HEADER_FIELD);
+							}
 						}
-						else
-							restoreState(ST_FILE_CONTENT);
-					}
-					else if(*it != *cmp_it)
-						restoreState(ST_FILE_CONTENT);
-					else
-						cmp_it++;
-					break;
-
-				case ST_FILE_CONTENT_END:
-					if (isCRLF(*it))
-					{
-						m_eat = false;
-						transitionState(ST_CRLF, ST_CHECK_BOUND_DASH1);
-					}
-					else if (*it == '-')
-					{
-						m_eat = false;
-						changeState(ST_END_DASH1);
-					}
-					writeDataBatch(m_saved_it);
-					m_ofile_handle.close();
-					break;
-
-				case ST_END_DASH1:
-					if (*it != '-')
-						throw (RequestHandler::Exception(BadRequest));
-					else
-						changeState(ST_END_DASH2);
-					break;
-
-				case ST_END_DASH2:
-					if (*it != '-')
-						throw (RequestHandler::Exception(BadRequest));
-					else
-						changeState(ST_DONE);
+						catch (const RequestHandler::Exception& e)
+						{
+							writeDataBatch(m_boundary_parser.get().begin(), m_boundary_parser.get().end());
+						}
 					break;
 
 				case ST_CRLF:
@@ -179,10 +128,7 @@ namespace HTTP
 		}
 
 		if (m_current_state == ST_FILE_CONTENT)
-		{
 			writeDataBatch(it);
-			m_current_state = ST_DONE;
-		}
 		return (it);
 	}
 
@@ -208,9 +154,9 @@ namespace HTTP
 			throw (RequestHandler::Exception(InternalServerError));
 	}
 
-	void	MultiPartHandler::writeDataBatch(Buffer::const_iterator end_it)
+	void	MultiPartHandler::writeDataBatch(Buffer::const_iterator begin, Buffer::const_iterator end)
 	{
-		m_ofile_handle.write(reinterpret_cast<const char *>(m_start_it.base()), std::distance(m_start_it, end_it));
+		m_ofile_handle.write(reinterpret_cast<const char *>(m_start_it.base()), std::distance(begin, end));
 	}
 
 	void	MultiPartHandler::transitionState(int new_state, int next_state)
@@ -225,6 +171,7 @@ namespace HTTP
 		m_previous_state = m_current_state;
 		m_current_state = new_state;
 	}
+
 
 	Buffer::const_iterator	MultiPartHandler::restoreState(int state)
 	{
