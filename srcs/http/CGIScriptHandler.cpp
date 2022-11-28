@@ -135,7 +135,7 @@ namespace HTTP
 				::close(output_pipe[WRITE_END]);
 #ifdef DEBUG
 				{
-					std::cerr << "Child process before excver :";
+					std::cerr << "Child process before excve :";
 					std::cerr << "m_cgi_path :" << m_cgi_path << std::endl ;
 					std::cerr << "m_cargv.data() :\n" ;
 					std::vector<char*>::const_iterator it = m_cargv.begin();
@@ -150,11 +150,11 @@ namespace HTTP
 					::execve(m_cgi_path.c_str(), m_cargv.data(), m_cenv.data());
 				else
 					::execve(*(m_cargv.data()), m_cargv.data(), m_cenv.data());
-				throw std::runtime_error("::execve");
+				throw std::runtime_error("execve");
 			}
 			catch (std::exception& e)
 			{
-				Log().get(WARNING) << "Failed to set up CGI in forked process:"
+				Log().get(WARNING) << "Failed to set up CGI in forked process: "
 									<< e.what() << ": "
 									<< strerror(errno)
 									<< "\nExiting forked process...\n";

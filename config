@@ -1,7 +1,7 @@
 server
 {
 	listen		8080;
-	root		www/a_website;
+	root		www/main;
 	cgi_setup	.cgi;
 
 	location / {
