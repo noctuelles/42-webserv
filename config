@@ -1,7 +1,7 @@
 server
 {
 	listen		8080;
-	root		www/main;
+	root		www/cpp_scripts/;
 	cgi_setup	.cgi;
 
 	location / {
