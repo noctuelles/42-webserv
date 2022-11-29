@@ -4,7 +4,9 @@ int main(void)
 {
 	std::cout << "Content-type: text/html";
 	std::cout << "\r\n\r\n";
-	std::cout << "<html><head>Generated Hello World</head><body>";
-	std::cout << "Hello World";
-	std::cout << "</body><html>";
+	std::cout << "<!DOCTYPE html>";
+	std::cout << "<html>";
+	std::cout << "<head><title>Generated Hello World</title></head>";
+	std::cout << "<body>I am a generated Hello World</body>";
+	std::cout << "</html>";
 }

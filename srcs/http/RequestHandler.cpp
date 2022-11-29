@@ -137,6 +137,13 @@ namespace HTTP
 			std::memcpy(m_data_buff.data(), respHeader.toCString(), respHeader.size()); // changed later.
 			m_data_pair = make_pair(m_data_buff.data(), respHeader.size());
 
+			_setState(CRLF);
+		}
+		else if (_state(CRLF))
+		{
+			const char double_CRLF[] = "\r\n\r\n";
+			if (m_request_type != CGI)
+				m_data_pair = make_pair(double_CRLF, sizeof(double_CRLF) - 1);
 			_setState(PROCESSING_RESPONSE_BODY);
 		}
 		else if (_state(PROCESSING_RESPONSE_BODY))

@@ -112,7 +112,6 @@ namespace HTTP
 				.append(it->second)
 				.append(CRLF);
 		}
-		m_cache.append(CRLF);
 		m_build_cache = false;
 	}
 }
