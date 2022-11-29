@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 16:31:20 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 22:58:34 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,10 @@ namespace HTTP
 	void	RequestHandler::_methodHeaderGet(ResponseHeader& header)
 	{
 		header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+
 		if (m_request_type == FILE)
 		{
-			MIME	mime = getMimeFromFileExtension(m_ressource_path.c_str());
+			MIME		mime = getMimeFromFileExtension(m_ressource_path.c_str());
 			size_t		fileSize = IO::getFileSize(m_ressource_path.c_str());
 
 			header.addField(Field::ContentLength(), Utils::integralToString(fileSize));
@@ -63,7 +64,15 @@ namespace HTTP
 	{
 		header.setReasonPhrase(StatusInfoPages::get()[m_status_code].phrase);
 		header.addField(Field::ContentType(), MIME::TextHtml());
-		header.addField(Field::ContentLength(), Utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));
+
+		if (m_request_type == ERROR)
+			header.addField(Field::ContentLength(), Utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));
+		else if (m_request_type == FILE_ERROR)
+		{
+			size_t		fileSize = IO::getFileSize(m_ressource_path.c_str());
+
+			header.addField(Field::ContentLength(), Utils::integralToString(fileSize));
+		}
 		if (m_status_code == MethodNotAllowed)
 		{
 			string	allowed_method;

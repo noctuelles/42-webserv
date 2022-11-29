@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:10:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 12:21:08 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 22:45:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <string>
 # include <vector>
 # include "FileDescriptor.hpp"
+# include "VirtServ.hpp"
 
 namespace Utils
 {
@@ -29,6 +30,8 @@ namespace Utils
 	std::string	formatTimeToRFC822(struct tm* ptrTm);
 	FdPair	pipe();
 	std::vector<char>	getCStr(const std::string& str);
+
+	const VirtServ::RouteOptions&	findRoute(const std::string& uri, const VirtServ& virtserv);
 
 	template <class T>
 		inline std::string	integralToString(T val)

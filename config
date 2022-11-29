@@ -4,8 +4,17 @@ server
 	server_name				localhost:8080;
 	client_max_body_size	1000;
 
+	error_page 404 /error_pages/custom_404.html;
+
 	location / {
-		root		www/post/;
-		allowed_methods GET POST;
+		root		www/a_website;
+
+		allowed_methods GET;
+	}
+
+	location /error_pages {
+		root	www/custom_pages;
+
+		allowed_methods GET;
 	}
 }
