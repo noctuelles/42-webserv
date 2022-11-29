@@ -56,14 +56,6 @@ std::ostream& operator<<(std::ostream& os, const VirtServ::RouteOptions& routein
 	os << routeinfo.m_upload_store.first << " " << routeinfo.m_upload_store.second;
 	os << '\n';
 
-	os	<< "\t\terror_page:\t\t";
-	for (map<HTTP::StatusCode, string>::const_iterator it = routeinfo.m_error_page_map.begin();
-			it != routeinfo.m_error_page_map.end(); ++it)
-	{
-		os << it->first <<": "<< it->second << '\t';
-	}
-	os << '\n';
-
 	os << "\t\t-------------------------\n";
 
 	return os;
@@ -82,6 +74,14 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 
 	os	<< "\tmax_body_size:\t\t" ;
 	os << servinfo.m_max_body_size << '\t';
+	os << '\n';
+
+	os	<< "\terror_page:\t\t";
+	for (map<HTTP::StatusCode, string>::const_iterator it = servinfo.m_default_route_options.m_error_page_map.begin();
+			it != servinfo.m_default_route_options.m_error_page_map.end(); ++it)
+	{
+		os << it->first <<": "<< it->second << '\t';
+	}
 	os << '\n';
 
 	os	<< "\troot:\t\t" ;
@@ -111,14 +111,6 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 
 	os	<< "\tupload_store:\t";
 	os << servinfo.m_default_route_options.m_upload_store.first << " " << servinfo.m_default_route_options.m_upload_store.second;
-	os << '\n';
-
-	os	<< "\terror_page:\t\t";
-	for (map<HTTP::StatusCode, string>::const_iterator it = servinfo.m_default_route_options.m_error_page_map.begin();
-			it != servinfo.m_default_route_options.m_error_page_map.end(); ++it)
-	{
-		os << it->first <<": "<< it->second << '\t';
-	}
 	os << '\n';
 
 	os	<< "\tlocation blocks:\n";
