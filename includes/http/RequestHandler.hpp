@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:26:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 22:52:18 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,16 @@
 
 # include <cstring>
 # include <exception>
-#include <functional>
+# include <functional>
 # include <vector>
-#include <sys/stat.h>
 # include <list>
 # include <fstream>
+# include <sys/stat.h>
 # include "Http.hpp"
+# include "HeaderParser.hpp"
 # include "ResponseHeader.hpp"
+# include "MultiPartHandler.hpp"
 # include "SocketTypes.hpp"
-# include "RequestParser.hpp"
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
 # include "AutoIndex.hpp"
@@ -32,6 +33,7 @@ using std::pair;
 using std::vector;
 using std::string;
 using std::ifstream;
+using std::ofstream;
 
 namespace HTTP
 {
@@ -51,6 +53,9 @@ namespace HTTP
 			enum Type
 			{
 				FILE,
+				FILE_UPLOAD,
+				ERROR,
+				FILE_ERROR,
 				CGI,
 				AUTOINDEX
 			};
@@ -75,7 +80,7 @@ namespace HTTP
 			RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
 			~RequestHandler();
 
-			State		fetchIncomingData(const std::vector<uint8_t>& data_buff, size_t recv_bytes);
+			State		fetchIncomingData(const Buffer& buff);
 			State		prepareOutcomingData();
 
 			void			setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
@@ -163,9 +168,11 @@ namespace HTTP
 			string						m_page_to_send;
 
 			ifstream					m_file_handle;
-			RequestParser::HeaderInfo	m_header_info;
-			RequestParser::UriInfo		m_uri_info;
-			RequestParser				m_header_parser;
+			ofstream					m_ofile_handle;
+			HeaderParser				m_header_parser;
+			HeaderInfo					m_header_info;
+			MultiPartHandler*			m_multipart_handler;
+
 			StatusCode					m_status_code;
 			string						m_ressource_path;
 
@@ -202,9 +209,6 @@ namespace HTTP
 
 			const vector<VirtServ*>&	_getBoundedVirtServ();
 			void						_parseGeneralHeaderFields();
-
-			bool	_isAReadableRegFile(const char* path);
-			bool	_isAExecutableRegFile(const char* path);
 
 			void	_methodInitGet();
 			void	_methodInitPost();

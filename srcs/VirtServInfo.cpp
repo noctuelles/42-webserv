@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <cctype>
 #include <cstddef>
+#include <cstdlib>
 #include <exception>
 #include <fcntl.h>
 #include <fstream>
@@ -56,6 +57,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_server_block_dispatch_table
     {"error_page", &VirtServInfo::_parseErrorPage},
     {"client_max_body_size", &VirtServInfo::_parseClientMaxBodySize},
     {"cgi_setup", &VirtServInfo::_parseCgiSetup},
+    {"upload_store", &VirtServInfo::_parseUploadStore},
 };
 
 // Range constructor
@@ -69,7 +71,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_location_block_dispatch_tab
     {"autoindex", &VirtServInfo::_parseLocationAutoindex},
     {"index", &VirtServInfo::_parseLocationIndex},
     {"allowed_methods", &VirtServInfo::_parseLocationAllowedMethods},
-    {"cgi_setup", &VirtServInfo::_parseLocationCgiSetup},
+    {"upload_store", &VirtServInfo::_parseLocationUploadStore},
 };
 
 // Range constructor
@@ -332,12 +334,12 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	// Get cgi_setup if none defined
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.empty() )
 		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_default_route_options.m_cgi_extension;
-	// Get error_page_map if none defined
-	if ( m_virtserv_vec.back().m_routes_vec.back().m_error_page_map.empty() )
-		m_virtserv_vec.back().m_routes_vec.back().m_error_page_map = m_virtserv_vec.back().m_default_route_options.m_error_page_map;
 	// Put all methods to true if 0
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_methods == 0 )
 		m_virtserv_vec.back().m_routes_vec.back().m_methods.set();
+	// Inherit upload_store if none
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_upload_store.first.empty() )
+		m_virtserv_vec.back().m_routes_vec.back().m_upload_store = m_virtserv_vec.back().m_default_route_options.m_upload_store;
 	// Check for end delimiter
 }
 
@@ -355,14 +357,31 @@ void VirtServInfo::_parseLocationCgiSetup(VirtServInfo::configstream_iterator& i
 		++it;
 }
 
-static int xatoi(const string& str, const char *info)
+void VirtServInfo::_parseLocationUploadStore(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_routes_vec.back().m_upload_store.first = *it; // upload dir
+	++it;
+	// Optional executable name
+	if (*it != ";")
+	{
+		m_virtserv_vec.back().m_routes_vec.back().m_upload_store.second = *it; // executable name
+		++it;
+	}
+	if (*it != ";")
+		throw ConfigFileError("missing ; after upload_store directive in location block");
+	++it;
+}
+
+static int xatol(const string& str, const char *info)
 {
 	string::const_iterator it = str.begin();
 	string::const_iterator end = str.end();
 	for (--end; it != end ; ++it)
 		if ( not std::isdigit(*it) )
 			throw std::runtime_error(info);
-	return ::atoi(str.c_str());
+	return ::atol(str.c_str());
 }
 
 void VirtServInfo::_parseListen(VirtServInfo::configstream_iterator& it)
@@ -394,7 +413,7 @@ void VirtServInfo::_parseListen(VirtServInfo::configstream_iterator& it)
 	sockaddr.sin_addr.s_addr = inet_addr(host.c_str());
 	if ( sockaddr.sin_addr.s_addr == INADDR_NONE )
 		throw ConfigFileError("listen directive does not have a valid ip address");
-	sockaddr.sin_port = htons(xatoi(port.c_str(), "Config file error: invalid port in listen directive "));
+	sockaddr.sin_port = htons(xatol(port.c_str(), "Config file error: invalid port in listen directive "));
 
 	m_virtserv_vec.back().m_sockaddr_vec.push_back(sockaddr);
 
@@ -449,13 +468,13 @@ void VirtServInfo::_parseErrorPage(VirtServInfo::configstream_iterator& it)
 {
 	stack<HTTP::StatusCode> codes;
 	for (++it; not it.is_delim() and (*it)[0] != '/'; ++it)
-		codes.push((HTTP::StatusCode)xatoi(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
+		codes.push((HTTP::StatusCode)xatol(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
 	if (it.is_delim())
 		throw ConfigFileError("Missing path to default error page file at the end of error_page directive in server block");
 	else if ((*it)[0] != '/')
 		throw ConfigFileError("Invalid path at the end of error_page directive in server block");
 	for (; not codes.empty(); codes.pop())
-	    m_virtserv_vec.back().m_default_route_options.m_error_page_map[codes.top()] = *it;;
+	    m_virtserv_vec.back().m_error_page_map[codes.top()] = *it;;
 	++it;
 	if (*it != ";")
 		throw ConfigFileError("missing ; after error_page directive in server block");
@@ -467,7 +486,7 @@ void VirtServInfo::_parseClientMaxBodySize(VirtServInfo::configstream_iterator& 
 {
 	// Can only have one argument
 	++it;
-	m_virtserv_vec.back().m_max_body_size = xatoi(*it, "Config file error: Invalid number after client_max_body_size directive in server block");
+	m_virtserv_vec.back().m_max_body_size = xatol(*it, "Config file error: Invalid number after client_max_body_size directive in server block");
 	++it;
 	if (*it != ";")
 		throw ConfigFileError("missing ; after client_max_body_size directive in server block");
@@ -485,6 +504,23 @@ void VirtServInfo::_parseCgiSetup(VirtServInfo::configstream_iterator& it)
 		throw ConfigFileError("missing ; after cgi_setup directive in server block");
 	else
 		++it;
+}
+
+void VirtServInfo::_parseUploadStore(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_default_route_options.m_upload_store.first = *it; // upload dir
+	++it;
+	// Optional executable name
+	if (*it != ";")
+	{
+		m_virtserv_vec.back().m_default_route_options.m_upload_store.second = *it; // executable name
+		++it;
+	}
+	if (*it != ";")
+		throw ConfigFileError("missing ; after upload_store directive in server block");
+	++it;
 }
 
 #undef BEFORE 

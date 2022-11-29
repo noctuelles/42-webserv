@@ -30,6 +30,7 @@ namespace IO
 	{
 		setReusableMode(true);
 		setBlockingMode(false);
+		setCloseOnExecMode(true);
 	}
 
 	ListeningSocket::ListeningSocket(in_addr_t addr, in_port_t port)
@@ -37,6 +38,7 @@ namespace IO
 	{
 		setReusableMode(true);
 		setBlockingMode(false);
+		setCloseOnExecMode(true);
 		bind(addr, port);
 		listen(WebServ::MaxPendingConnection);
 	}
@@ -47,6 +49,7 @@ namespace IO
 		m_sockaddr = sockaddr;
 		setReusableMode(true);
 		setBlockingMode(false);
+		setCloseOnExecMode(true);
 		bind(sockaddr);
 		listen(WebServ::MaxPendingConnection);
 	}

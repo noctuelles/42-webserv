@@ -6,12 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:47:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 22:46:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Utils.hpp"
 #include "Http.hpp"
+#include "RequestHandler.hpp"
 #include <ctime>
 #include <stdexcept>
 #include <string>
@@ -42,8 +43,43 @@ namespace Utils
 		return (std::string(buffer, length));
 	}
 
-	bool		suffixMatch(std::string str, std::string ending)
+	FdPair	pipe()
 	{
-		return not str.compare(str.length() - ending.length(), ending.length(), ending);
+		int	fd[2];
+
+		if (::pipe(fd) < 0)
+			throw (HTTP::RequestHandler::Exception(HTTP::InternalServerError));
+		return (std::make_pair(IO::FileDescriptor(fd[0]), IO::FileDescriptor(fd[1])));
+	}
+
+	std::vector<char>	getCStr(const std::string& str)
+	{
+		std::vector<char>	cstr(str.begin(), str.end());
+
+		cstr.push_back('\0');
+		return (cstr);
+	}
+
+	const VirtServ::RouteOptions&	findRoute(const std::string& uri, const VirtServ& virtserv)
+	{
+		typedef vector<VirtServ::RouteOptions>::const_iterator	RouteOptionsIt;
+
+		const vector<VirtServ::RouteOptions>&					routes = virtserv.m_routes_vec;
+		vector<RouteOptionsIt>									matching_candidate;
+
+		for (RouteOptionsIt it = routes.begin(); it != routes.end(); it++)
+		{
+			if (uri.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
+				matching_candidate.push_back(it);
+		}
+
+		// Select the longest matching location match.
+		vector<RouteOptionsIt>::const_iterator	best_candidate = std::max_element(matching_candidate.begin(), matching_candidate.end());
+
+		// Either our route vector was empty or no matching candidate
+		if (best_candidate != matching_candidate.end())
+			return (**best_candidate);
+		else
+			return(virtserv.m_default_route_options);
 	}
 }

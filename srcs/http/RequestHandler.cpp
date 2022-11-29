@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:59:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 23:03:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,14 @@
 #include "ConnectionSocket.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
+#include "FieldParser.hpp"
 #include "Log.hpp"
 #include <ios>
 #include <utility>
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include "StatusInfoPages.hpp"
 
 using std::make_pair;
 using std::vector;
@@ -62,9 +64,10 @@ namespace HTTP
 		m_data_to_send_size(0),
 		m_page_to_send(),
 		m_file_handle(),
+		m_ofile_handle(),
+		m_header_parser(),
 		m_header_info(),
-		m_uri_info(),
-		m_header_parser(m_header_info, m_uri_info),
+		m_multipart_handler(NULL),
 		m_status_code(OK),
 		m_ressource_path()
 	{
@@ -72,20 +75,26 @@ namespace HTTP
 
 	/* We gather the data */
 
-	RequestHandler::State	RequestHandler::fetchIncomingData(const vector<uint8_t>& data_buff, size_t recv_bytes)
+	RequestHandler::State	RequestHandler::fetchIncomingData(const Buffer& buff)
 	{
+		Buffer::const_iterator	it = buff.begin();
+
 		try
 		{
 			if (_state(FETCHING_REQUEST_HEADER))
 			{
-				if (m_header_parser.parseHeader(data_buff, recv_bytes))
+				it = m_header_parser(buff, it);
+
+				if (m_header_parser.getState() == HeaderParser::ST_DONE)
 				{
+					m_header_info = m_header_parser.get();
 					_parseGeneralHeaderFields();
 
-					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << '\n';
-
-					m_ressource_path = m_uri_info.absolute_path;
+					m_ressource_path = m_header_info.uri.absolute_path;
+					m_ressource_path.erase(0, m_route->m_location_match.length());
 					m_ressource_path.insert(0, m_route->m_root);
+
+					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << " -> " << '"' << m_ressource_path << '"' << '\n';
 
 					(this->*m_method_init_fnct[m_header_info.method])();
 
@@ -94,8 +103,18 @@ namespace HTTP
 			}
 			if (_state(FETCHING_REQUEST_BODY))
 			{
-				if (m_header_info.method != Get)
+				if (m_header_info.method == Post)
 				{
+					if (m_request_type == FILE_UPLOAD)
+					{
+						(*m_multipart_handler)(buff, it);
+
+						if (m_multipart_handler->getState() == MultiPartHandler::ST_DONE)
+						{
+							delete (m_multipart_handler);
+							_setState(PROCESSING_RESPONSE_HEADER);
+						}
+					}
 				}
 				else
 					_setState(PROCESSING_RESPONSE_HEADER);
@@ -103,7 +122,35 @@ namespace HTTP
 		}
 		catch (const Exception& e)
 		{
-			::Log().get(WARNING) << "Issuing a " << e.what() << " HTTP error.\n";
+			::Log().get(FATAL) << "Issuing a " << e.what() << " HTTP error.\n";
+			m_request_type = ERROR;
+
+			if (m_virtserv)
+			{
+				// Trying to find a custom error pages defined by the user...
+				const std::map<StatusCode, std::string>::const_iterator	custom_page = m_virtserv->m_error_page_map.find(e.what());
+
+				// A custom page exists...
+				if (custom_page != m_virtserv->m_error_page_map.end())
+				{
+					// Find the best route.
+					m_ressource_path = custom_page->second;
+					m_route = &Utils::findRoute(m_ressource_path, *m_virtserv);
+					m_ressource_path.erase(0, m_route->m_location_match.length());
+					m_ressource_path.insert(0, m_route->m_root);
+
+					// Is the file readable and is a regular file ?
+					mode_t	file_mode = IO::getFileMode(m_ressource_path.c_str());
+
+					if ((file_mode & S_IFMT) & S_IFREG && (file_mode & S_IRUSR))
+					{
+						m_file_handle.open(m_ressource_path.c_str(), std::ios::in | std::ios::binary);
+						if (m_file_handle.is_open())
+							m_request_type = FILE_ERROR;
+					}
+				}
+			}
+
 			_setErrorState(PROCESSING_RESPONSE_HEADER, e.what());
 		}
 		return (m_state);
@@ -121,9 +168,9 @@ namespace HTTP
 
 			(this->*m_method_header_fnct[m_header_info.method])(respHeader);
 
-			std::memcpy(m_data_buff.data(), respHeader.toCString(), respHeader.size()); // changed later.
-			m_data_to_send = m_data_buff.data();
-			m_data_to_send_size = respHeader.size();
+			m_page_to_send = respHeader.toString();
+			m_data_to_send = m_page_to_send.data();
+			m_data_to_send_size = m_page_to_send.size();
 
 			_setState(PROCESSING_RESPONSE_BODY);
 		}
@@ -154,11 +201,14 @@ namespace HTTP
 
 	const string&	RequestHandler::getAbsPath() const
 	{
-		return (m_uri_info.absolute_path);
+		return (m_header_info.uri.absolute_path);
 	}
 
 	RequestHandler::~RequestHandler()
-	{}
+	{
+		if (!m_multipart_handler)
+			delete (m_multipart_handler);
+	}
 
 	/* ############################ Private function ############################ */
 
@@ -177,12 +227,13 @@ namespace HTTP
 		}
 	}
 
+
 	void	RequestHandler::_parseGeneralHeaderFields()
 	{
 		// First, get the correct virtual server by parsing the Host field.
 		{
 			const vector<VirtServ*>&				virt_serv	=  _getBoundedVirtServ();
-			const string&							host		= m_header_info.header_fields.at(Field::Host());
+			const string&							host		= m_header_info.header_field.at(Field::Host());
 			const vector<VirtServ*>::const_iterator	it			= std::find_if(virt_serv.begin(), virt_serv.end(), MatchingServerName(host));
 
 			if (it != virt_serv.end())
@@ -191,32 +242,6 @@ namespace HTTP
 				m_virtserv = *virt_serv.begin();
 		}
 
-		// Next, find if the request URI match any of the location block to find a route.
-		{
-			typedef vector<VirtServ::RouteOptions>::const_iterator	RouteOptionsIt;
-			const vector<VirtServ::RouteOptions>&					routes = m_virtserv->m_routes_vec;
-			vector<RouteOptionsIt>									matching_candidate;
-
-			for (RouteOptionsIt it = routes.begin(); it != routes.end(); it++)
-			{
-				if (m_header_info.uri.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
-					matching_candidate.push_back(it);
-			}
-
-			// Select the longest matching location match.
-			vector<RouteOptionsIt>::const_iterator	best_candidate = std::max_element(matching_candidate.begin(), matching_candidate.end());
-
-			// Either our route vector was empty or no matching candidate
-			if (best_candidate != matching_candidate.end())
-				m_route = &**best_candidate;
-			else
-				m_route = &m_virtserv->m_default_route_options;
-		}
-
-		// Route, virtual server, has been found. We can now see if the method is supported in this route.
-		{
-			if (!m_route->m_methods[m_header_info.method])
-				throw (Exception(MethodNotAllowed));
-		}
+		m_route = &Utils::findRoute(m_header_info.uri.absolute_path, *m_virtserv);
 	}
 }

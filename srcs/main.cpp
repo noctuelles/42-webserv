@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "FileUtils.hpp"
-#include "RequestParser.hpp"
 #include "ResponseHeader.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
@@ -23,13 +22,8 @@ int main(int ac, char **av)
 
 	WebServ	serv(av[1]);
 
-	try {
-		serv.run();
-	}
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what() << ": " << strerror(errno) << '\n';
-	}
+	if (serv.run() < 0)
+		return (1);
 
 	return 0;
 }

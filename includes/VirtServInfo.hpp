@@ -162,12 +162,14 @@ class VirtServInfo
 	void _parseErrorPage(VirtServInfo::configstream_iterator& it);
 	void _parseClientMaxBodySize(VirtServInfo::configstream_iterator& it);
 	void _parseCgiSetup(VirtServInfo::configstream_iterator& it);
+	void _parseUploadStore(VirtServInfo::configstream_iterator& it);
 	void _parseLocationBlock(VirtServInfo::configstream_iterator& it);
 	void _parseLocationIndex(VirtServInfo::configstream_iterator& it);
 	void _parseLocationAutoindex(VirtServInfo::configstream_iterator& it);
 	void _parseLocationRoot(VirtServInfo::configstream_iterator& it);
 	void _parseLocationAllowedMethods(VirtServInfo::configstream_iterator& it);
-	void _parseLocationCgiSetup(VirtServInfo::configstream_iterator& it); // I hereby protest against the existence of this function
+	void _parseLocationCgiSetup(VirtServInfo::configstream_iterator& it); 
+	void _parseLocationUploadStore(VirtServInfo::configstream_iterator& it); 
 };
 
 #endif /* VIRTSERVINFO_HPP */

@@ -52,6 +52,10 @@ std::ostream& operator<<(std::ostream& os, const VirtServ::RouteOptions& routein
 	os << routeinfo.m_cgi_extension;
 	os << '\n';
 
+	os	<< "\t\tupload_store:\t";
+	os << routeinfo.m_upload_store.first << " " << routeinfo.m_upload_store.second;
+	os << '\n';
+
 	os << "\t\t-------------------------\n";
 
 	return os;
@@ -73,8 +77,8 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 	os << '\n';
 
 	os	<< "\terror_page:\t\t";
-	for (map<HTTP::StatusCode, string>::const_iterator it = servinfo.m_default_route_options.m_error_page_map.begin();
-			it != servinfo.m_default_route_options.m_error_page_map.end(); ++it)
+	for (map<HTTP::StatusCode, string>::const_iterator it = servinfo.m_error_page_map.begin();
+			it != servinfo.m_error_page_map.end(); ++it)
 	{
 		os << it->first <<": "<< it->second << '\t';
 	}
@@ -103,6 +107,10 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 
 	os	<< "\tcgi_setup:\t";
 	os << servinfo.m_default_route_options.m_cgi_extension;
+	os << '\n';
+
+	os	<< "\tupload_store:\t";
+	os << servinfo.m_default_route_options.m_upload_store.first << " " << servinfo.m_default_route_options.m_upload_store.second;
 	os << '\n';
 
 	os	<< "\tlocation blocks:\n";

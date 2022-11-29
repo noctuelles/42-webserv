@@ -1,9 +1,11 @@
 #ifndef VIRTSERV_HPP
 #define VIRTSERV_HPP
 
+#include <cstddef>
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <bitset>
@@ -17,6 +19,7 @@ using std::bitset;
 
 using std::string;
 using std::vector;
+using std::pair;
 
 struct VirtServ
 {
@@ -27,8 +30,8 @@ struct VirtServ
 			, m_cgi_extension()
 			, m_root()
 			, m_index_vec()
-			, m_error_page_map()
 			, m_autoindex(-1)
+			, m_upload_store()
 		{}
 
 		bool	operator<(const RouteOptions& rhs)
@@ -41,17 +44,18 @@ struct VirtServ
 		string							m_cgi_extension;
 		string							m_root;
 		vector<string>					m_index_vec;
-		map<HTTP::StatusCode, string>	m_error_page_map;
 		short							m_autoindex;
+		pair<string, string>			m_upload_store;
 	};
 
 	VirtServ() : m_default_route_options("/"), m_max_body_size(), m_routes_vec(), m_sockaddr_vec(), m_server_name_vec() {}
 
 	RouteOptions					m_default_route_options;
-	int								m_max_body_size;
+	size_t							m_max_body_size;
 	vector<RouteOptions>			m_routes_vec;
 	vector<sockaddr_in>				m_sockaddr_vec;
 	vector<string>					m_server_name_vec;
+	map<HTTP::StatusCode, string>	m_error_page_map;
 };
  
 std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo);
