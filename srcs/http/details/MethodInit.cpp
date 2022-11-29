@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 16:57:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 18:08:50 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ namespace HTTP
 		{
 			if (!m_route->m_autoindex)
 			{
+				// Search a default index file.
 				const vector<string>&			index_vec		= m_route->m_index_vec;
 				vector<string>::const_iterator	selected_file	= find_if(index_vec.begin(), index_vec.end(), ValidIndexFile(m_ressource_path));
 
@@ -54,7 +55,9 @@ namespace HTTP
 		}
 		else
 		{
-			if (!_isAReadableRegFile(m_ressource_path.c_str()))
+			mode_t	file_mode = IO::getFileMode(m_ressource_path.c_str());
+
+			if (!((file_mode & S_IFMT) & S_IFREG && (file_mode & S_IRUSR)))
 				throw (Exception(NotFound));
 		}
 

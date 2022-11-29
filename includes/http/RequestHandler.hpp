@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 11:48:40 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 18:02:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ namespace HTTP
 
 			enum Type
 			{
+				INDETERMINATE,
 				FILE,
 				FILE_UPLOAD,
 				CGI,

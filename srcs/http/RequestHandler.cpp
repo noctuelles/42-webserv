@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 16:38:28 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 18:02:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ namespace HTTP
 
 	RequestHandler::RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
 		m_state(FETCHING_REQUEST_HEADER),
-		m_request_type(),
+		m_request_type(INDETERMINATE),
 		m_virtserv_map(virt_serv_map),
 		m_virtserv(NULL),
 		m_route(NULL),
@@ -90,13 +90,11 @@ namespace HTTP
 					m_header_info = m_header_parser.get();
 					_parseGeneralHeaderFields();
 
-					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << '\n';
-
 					m_ressource_path = m_header_info.uri.absolute_path;
 					m_ressource_path.erase(0, m_route->m_location_match.length());
 					m_ressource_path.insert(0, m_route->m_root);
 
-					::Log().get(INFO) << "Ressource resolved to " << '"' << m_ressource_path << '"' << '\n';
+					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << " -> " << '"' << m_ressource_path << '"' << '\n';
 
 					(this->*m_method_init_fnct[m_header_info.method])();
 
