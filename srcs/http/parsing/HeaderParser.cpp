@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 18:06:36 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 23:07:01 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 17:28:34 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,6 +167,8 @@ namespace HTTP
 		{
 			/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
 
+			if (m_data.uri.absolute_path.find("..") != std::string::npos)
+				throw (RequestHandler::Exception(BadRequest));
 			try
 			{
 				m_data.header_field.at(Field::Host());
