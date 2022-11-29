@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 15:49:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 18:57:25 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 13:45:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,10 +52,10 @@ namespace HTTP
 			Buffer::const_iterator	checkEnd(const Buffer& buff, Buffer::const_iterator it);
 
 			HeaderFieldParser			m_hfield_parser;
+			std::string					m_boundary;
 			BoundaryParser				m_boundary_parser;
 			size_t						m_content_lenght;
 			const std::string&			m_ressource_path;
-			std::string					m_boundary;
 
 			Buffer::const_iterator		m_data_it;
 

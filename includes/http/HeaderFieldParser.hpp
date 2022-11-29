@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:44:44 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 23:07:41 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 14:13:24 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,8 @@ namespace HTTP
 			HeaderFieldParser();
 			~HeaderFieldParser();
 			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it);
+
+			void	reset();
 
 		private:
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:06:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 16:32:05 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,9 @@ namespace HTTP
 
 	void	RequestHandler::_methodSendPost()
 	{
-
+		m_data_to_send = NULL;
+		m_data_to_send_size = 0;
+		m_state = DONE;
 	}
 
 	void	RequestHandler::_methodSendDelete()

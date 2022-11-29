@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 11:48:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 16:31:20 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,12 @@ namespace HTTP
 
 	void	RequestHandler::_methodHeaderPost(ResponseHeader& header)
 	{
-		(void) header;
+		if (m_request_type == FILE_UPLOAD)
+		{
+			header.setReasonPhrase(StatusInfoPages::get()[Created].phrase);
+
+			header.addField(Field::Location(), m_header_info.request_line);
+		}
 	}
 
 	void	RequestHandler::_methodHeaderDelete(ResponseHeader& header)

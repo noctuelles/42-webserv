@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 15:49:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 18:59:50 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 15:19:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,19 @@
 #include "FieldParser.hpp"
 #include <algorithm>
 #include <iterator>
+#include <iostream>
 
 namespace HTTP
 {
 
 	MultiPartHandler::MultiPartHandler(const std::string& ressource_path, size_t content_lenght, const std::string& boundary) :
-		Parser(ST_CHECK_BOUND_DASH1),
+		Parser(ST_START_BOUND),
 		m_hfield_parser(),
+		m_boundary(boundary),
+		m_boundary_parser(boundary),
 		m_content_lenght(content_lenght),
 		m_ressource_path(ressource_path),
-		m_boundary(boundary),
-		cmp_it(m_boundary.begin()),
+		m_data_it(),
 		m_ofile_handle()
 	{}
 
@@ -37,31 +39,34 @@ namespace HTTP
 
 	Buffer::const_iterator	MultiPartHandler::operator()(const Buffer& buff, Buffer::const_iterator it)
 	{
+		if (m_current_state == ST_FILE_CONTENT)
+			m_data_it = it;
+
 		while (it != buff.end() && m_current_state != ST_DONE)
 		{
 			switch (m_current_state)
 			{
 				case ST_START_BOUND: 
+				{
 					try
 					{
 						it = m_boundary_parser(buff, it);
+						m_eat = false;
 						if (m_boundary_parser.getState() == BoundaryParser::ST_DONE)
-						{
-							m_eat = false;
-							changeState(ST_PARSE_HEADER_FIELD);
-						}
+							transitionState(ST_CRLF, ST_PARSE_HEADER_FIELD);
 					}
-					catch (const Exception& e)
+					catch (const BoundaryParser::Exception& e)
 					{
 						throw (RequestHandler::Exception(BadRequest));
 					}
+				}
 					break;
 
 				case ST_PARSE_HEADER_FIELD:
 					it = m_hfield_parser(buff, it);
+					m_eat = false;
 					if (m_hfield_parser.getState() == HeaderFieldParser::ST_DONE)
 					{
-						m_eat = false;
 						m_data.header_field = m_hfield_parser.get();
 						initFileWriting();
 						m_data_it = it;
@@ -72,45 +77,51 @@ namespace HTTP
 				case ST_FILE_CONTENT:
 					if (isCRLF(*it))
 					{
-						BoundaryParser	tmp(m_boundary, true);
+						m_boundary_parser.reset(true);
 
 						m_eat = false;
-						std::swap(m_boundary_parser, tmp);
 						writeDataBatch(m_data_it, it);
 						changeState(ST_FILE_BOUND);
 					}
 					break;
 
 				case ST_FILE_BOUND:
+				{
 					try
 					{
 						it = m_boundary_parser(buff, it);
-
+						m_eat = false;
 						if (m_boundary_parser.getState() == BoundaryParser::ST_DONE)
-						{
-							m_eat = false;
 							changeState(ST_FILE_BOUND_END);
-						}
 					}
-					catch (const Exception& e) // failed to check the boundary here.
+					catch (const BoundaryParser::Exception& e) // failed to check the boundary here.
 					{
-						writeDataBatch(m_boundary_parser.get().begin(), m_boundary_parser.get().end());
+						Buffer	bound_buff = m_boundary_parser.get();
+
+						writeDataBatch(bound_buff.begin(), bound_buff.end());
+						m_eat = false;
 						it = e.m_it;
 						m_data_it = it;
+						changeState(ST_FILE_CONTENT);
 					}
+				}
 					break;
 
 				case ST_FILE_BOUND_END:
 					m_eat = false;
 					if (isCRLF(*it))
 					{
-						BoundaryParser	tmp(m_boundary);
-
-						std::swap(m_boundary_parser, tmp);
-						transitionState(ST_CRLF, ST_START_BOUND);
+						m_boundary_parser.reset(false);
+						m_hfield_parser.reset();
+						m_ofile_handle.close();
+						transitionState(ST_CRLF, ST_PARSE_HEADER_FIELD);
 					}
 					else if (*it == '-')
+					{
+						m_boundary_parser.reset(false);
+						m_ofile_handle.close();
 						changeState(ST_FILE_BOUND_END_DASH1);
+					}
 					else
 						throw (RequestHandler::Exception(BadRequest));
 					break;
@@ -126,7 +137,7 @@ namespace HTTP
 					if (*it != '-')
 						throw (RequestHandler::Exception(BadRequest));
 					else
-						changeState(ST_DONE);
+						transitionState(ST_CRLF, ST_DONE);
 					break;
 
 				case ST_CRLF:
@@ -146,6 +157,9 @@ namespace HTTP
 			else
 				it++;
 		}
+
+		if (m_current_state == ST_FILE_CONTENT && it == buff.end())
+			writeDataBatch(m_data_it, it);
 		return (it);
 	}
 

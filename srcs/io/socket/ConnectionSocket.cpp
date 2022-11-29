@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 13:37:38 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 16:19:39 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,23 +59,22 @@ namespace IO
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
 		m_recv_buff.resize(m_recv_bytes);
-		::Log().get(INFO) << "Received " << m_recv_bytes << " bytes.\n";
-		for (HTTP::Buffer::const_iterator it = m_recv_buff.begin(); it != m_recv_buff.end(); it++)
+		//::Log().get(INFO) << "Received " << m_recv_bytes << " bytes.\n";
+		/*for (HTTP::Buffer::const_iterator it = m_recv_buff.begin(); it != m_recv_buff.end(); it++)
 		{
 			if (std::isspace(*it))
 			{
 				if (*it == '\r')
-					std::cout << "\\r";
+					std::cerr << "\\r";
 				else if (*it == '\n')
-					std::cout << "\\n" << *it;
+					std::cerr << "\\n";
 				else if (*it == ' ')
-					std::cout << " ";
+					std::cerr << " ";
 			}
 			else if (std::isprint(*it))
-				std::cout << *it;
-			else
-				std::cout << '#';
+				std::cerr << *it;
 		}
+		std::cerr << "\n";*/
 		if (m_request_handler.fetchIncomingData(m_recv_buff) == RequestHandler::PROCESSING_RESPONSE_HEADER)
 			m_state = FETCH_SEND_DATA;
 		return (m_state);

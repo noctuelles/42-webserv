@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/27 13:48:43 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 16:29:00 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ namespace HTTP
 	typedef enum eStatusCode
 	{
 		OK							= 200,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-200-ok */
+		Created						= 201,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-201-created */
 		BadRequest					= 400,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-400-bad-request */
 		Forbidden					= 403,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-403-forbidden */
 		NotFound					= 404,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-408-request-timeout */
@@ -144,17 +145,18 @@ namespace HTTP
 
 			operator	const ci_string&() const {return (m_str);}
 
-			static inline Field	Server()			{return Field("Server");}
-			static inline Field	Date()				{return Field("Date");}
-			static inline Field	ContentLength()		{return Field("Content-Length");}
+			static inline Field	Server()					{return Field("Server");}
+			static inline Field	Date()						{return Field("Date");}
+			static inline Field	ContentLength()				{return Field("Content-Length");}
 			static inline Field	ContentDisposition()		{return Field("Content-Disposition");}
 			static inline Field	ContentTransferEncoding()	{return Field("Content-Transfer-Encoding");}
-			static inline Field	ContentType()		{return Field("Content-Type");}
-			static inline Field	Connection()		{return Field("Connection");}
-			static inline Field	Host()				{return Field("Host");}
-			static inline Field	SetCookie()			{return Field("Set-Cookie");}
-			static inline Field	Allow()				{return Field("Allow");}
-			static inline Field	TransferEncoding()	{return Field("Transfer-Encoding");}
+			static inline Field	ContentType()				{return Field("Content-Type");}
+			static inline Field	Connection()				{return Field("Connection");}
+			static inline Field	Host()						{return Field("Host");}
+			static inline Field	SetCookie()					{return Field("Set-Cookie");}
+			static inline Field	Allow()						{return Field("Allow");}
+			static inline Field	TransferEncoding()			{return Field("Transfer-Encoding");}
+			static inline Field	Location()					{return Field("Location");}
 
 			inline const ci_string&	str() const
 			{

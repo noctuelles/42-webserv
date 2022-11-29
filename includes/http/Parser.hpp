@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:41:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 18:40:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 13:12:50 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define PARSER_HPP
 
 # include "Http.hpp"
+#include <exception>
 
 namespace HTTP
 {
@@ -35,7 +36,7 @@ namespace HTTP
 				virtual ~Parser()
 				{}
 
-				struct Exception
+				struct Exception : public std::exception
 				{
 					Exception(Buffer::const_iterator it) :
 						m_it(it)

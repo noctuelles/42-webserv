@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 12:58:46 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 16:38:28 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include "StatusInfoPages.hpp"
 
 using std::make_pair;
 using std::vector;

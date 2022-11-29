@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/28 14:41:45 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 18:41:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 16:10:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,11 @@
 
 namespace HTTP
 {
-	BoundaryParser::BoundaryParser(const std::string& boundary, bool crlf_prefix) :
+	BoundaryParser::BoundaryParser(const std::string& boundary) :
 		Parser(ST_DASH1),
 		m_boundary(boundary),
 		m_cmp_it(m_boundary.begin())
 	{
-		if (crlf_prefix)
-			transitionState(ST_CRLF, ST_DASH1);
 	}
 
 	Buffer::const_iterator	BoundaryParser::operator()(const Buffer& buff, Buffer::const_iterator it)
@@ -34,14 +32,20 @@ namespace HTTP
 					if (*it != '-')
 						throw (Exception(it));
 					else
+					{
 						changeState(ST_DASH2);
+						m_data.push_back('-');
+					}
 					break;
 
 				case ST_DASH2:
 					if (*it != '-')
 						throw (Exception(it));
 					else
+					{
 						changeState(ST_BOUNDARY);
+						m_data.push_back('-');
+					}
 					break;
 
 				case ST_BOUNDARY:
@@ -78,6 +82,16 @@ namespace HTTP
 				it++;
 		}
 		return (it);
+	}
+
+	void BoundaryParser::reset(bool crlf_prefix)
+	{
+		m_cmp_it = m_boundary.begin();
+		if (crlf_prefix)
+			transitionState(ST_CRLF, ST_DASH1);
+		else
+			m_current_state = ST_DASH1;
+		m_data.clear();
 	}
 
 	void	BoundaryParser::transitionState(int new_state, int next_state)

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/28 14:41:46 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 18:27:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 13:45:56 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,18 @@ namespace HTTP
 				ST_DONE
 			};
 
-			BoundaryParser(const std::string& boundary, bool crlf_prefix = false);
+			BoundaryParser(const std::string& boundary);
 
 			Buffer::const_iterator	operator()(const Buffer& buff, Buffer::const_iterator it);
+
+			void	reset(bool crlf_prefix);
 
 		private:
 
 			void	transitionState(int new_state, int next_state);
 			void	changeState(int new_state);
 
-			bool						m_eat;
-			std::string					m_boundary;
+			std::string			m_boundary;
 			std::string::const_iterator	m_cmp_it;
 	};
 }

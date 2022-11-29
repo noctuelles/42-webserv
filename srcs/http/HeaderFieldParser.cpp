@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:54:42 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/26 23:10:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 14:14:37 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,16 @@ namespace HTTP
 			}
 		}
 		return (it);
+	}
+
+	void HeaderFieldParser::reset()
+	{
+		m_current_state = ST_HEADER_FIELD_NAME;
+		m_eat = true;
+		m_f = NULL;
+		m_data.clear();
+		m_buffer.first.clear();
+		m_buffer.second.clear();
 	}
 
 	void	HeaderFieldParser::transitionState(int new_state, int next_state, callBackFnct f)
