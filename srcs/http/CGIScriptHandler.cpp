@@ -191,7 +191,7 @@ namespace HTTP
 		ssize_t r;
 		ssize_t s;
 
-		// Current policy is send all data then make non blocking reads on the ouptut
+		// while loop is here to send all data before making non blocking reads on the ouptut
 		while (1)
 		{
 			nfds = ::poll(m_fds, 2, -1);
@@ -202,12 +202,7 @@ namespace HTTP
 			}
 			if (m_fds[1].revents)
 			{
-				if (m_fds[1].revents & POLLERR) // The other side has closed reading before we sent all data
-				{
-					::Log().get(WARNING) << "CGI script " << m_cgi_path << "did not consume all available POST data";
-					m_fds[1].fd = -1;
-				}
-				else if (m_fds[1].revents & POLLOUT) // The other side is blocking, waiting for data
+				if (m_fds[1].revents & POLLOUT) // The other side is blocking, waiting for data
 				{
 					// poll guarantees that s > 0 right ?
 					s = ::write(m_write_fd, m_post_data.data() + m_post_data_sent, m_post_data.size() - m_post_data_sent);
@@ -218,17 +213,25 @@ namespace HTTP
 						m_fds[1].fd = -1;
 					}
 				}
+				if (m_fds[1].revents & POLLERR) // The other side has closed reading before we sent all data
+				{
+					::Log().get(WARNING) << "CGI script " << m_cgi_path << "did not consume all available POST data";
+					m_fds[1].fd = -1;
+				}
 			}
-			else if (m_fds[0].revents & POLLHUP) // When pipe read end reaches EOF, POLLHUP is set
+			else if (m_fds[0].revents) // Must before POLLHUP 
 			{
-				wait(NULL);
-				return make_pair(static_cast<void*>(0), 0);
-			}
-			else if (m_fds[0].revents & POLLIN)
-			{
-				// poll guarantees r > -1 because pipe has only one consumer
-				r = ::read(m_read_fd, m_read_buffer.data(), BufferSize); 
-				return make_pair(m_read_buffer.data(), r);
+				if (m_fds[0].revents & POLLIN)
+				{
+					// poll guarantees r > -1 because pipe has only one consumer
+					r = ::read(m_read_fd, m_read_buffer.data(), BufferSize); 
+					return make_pair(m_read_buffer.data(), r);
+				}
+				if (m_fds[0].revents & POLLHUP) // When pipe read end reaches EOF, POLLHUP is set
+				{
+					wait(NULL);
+					return make_pair(static_cast<void*>(0), 0);
+				}
 			}
 		}
 		throw std::logic_error("CGIScriptHandler::read");
