@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/22 23:59:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 18:02:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,14 @@
 #include "ConnectionSocket.hpp"
 #include "Utils.hpp"
 #include "WebServ.hpp"
+#include "FieldParser.hpp"
 #include "Log.hpp"
 #include <ios>
 #include <utility>
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include "StatusInfoPages.hpp"
 
 using std::make_pair;
 using std::vector;
@@ -52,7 +54,7 @@ namespace HTTP
 
 	RequestHandler::RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
 		m_state(FETCHING_REQUEST_HEADER),
-		m_request_type(FILE),
+		m_request_type(INDETERMINATE),
 		m_virtserv_map(virt_serv_map),
 		m_virtserv(NULL),
 		m_route(NULL),
@@ -62,9 +64,10 @@ namespace HTTP
 		m_data_to_send_size(0),
 		m_page_to_send(),
 		m_file_handle(),
+		m_ofile_handle(),
+		m_header_parser(),
 		m_header_info(),
-		m_uri_info(),
-		m_header_parser(m_header_info, m_uri_info),
+		m_multipart_handler(NULL),
 		m_status_code(OK),
 		m_ressource_path()
 	{
@@ -72,20 +75,26 @@ namespace HTTP
 
 	/* We gather the data */
 
-	RequestHandler::State	RequestHandler::fetchIncomingData(const vector<uint8_t>& data_buff, size_t recv_bytes)
+	RequestHandler::State	RequestHandler::fetchIncomingData(const Buffer& buff)
 	{
+		Buffer::const_iterator	it = buff.begin();
+
 		try
 		{
 			if (_state(FETCHING_REQUEST_HEADER))
 			{
-				if (m_header_parser.parseHeader(data_buff, recv_bytes))
+				it = m_header_parser(buff, it);
+
+				if (m_header_parser.getState() == HeaderParser::ST_DONE)
 				{
+					m_header_info = m_header_parser.get();
 					_parseGeneralHeaderFields();
 
-					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << '\n';
-
-					m_ressource_path = m_uri_info.absolute_path;
+					m_ressource_path = m_header_info.uri.absolute_path;
+					m_ressource_path.erase(0, m_route->m_location_match.length());
 					m_ressource_path.insert(0, m_route->m_root);
+
+					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << " -> " << '"' << m_ressource_path << '"' << '\n';
 
 					(this->*m_method_init_fnct[m_header_info.method])();
 
@@ -94,8 +103,18 @@ namespace HTTP
 			}
 			if (_state(FETCHING_REQUEST_BODY))
 			{
-				if (m_header_info.method != Get)
+				if (m_header_info.method == Post)
 				{
+					if (m_request_type == FILE_UPLOAD)
+					{
+						(*m_multipart_handler)(buff, it);
+
+						if (m_multipart_handler->getState() == MultiPartHandler::ST_DONE)
+						{
+							delete (m_multipart_handler);
+							_setState(PROCESSING_RESPONSE_HEADER);
+						}
+					}
 				}
 				else
 					_setState(PROCESSING_RESPONSE_HEADER);
@@ -103,7 +122,7 @@ namespace HTTP
 		}
 		catch (const Exception& e)
 		{
-			::Log().get(WARNING) << "Issuing a " << e.what() << " HTTP error.\n";
+			::Log().get(FATAL) << "Issuing a " << e.what() << " HTTP error.\n";
 			_setErrorState(PROCESSING_RESPONSE_HEADER, e.what());
 		}
 		return (m_state);
@@ -154,11 +173,14 @@ namespace HTTP
 
 	const string&	RequestHandler::getAbsPath() const
 	{
-		return (m_uri_info.absolute_path);
+		return (m_header_info.uri.absolute_path);
 	}
 
 	RequestHandler::~RequestHandler()
-	{}
+	{
+		if (!m_multipart_handler)
+			delete (m_multipart_handler);
+	}
 
 	/* ############################ Private function ############################ */
 
@@ -182,7 +204,7 @@ namespace HTTP
 		// First, get the correct virtual server by parsing the Host field.
 		{
 			const vector<VirtServ*>&				virt_serv	=  _getBoundedVirtServ();
-			const string&							host		= m_header_info.header_fields.at(Field::Host());
+			const string&							host		= m_header_info.header_field.at(Field::Host());
 			const vector<VirtServ*>::const_iterator	it			= std::find_if(virt_serv.begin(), virt_serv.end(), MatchingServerName(host));
 
 			if (it != virt_serv.end())
@@ -199,7 +221,7 @@ namespace HTTP
 
 			for (RouteOptionsIt it = routes.begin(); it != routes.end(); it++)
 			{
-				if (m_header_info.uri.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
+				if (m_header_info.uri.absolute_path.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
 					matching_candidate.push_back(it);
 			}
 

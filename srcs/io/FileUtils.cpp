@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 16:08:33 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:16:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/27 13:06:41 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,20 @@ namespace IO
 		if (stat(filename, &statbuf) < 0)
 			throw (std::runtime_error("stat"));
 		return (S_ISDIR(statbuf.st_mode));
+	}
+
+	mode_t	getFileMode(const char* path)
+	{
+		struct stat	stat_buf;
+
+		if (stat(path, &stat_buf) < 0)
+		{
+			if (errno == ENOENT)
+				throw (HTTP::RequestHandler::Exception(HTTP::NotFound));
+			else
+				throw (HTTP::RequestHandler::Exception(HTTP::BadRequest));
+		}
+		return (stat_buf.st_mode);
 	}
 
 	struct stat	statWrapper(const char* filename)

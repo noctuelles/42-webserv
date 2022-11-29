@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 13:55:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:46:39 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 17:02:20 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ namespace HTTP
 				if (!init)
 				{
 					vec[OK]						= HTTP_STATUS("200 OK");
+					vec[Created]				= HTTP_STATUS("201 Created");
 					vec[BadRequest]				= HTTP_ERRPAGE("400 Bad Request");
 					vec[Forbidden]				= HTTP_ERRPAGE("403 Forbidden");
 					vec[NotFound]				= HTTP_ERRPAGE("404 Not Found");
@@ -40,6 +41,7 @@ namespace HTTP
 					vec[RequestTimeout]			= HTTP_ERRPAGE("408 Request Timeout");
 					vec[ContentTooLarge]		= HTTP_ERRPAGE("413 Content Too Large");
 					vec[UriTooLong]				= HTTP_ERRPAGE("414 Uri Too Long");
+					vec[UnsupportedMediaType]	= HTTP_ERRPAGE("415 Unsupported Media Type");
 					vec[InternalServerError]	= HTTP_ERRPAGE("500 Internal Server Error");
 					vec[NotImplemented]			= HTTP_ERRPAGE("501 Not Implemented");
 					vec[VersionNotSupported]	= HTTP_ERRPAGE("505 HTTP Version Not Supported");

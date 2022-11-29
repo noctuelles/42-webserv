@@ -6,12 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:47:58 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 22:07:45 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Utils.hpp"
 #include "Http.hpp"
+#include "RequestHandler.hpp"
 #include <ctime>
 #include <stdexcept>
 #include <string>
@@ -42,8 +43,20 @@ namespace Utils
 		return (std::string(buffer, length));
 	}
 
-	bool		suffixMatch(std::string str, std::string ending)
+	FdPair	pipe()
 	{
-		return not str.compare(str.length() - ending.length(), ending.length(), ending);
+		int	fd[2];
+
+		if (::pipe(fd) < 0)
+			throw (HTTP::RequestHandler::Exception(HTTP::InternalServerError));
+		return (std::make_pair(IO::FileDescriptor(fd[0]), IO::FileDescriptor(fd[1])));
+	}
+
+	std::vector<char>	getCStr(const std::string& str)
+	{
+		std::vector<char>	cstr(str.begin(), str.end());
+
+		cstr.push_back('\0');
+		return (cstr);
 	}
 }
