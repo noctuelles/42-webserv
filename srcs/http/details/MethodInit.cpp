@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/28 11:49:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 16:57:07 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ namespace HTTP
 			const HeaderFieldMap::const_iterator	content_len = m_header_info.header_field.find(Field::ContentLength());
 			const HeaderFieldMap::const_iterator	transfer_enc = m_header_info.header_field.find(Field::TransferEncoding());
 
-			// Check the existance of borth ContentType and ContentLenght header (does not support chunked request).
+			// Check the existance of both ContentType and ContentLenght header (does not support chunked request).
 			if (content_type == m_header_info.header_field.end())
 				throw (Exception(BadRequest));
 			if (content_len == m_header_info.header_field.end())
@@ -100,6 +100,9 @@ namespace HTTP
 			const std::map<string, string>::const_iterator	boundary = ctype.param.find("boundary");
 			size_t											clen = Utils::stringToIntegral<size_t>(content_len->second);
 
+			// Check if the Content-Length does not exceed the max body size.
+			if (clen > (size_t) m_virtserv->m_max_body_size)
+				throw (Exception(ContentTooLarge));
 			// Only support multipart/form-data for uploading with POST
 			if (ctype.value != MIME::MultipartFormData().toStr())
 				throw (Exception(NotImplemented));

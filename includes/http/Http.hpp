@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 16:29:00 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 17:01:34 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,8 +65,8 @@ namespace HTTP
 		ContentTooLarge				= 413,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-413-content-too-large */
 		UnsupportedMediaType		= 415,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-415-unsupported-media-type */
 		UriTooLong					= 414,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-414-uri-too-long */
-		UnprocessableContent		= 422,
-		InternalServerError			= 500,
+		UnprocessableContent		= 422,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-422-unprocessable-content */
+		InternalServerError			= 500,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-500-internal-server-error */
 		NotImplemented				= 501,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-501-not-implemented */
 		VersionNotSupported			= 505,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-505-http-version-not-suppor */
 		MaxStatusCode				= 600 	/* Not used, only a placeholder for allocating the right amount of size of memory. */

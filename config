@@ -3,6 +3,7 @@ server
 	listen		8080;
 	server_name	localhost:8080 192.168.1.28:8080;
 	root		www/a_website/;
+	client_max_body_size	1000;
 
 	location / {
 		autoindex on;
@@ -10,7 +11,7 @@ server
 	}
 
 	location /upload {
-		allowed_methods GET;
+		allowed_methods GET POST;
 		root www/post/;
 	}
 }

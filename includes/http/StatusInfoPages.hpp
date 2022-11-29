@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 13:55:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 16:29:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/29 17:02:20 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ namespace HTTP
 					vec[RequestTimeout]			= HTTP_ERRPAGE("408 Request Timeout");
 					vec[ContentTooLarge]		= HTTP_ERRPAGE("413 Content Too Large");
 					vec[UriTooLong]				= HTTP_ERRPAGE("414 Uri Too Long");
+					vec[UnsupportedMediaType]	= HTTP_ERRPAGE("415 Unsupported Media Type");
 					vec[InternalServerError]	= HTTP_ERRPAGE("500 Internal Server Error");
 					vec[NotImplemented]			= HTTP_ERRPAGE("501 Not Implemented");
 					vec[VersionNotSupported]	= HTTP_ERRPAGE("505 HTTP Version Not Supported");
