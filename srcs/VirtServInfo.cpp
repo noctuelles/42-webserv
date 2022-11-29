@@ -72,6 +72,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_location_block_dispatch_tab
     {"index", &VirtServInfo::_parseLocationIndex},
     {"allowed_methods", &VirtServInfo::_parseLocationAllowedMethods},
     {"upload_store", &VirtServInfo::_parseLocationUploadStore},
+    {"error_page", &VirtServInfo::_parseLocationErrorPage},
 };
 
 // Range constructor
@@ -387,6 +388,24 @@ static int xatol(const string& str, const char *info)
 	return ::atol(str.c_str());
 }
 
+void VirtServInfo::_parseLocationErrorPage(VirtServInfo::configstream_iterator& it)
+{
+	stack<HTTP::StatusCode> codes;
+	for (++it; not it.is_delim() and (*it)[0] != '/'; ++it)
+		codes.push((HTTP::StatusCode)xatol(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
+	if (it.is_delim())
+		throw ConfigFileError("Missing path to default error page file at the end of error_page directive in server block");
+	else if ((*it)[0] != '/')
+		throw ConfigFileError("Invalid path at the end of error_page directive in server block");
+	for (; not codes.empty(); codes.pop())
+	    m_virtserv_vec.back().m_routes_vec.back().m_error_page_map[codes.top()] = *it;;
+	++it;
+	if (*it != ";")
+		throw ConfigFileError("missing ; after error_page directive in server block");
+	else
+		++it;
+}
+
 void VirtServInfo::_parseListen(VirtServInfo::configstream_iterator& it)
 {
 	// Has only one arg
@@ -466,7 +485,6 @@ void VirtServInfo::_parseIndex(VirtServInfo::configstream_iterator& it)
 		++it;
 }
 
-//	 Check if it's a valid status code ? Pb not worth it
 void VirtServInfo::_parseErrorPage(VirtServInfo::configstream_iterator& it)
 {
 	stack<HTTP::StatusCode> codes;
