@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <cctype>
 #include <cstddef>
+#include <cstdlib>
 #include <exception>
 #include <fcntl.h>
 #include <fstream>
@@ -376,14 +377,14 @@ void VirtServInfo::_parseLocationUploadStore(VirtServInfo::configstream_iterator
 	++it;
 }
 
-static int xatoi(const string& str, const char *info)
+static int xatol(const string& str, const char *info)
 {
 	string::const_iterator it = str.begin();
 	string::const_iterator end = str.end();
 	for (--end; it != end ; ++it)
 		if ( not std::isdigit(*it) )
 			throw std::runtime_error(info);
-	return ::atoi(str.c_str());
+	return ::atol(str.c_str());
 }
 
 void VirtServInfo::_parseListen(VirtServInfo::configstream_iterator& it)
@@ -415,7 +416,7 @@ void VirtServInfo::_parseListen(VirtServInfo::configstream_iterator& it)
 	sockaddr.sin_addr.s_addr = inet_addr(host.c_str());
 	if ( sockaddr.sin_addr.s_addr == INADDR_NONE )
 		throw ConfigFileError("listen directive does not have a valid ip address");
-	sockaddr.sin_port = htons(xatoi(port.c_str(), "Config file error: invalid port in listen directive "));
+	sockaddr.sin_port = htons(xatol(port.c_str(), "Config file error: invalid port in listen directive "));
 
 	m_virtserv_vec.back().m_sockaddr_vec.push_back(sockaddr);
 
@@ -470,7 +471,7 @@ void VirtServInfo::_parseErrorPage(VirtServInfo::configstream_iterator& it)
 {
 	stack<HTTP::StatusCode> codes;
 	for (++it; not it.is_delim() and (*it)[0] != '/'; ++it)
-		codes.push((HTTP::StatusCode)xatoi(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
+		codes.push((HTTP::StatusCode)xatol(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
 	if (it.is_delim())
 		throw ConfigFileError("Missing path to default error page file at the end of error_page directive in server block");
 	else if ((*it)[0] != '/')
@@ -488,7 +489,7 @@ void VirtServInfo::_parseClientMaxBodySize(VirtServInfo::configstream_iterator& 
 {
 	// Can only have one argument
 	++it;
-	m_virtserv_vec.back().m_max_body_size = xatoi(*it, "Config file error: Invalid number after client_max_body_size directive in server block");
+	m_virtserv_vec.back().m_max_body_size = xatol(*it, "Config file error: Invalid number after client_max_body_size directive in server block");
 	++it;
 	if (*it != ";")
 		throw ConfigFileError("missing ; after client_max_body_size directive in server block");

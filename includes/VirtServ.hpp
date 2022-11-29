@@ -1,6 +1,7 @@
 #ifndef VIRTSERV_HPP
 #define VIRTSERV_HPP
 
+#include <cstddef>
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string>
@@ -52,7 +53,7 @@ struct VirtServ
 	VirtServ() : m_default_route_options("/"), m_max_body_size(), m_routes_vec(), m_sockaddr_vec(), m_server_name_vec() {}
 
 	RouteOptions					m_default_route_options;
-	int								m_max_body_size;
+	size_t							m_max_body_size;
 	vector<RouteOptions>			m_routes_vec;
 	vector<sockaddr_in>				m_sockaddr_vec;
 	vector<string>					m_server_name_vec;
