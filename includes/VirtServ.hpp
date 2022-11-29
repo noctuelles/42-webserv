@@ -30,7 +30,6 @@ struct VirtServ
 			, m_cgi_extension()
 			, m_root()
 			, m_index_vec()
-			, m_error_page_map()
 			, m_autoindex(-1)
 			, m_upload_store()
 		{}
@@ -45,7 +44,6 @@ struct VirtServ
 		string							m_cgi_extension;
 		string							m_root;
 		vector<string>					m_index_vec;
-		map<HTTP::StatusCode, string>	m_error_page_map;
 		short							m_autoindex;
 		pair<string, string>			m_upload_store;
 	};
@@ -57,6 +55,7 @@ struct VirtServ
 	vector<RouteOptions>			m_routes_vec;
 	vector<sockaddr_in>				m_sockaddr_vec;
 	vector<string>					m_server_name_vec;
+	map<HTTP::StatusCode, string>	m_error_page_map;
 };
  
 std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo);

@@ -77,8 +77,8 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 	os << '\n';
 
 	os	<< "\terror_page:\t\t";
-	for (map<HTTP::StatusCode, string>::const_iterator it = servinfo.m_default_route_options.m_error_page_map.begin();
-			it != servinfo.m_default_route_options.m_error_page_map.end(); ++it)
+	for (map<HTTP::StatusCode, string>::const_iterator it = servinfo.m_error_page_map.begin();
+			it != servinfo.m_error_page_map.end(); ++it)
 	{
 		os << it->first <<": "<< it->second << '\t';
 	}
