@@ -135,8 +135,8 @@ namespace HTTP
 				::close(output_pipe[WRITE_END]);
 #ifdef DEBUG
 				{
-					std::cerr << "Child process before excve :";
-					std::cerr << "m_cgi_path :" << m_cgi_path << std::endl ;
+					std::cerr << "Child process before excve :\n";
+					std::cerr << "m_cgi_path :" << m_cgi_path << "\n";
 					std::cerr << "m_cargv.data() :\n" ;
 					std::vector<char*>::const_iterator it = m_cargv.begin();
 					std::vector<char*>::const_iterator end = m_cargv.end();
@@ -169,16 +169,17 @@ namespace HTTP
 			m_write_fd = input_pipe[WRITE_END];
 			m_read_fd = output_pipe[READ_END];
 
-			//int flags;
-			//// Setting non blocking mode server-side
+			int flags;
+			// Setting non blocking mode server-side for writing
 			//if ((flags = fcntl(m_write_fd, F_GETFL)) < 0)
 			//    throw (std::runtime_error("fcntl(F_GETFL)"));
 			//if (fcntl(m_write_fd, F_SETFL, flags | O_NONBLOCK) < 0)
 			//    throw (std::runtime_error("fcntl(F_SETFL)"));
-			//if ((flags = fcntl(m_read_fd, F_GETFL)) < 0)
-			//    throw (std::runtime_error("fcntl(F_GETFL)"));
-			//if (fcntl(m_read_fd, F_SETFL, flags | O_NONBLOCK) < 0)
-			//    throw (std::runtime_error("fcntl(F_SETFL)"));
+			// Setting non blocking mode server-side for reading
+			if ((flags = fcntl(m_read_fd, F_GETFL)) < 0)
+				throw (std::runtime_error("fcntl(F_GETFL)"));
+			if (fcntl(m_read_fd, F_SETFL, flags | O_NONBLOCK) < 0)
+				throw (std::runtime_error("fcntl(F_SETFL)"));
 		}
 	}
 #undef READ_END
@@ -190,7 +191,7 @@ namespace HTTP
 		ssize_t r;
 		ssize_t s;
 
-		// Current policy is send all data the make non blocking reads on the ouptut
+		// Current policy is send all data then make non blocking reads on the ouptut
 		while (1)
 		{
 			nfds = ::poll(m_fds, 2, -1);
