@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 23:03:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 11:59:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,10 +120,10 @@ namespace HTTP
 					_setState(PROCESSING_RESPONSE_HEADER);
 			}
 		}
-		catch (const Exception& e)
+		catch (const RequestHandler::Exception& e)
 		{
-			::Log().get(FATAL) << "Issuing a " << e.what() << " HTTP error.\n";
 			m_request_type = ERROR;
+			_setErrorState(PROCESSING_RESPONSE_HEADER, e.what());
 
 			if (m_virtserv)
 			{
@@ -133,25 +133,28 @@ namespace HTTP
 				// A custom page exists...
 				if (custom_page != m_virtserv->m_error_page_map.end())
 				{
-					// Find the best route.
-					m_ressource_path = custom_page->second;
-					m_route = &Utils::findRoute(m_ressource_path, *m_virtserv);
-					m_ressource_path.erase(0, m_route->m_location_match.length());
-					m_ressource_path.insert(0, m_route->m_root);
+					// See if the redirect file exist, to avoid multiple redirection.
+					std::string	redirect = custom_page->second;
 
-					// Is the file readable and is a regular file ?
-					mode_t	file_mode = IO::getFileMode(m_ressource_path.c_str());
+					m_ressource_path = redirect;
+					m_route = &Utils::findRoute(redirect, *m_virtserv);
+					redirect.erase(0, m_route->m_location_match.length());
+					redirect.insert(0, m_route->m_root);
 
-					if ((file_mode & S_IFMT) & S_IFREG && (file_mode & S_IRUSR))
+					try
 					{
-						m_file_handle.open(m_ressource_path.c_str(), std::ios::in | std::ios::binary);
-						if (m_file_handle.is_open())
-							m_request_type = FILE_ERROR;
+						mode_t	file_mode = IO::getFileMode(redirect.c_str());
+
+						if ((file_mode & S_IFMT) & S_IFREG && (file_mode & S_IRUSR))
+						{
+							m_request_type = REDIRECT_ERROR;
+							_setErrorState(PROCESSING_RESPONSE_HEADER, SeeOther);
+						}
 					}
+					catch (const RequestHandler::Exception& er)
+					{}
 				}
 			}
-
-			_setErrorState(PROCESSING_RESPONSE_HEADER, e.what());
 		}
 		return (m_state);
 	}
@@ -168,7 +171,8 @@ namespace HTTP
 
 			(this->*m_method_header_fnct[m_header_info.method])(respHeader);
 
-			m_page_to_send = respHeader.toString();
+			m_page_to_send.assign(respHeader.toString());
+
 			m_data_to_send = m_page_to_send.data();
 			m_data_to_send_size = m_page_to_send.size();
 
@@ -243,5 +247,8 @@ namespace HTTP
 		}
 
 		m_route = &Utils::findRoute(m_header_info.uri.absolute_path, *m_virtserv);
+
+		if (!m_route->m_methods[m_header_info.method])
+			throw (Exception(MethodNotAllowed));
 	}
 }

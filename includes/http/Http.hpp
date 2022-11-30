@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 17:01:34 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 11:04:49 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ namespace HTTP
 	{
 		OK							= 200,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-200-ok */
 		Created						= 201,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-201-created */
+		SeeOther					= 303,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-303-see-other */
 		BadRequest					= 400,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-400-bad-request */
 		Forbidden					= 403,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-403-forbidden */
 		NotFound					= 404,	/* https://www.rfc-editor.org/rfc/rfc9110.html#name-408-request-timeout */

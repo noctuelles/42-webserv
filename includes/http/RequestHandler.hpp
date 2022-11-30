@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 22:52:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 11:15:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ namespace HTTP
 				FILE,
 				FILE_UPLOAD,
 				ERROR,
-				FILE_ERROR,
+				REDIRECT_ERROR,
 				CGI,
 				AUTOINDEX
 			};
