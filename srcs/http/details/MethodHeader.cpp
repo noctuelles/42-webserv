@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 11:32:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 12:39:40 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,10 @@ namespace HTTP
 			header.addField(Field::ContentLength(), Utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));
 		}
 		else if (m_request_type == REDIRECT_ERROR)
+		{
 			header.addField(Field::Location(), m_ressource_path);
+			m_state = DONE;
+		}
 
 		if (m_status_code == MethodNotAllowed)
 		{

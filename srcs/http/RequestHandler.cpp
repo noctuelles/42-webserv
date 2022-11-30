@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 11:59:59 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 15:11:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,17 @@ namespace HTTP
 		&RequestHandler::_methodSendDelete,
 		&RequestHandler::_methodSendError
 	};
+
+	const std::string RequestHandler::m_upload_page =
+		"<html>\n"
+		"	<head><title>201 Created</title></head>\n"
+		"	<body>\n"
+		"		<center><h1>201 Created</h1></center>\n"
+		"		<center><p>File uploaded successfully.</p></center>\n"
+		"		<hr>\n"
+		"		<center><i>webserv</i></center>\n"
+		"	</body>\n"
+		"</html>";
 
 	RequestHandler::RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map) :
 		m_state(FETCHING_REQUEST_HEADER),
@@ -173,8 +184,8 @@ namespace HTTP
 
 			m_page_to_send.assign(respHeader.toString());
 
-			m_data_to_send = m_page_to_send.data();
-			m_data_to_send_size = m_page_to_send.size();
+			m_data.first = m_page_to_send.data();
+			m_data.second = m_page_to_send.size();
 
 			_setState(PROCESSING_RESPONSE_BODY);
 		}
@@ -188,9 +199,9 @@ namespace HTTP
 		m_bounded_sock = bounded_sock;
 	}
 
-	RequestHandler::DataInfo	RequestHandler::getDataToSend() const
+	DataInfo	RequestHandler::getDataToSend() const
 	{
-		return (make_pair(m_data_to_send, m_data_to_send_size));
+		return (m_data);
 	}
 
 	StatusCode	RequestHandler::getStatusCode() const
@@ -230,7 +241,6 @@ namespace HTTP
 			return (m_virtserv_map.at(tmp_sock));
 		}
 	}
-
 
 	void	RequestHandler::_parseGeneralHeaderFields()
 	{

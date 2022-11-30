@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 11:15:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 15:05:27 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,7 @@ namespace HTTP
 			static const methodInitFnct				m_method_init_fnct[HTTP::NbrAvailableMethod];
 			static const methodHeaderFnct			m_method_header_fnct[HTTP::NbrAvailableMethod + 1];
 			static const methodSendFnct				m_method_send_fnct[HTTP::NbrAvailableMethod + 1];
+			static const std::string				m_upload_page;
 
 			State								m_state;
 			Type								m_request_type;
@@ -163,8 +164,7 @@ namespace HTTP
 			struct sockaddr_in					m_bounded_sock;
 
 			vector<uint8_t>				m_data_buff;
-			const void*					m_data_to_send;
-			size_t						m_data_to_send_size;
+			DataInfo					m_data;
 			string						m_page_to_send;
 
 			ifstream					m_file_handle;

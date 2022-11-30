@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 16:19:39 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 13:35:24 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,22 +60,6 @@ namespace IO
 		if (m_recv_bytes <= 0)
 			return (DISCONNECT);
 		m_recv_buff.resize(m_recv_bytes);
-		//::Log().get(INFO) << "Received " << m_recv_bytes << " bytes.\n";
-		/*for (HTTP::Buffer::const_iterator it = m_recv_buff.begin(); it != m_recv_buff.end(); it++)
-		{
-			if (std::isspace(*it))
-			{
-				if (*it == '\r')
-					std::cerr << "\\r";
-				else if (*it == '\n')
-					std::cerr << "\\n";
-				else if (*it == ' ')
-					std::cerr << " ";
-			}
-			else if (std::isprint(*it))
-				std::cerr << *it;
-		}
-		std::cerr << "\n";*/
 		if (m_request_handler.fetchIncomingData(m_recv_buff) == RequestHandler::PROCESSING_RESPONSE_HEADER)
 			m_state = FETCH_SEND_DATA;
 		return (m_state);
@@ -93,7 +77,6 @@ namespace IO
 				else
 					m_next_state = FETCH_SEND_DATA;
 				m_to_send = m_request_handler.getDataToSend();
-				//::Log().get(FATAL) << "SENDING " << m_to_send.second << '\n';
 			}
 			catch (...)
 			{

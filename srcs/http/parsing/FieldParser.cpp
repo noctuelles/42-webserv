@@ -68,6 +68,18 @@ namespace HTTP
 							transitionState(ST_OWS, ST_PARAM_KEY, &FieldParser::insertParam);
 							break;
 						case '"':
+							changeState(ST_PARAM_VALUE_QUOTE);
+							break;
+						default:
+							m_buffer.second.push_back(*it);
+					}
+					break;
+
+				case ST_PARAM_VALUE_QUOTE:
+					switch (*it)
+					{
+						case '"':
+							changeState(ST_PARAM_VALUE);
 							break;
 						default:
 							m_buffer.second.push_back(*it);

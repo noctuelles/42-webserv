@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 22:31:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 15:15:26 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ namespace HTTP
 	{
 		using std::ios;
 		using std::ifstream;
+
+		std::string	cgiExt = ".php";
 
 		if (*m_ressource_path.rbegin() == '/')
 		{
@@ -78,8 +80,9 @@ namespace HTTP
 		}
 		else
 		{
+			// Check if we can upload in this route.
 			// Check if this is a correct directory and that we've write permissions.
-			mode_t	file_mode = IO::getFileMode(m_ressource_path.c_str());
+			mode_t	file_mode = IO::getFileMode(m_route->m_upload_store.first.c_str());
 
 			if (!((file_mode & S_IFMT) & S_IFDIR && file_mode & S_IWUSR))
 				throw (Exception(Forbidden));
@@ -118,7 +121,7 @@ namespace HTTP
 					throw (Exception(BadRequest));
 			}
 
-			m_multipart_handler = new MultiPartHandler(m_ressource_path, clen, boundary->second);
+			m_multipart_handler = new MultiPartHandler(m_route->m_upload_store.first, clen, boundary->second);
 			m_request_type = FILE_UPLOAD;
 		}
 	}

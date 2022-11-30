@@ -14,6 +14,7 @@ namespace HTTP
 				ST_SEMICOLON,
 				ST_PARAM_KEY,
 				ST_PARAM_VALUE,
+				ST_PARAM_VALUE_QUOTE,
 				ST_OWS,
 				ST_DONE
 			};
