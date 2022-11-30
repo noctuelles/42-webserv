@@ -31,7 +31,7 @@ struct VirtServ
 			, m_root()
 			, m_index_vec()
 			, m_autoindex(-1)
-			, m_cgi_extension()
+			, m_cgi_extensions()
 		{}
 
 		bool	operator<(const RouteOptions& rhs)
@@ -45,7 +45,7 @@ struct VirtServ
 		string							m_root;
 		vector<string>					m_index_vec;
 		short							m_autoindex;
-		pair<string, string>			m_cgi_extension;
+		map<string, string>				m_cgi_extensions;
 	};
 
 	VirtServ() : m_default_route_options("/"), m_max_body_size(), m_routes_vec(), m_sockaddr_vec(), m_server_name_vec() {}
