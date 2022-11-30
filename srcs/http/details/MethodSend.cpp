@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 15:13:43 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 19:50:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,11 @@ namespace HTTP
 		{
 			m_data.first = StatusInfoPages::get()[m_status_code].page.data();
 			m_data.second = StatusInfoPages::get()[m_status_code].page.size();
+		}
+		else
+		{
+			m_data.first = NULL;
+			m_data.second = 0;
 		}
 		m_state = DONE;
 	}

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 16:27:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 20:02:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,12 +74,13 @@ namespace HTTP
 		m_data(),
 		m_page_to_send(),
 		m_file_handle(),
-		m_ofile_handle(),
 		m_header_parser(),
 		m_header_info(),
 		m_multipart_handler(NULL),
 		m_status_code(OK),
-		m_ressource_path()
+		m_res_info(),
+		m_cgi_handler(),
+		m_cgi_interpr()
 	{
 	}
 
@@ -100,13 +101,34 @@ namespace HTTP
 					m_header_info = m_header_parser.get();
 					_parseGeneralHeaderFields();
 
-					m_ressource_path = m_header_info.uri.absolute_path;
-					m_ressource_path.erase(0, m_route->m_location_match.length());
-					m_ressource_path.insert(0, m_route->m_root);
+					m_res_info.path = m_header_info.uri.absolute_path;
+					m_res_info.extension = Utils::getFileExtension(m_res_info.path);
+					m_res_info.path.erase(0, m_route->m_location_match.length());
+					m_res_info.path.insert(0, m_route->m_root);
 
-					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << " -> " << '"' << m_ressource_path << '"' << '\n';
+					map<string, string>::const_iterator	cgi_interp = m_route->m_cgi_extensions.find(m_res_info.extension);
+
+					if (cgi_interp != m_route->m_cgi_extensions.end())
+					{
+						m_cgi_interpr = cgi_interp->second;
+
+						m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
+						m_cgi_handler.addMetaVar("SCRIPT_NAME", m_res_info.path);
+						m_cgi_handler.addMetaVar("SERVER_NAME", m_header_info.header_field.at(Field::Host()));
+						m_cgi_handler.addMetaVar("SERVER_PROTOCOL", "HTTP/1.1");
+						m_cgi_handler.addMetaVar("REQUEST_METHOD", HTTP::MethodTable[m_header_info.method]);
+						m_cgi_handler.addMetaVar("PATH_INFO", m_res_info.path);
+						m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);
+
+						m_request_type = CGI;
+					}
+
+					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << " -> " << '"' << m_res_info.path << '"' << '\n';
 
 					(this->*m_method_init_fnct[m_header_info.method])();
+
+					if (m_request_type == CGI)
+						m_cgi_handler.start(m_cgi_interpr, m_res_info.path, m_header_info.method);
 
 					_setState(FETCHING_REQUEST_BODY);
 				}
@@ -117,7 +139,6 @@ namespace HTTP
 				{
 					if (m_request_type == FILE_UPLOAD)
 					{
-						// File uploading
 						(*m_multipart_handler)(buff, it);
 
 						if (m_multipart_handler->getState() == MultiPartHandler::ST_DONE)
@@ -153,7 +174,7 @@ namespace HTTP
 					// See if the redirect file exist, to avoid multiple redirection.
 					std::string	redirect = custom_page->second;
 
-					m_ressource_path = redirect;
+					m_res_info.path = redirect;
 					m_route = &Utils::findRoute(redirect, *m_virtserv);
 					redirect.erase(0, m_route->m_location_match.length());
 					redirect.insert(0, m_route->m_root);

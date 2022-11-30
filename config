@@ -10,14 +10,13 @@ server
 
 		allowed_methods GET;
 		cgi_setup .php php-cgi;
+		cgi_setup .py python3;
 	}
 
 	location /error_pages {
 		root	www/err_pages/;
 
 		allowed_methods GET;
-		cgi_setup .py py-cgi;
-		cgi_setup .php php-cgi;
 	}
 
 	location /upload {

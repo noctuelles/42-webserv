@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 15:05:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 19:39:19 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include "HeaderParser.hpp"
 # include "ResponseHeader.hpp"
 # include "MultiPartHandler.hpp"
+# include "CGIScriptHandler.hpp"
 # include "SocketTypes.hpp"
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
@@ -75,6 +76,12 @@ namespace HTTP
 				private:
 
 					StatusCode m_code;
+			};
+
+			struct RessourceInfo
+			{
+				std::string	path;
+				std::string	extension;
 			};
 
 			RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
@@ -168,13 +175,15 @@ namespace HTTP
 			string						m_page_to_send;
 
 			ifstream					m_file_handle;
-			ofstream					m_ofile_handle;
 			HeaderParser				m_header_parser;
 			HeaderInfo					m_header_info;
 			MultiPartHandler*			m_multipart_handler;
 
 			StatusCode					m_status_code;
-			string						m_ressource_path;
+			RessourceInfo				m_res_info;
+
+			CGIScriptHandler			m_cgi_handler;
+			std::string					m_cgi_interpr;
 
 			/* ############################ Private function ############################ */
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 16:21:09 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 19:49:55 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,14 @@ namespace HTTP
 
 		if (m_request_type == FILE)
 		{
-			MIME		mime = getMimeFromFileExtension(m_ressource_path.c_str());
-			size_t		fileSize = IO::getFileSize(m_ressource_path.c_str());
+			MIME		mime = getMimeFromFileExtension(m_res_info.path.c_str());
+			size_t		fileSize = IO::getFileSize(m_res_info.path.c_str());
 
 			header.addField(Field::ContentLength(), Utils::integralToString(fileSize));
 			header.addField(Field::ContentType(), mime);
 			if (mime == MIME::ApplicationOctetStream())
 			{
-				header.addField(Field::ContentDisposition(), string("attachment; filename=\"").append(::basename(m_ressource_path.c_str())).append("\""));
+				header.addField(Field::ContentDisposition(), string("attachment; filename=\"").append(::basename(m_res_info.path.c_str())).append("\""));
 				header.addField(Field::ContentTransferEncoding(), "binary");
 			}
 		}
@@ -75,8 +75,7 @@ namespace HTTP
 		}
 		else if (m_request_type == REDIRECT_ERROR)
 		{
-			header.addField(Field::Location(), m_ressource_path);
-			m_state = DONE;
+			header.addField(Field::Location(), m_res_info.path);
 		}
 
 		if (m_status_code == MethodNotAllowed)
