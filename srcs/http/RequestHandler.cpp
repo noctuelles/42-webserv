@@ -71,8 +71,6 @@ namespace HTTP
 		m_route(NULL),
 		m_bounded_sock(),
 		m_data_buff(IO::ConnectionSocket::MaxSendBufferSize),
-		m_data_to_send(NULL),
-		m_data_to_send_size(0),
 		m_page_to_send(),
 		m_file_handle(),
 		m_ofile_handle(),

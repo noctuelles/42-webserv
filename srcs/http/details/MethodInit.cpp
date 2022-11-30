@@ -82,7 +82,7 @@ namespace HTTP
 		{
 			// Check if we can upload in this route.
 			// Check if this is a correct directory and that we've write permissions.
-			mode_t	file_mode = IO::getFileMode(m_route->m_upload_store.first.c_str());
+			mode_t	file_mode = IO::getFileMode(m_route->m_upload_store.c_str());
 
 			if (!((file_mode & S_IFMT) & S_IFDIR && file_mode & S_IWUSR))
 				throw (Exception(Forbidden));
@@ -121,7 +121,7 @@ namespace HTTP
 					throw (Exception(BadRequest));
 			}
 
-			m_multipart_handler = new MultiPartHandler(m_route->m_upload_store.first, clen, boundary->second);
+			m_multipart_handler = new MultiPartHandler(m_route->m_upload_store, clen, boundary->second);
 			m_request_type = FILE_UPLOAD;
 		}
 	}

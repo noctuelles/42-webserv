@@ -56,7 +56,6 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_server_block_dispatch_table
     {"autoindex", &VirtServInfo::_parseAutoindex},
     {"error_page", &VirtServInfo::_parseErrorPage},
     {"client_max_body_size", &VirtServInfo::_parseClientMaxBodySize},
-    {"cgi_setup", &VirtServInfo::_parseCgiSetup},
     {"upload_store", &VirtServInfo::_parseUploadStore},
 };
 
@@ -72,6 +71,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_location_block_dispatch_tab
     {"index", &VirtServInfo::_parseLocationIndex},
     {"allowed_methods", &VirtServInfo::_parseLocationAllowedMethods},
     {"upload_store", &VirtServInfo::_parseLocationUploadStore},
+    {"cgi_setup", &VirtServInfo::_parseLocationCgiSetup},
 };
 
 // Range constructor
@@ -318,6 +318,7 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	++it;
 	// Parse location data
 	_match(it, m_location_block_dispatch_vec);
+	// Check for end delimiter
 	if (*it != "}")
 		throw ConfigFileError("Invalid token in location block");
 	++it;
@@ -325,22 +326,26 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	// Get parent root directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_root.empty() )
 		m_virtserv_vec.back().m_routes_vec.back().m_root = m_virtserv_vec.back().m_default_route_options.m_root;
+
 	// Get parent index directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_index_vec.empty() )
 		m_virtserv_vec.back().m_routes_vec.back().m_index_vec = m_virtserv_vec.back().m_default_route_options.m_index_vec;
+
 	// Get parent autoindex directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_autoindex == -1)
 		m_virtserv_vec.back().m_routes_vec.back().m_autoindex = m_virtserv_vec.back().m_default_route_options.m_autoindex;
+
 	// Get upload_store if none defined
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_upload_store.empty() )
-		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extensions = m_virtserv_vec.back().m_default_route_options.m_cgi_extensions;
+		m_virtserv_vec.back().m_routes_vec.back().m_upload_store = m_virtserv_vec.back().m_default_route_options.m_upload_store;
+	
 	// Put all methods to true if 0
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_methods == 0 )
 		m_virtserv_vec.back().m_routes_vec.back().m_methods.set();
+
 	// Inherit cgi_setup if none
-	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extensions.empty() )
-	    m_virtserv_vec.back().m_routes_vec.back().m_cgi_extensions = m_virtserv_vec.back().m_default_route_options.m_cgi_extensions;
-	// Check for end delimiter
+	//if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extensions.empty() )
+	//    m_virtserv_vec.back().m_routes_vec.back().m_cgi_extensions = m_virtserv_vec.back().m_default_route_options.m_cgi_extensions;
 }
 
 void VirtServInfo::_parseLocationUploadStore(VirtServInfo::configstream_iterator& it)
