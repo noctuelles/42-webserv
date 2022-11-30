@@ -27,11 +27,11 @@ struct VirtServ
 	{
 		RouteOptions(string uri) : m_location_match(uri)
 			, m_methods(0xFFFFFFFF)
-			, m_cgi_extension()
+			, m_upload_store()
 			, m_root()
 			, m_index_vec()
 			, m_autoindex(-1)
-			, m_upload_store()
+			, m_cgi_extension()
 		{}
 
 		bool	operator<(const RouteOptions& rhs)
@@ -41,11 +41,11 @@ struct VirtServ
 
 		string							m_location_match;
 		bitset<HTTP::NbrAvailableMethod>	m_methods;
-		string							m_cgi_extension;
+		string							m_upload_store;
 		string							m_root;
 		vector<string>					m_index_vec;
 		short							m_autoindex;
-		pair<string, string>			m_upload_store;
+		pair<string, string>			m_cgi_extension;
 	};
 
 	VirtServ() : m_default_route_options("/"), m_max_body_size(), m_routes_vec(), m_sockaddr_vec(), m_server_name_vec() {}

@@ -4,10 +4,13 @@ server
 	server_name				localhost:8080;
 	client_max_body_size	999999999;
 
+	cgi_setup .php php-cgi;
+
 	location / {
 		root		www/demo_website/;
 
 		allowed_methods GET;
+		cgi_setup .cgi;
 	}
 
 	location /error_pages {

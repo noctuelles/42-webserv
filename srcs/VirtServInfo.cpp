@@ -331,16 +331,28 @@ void VirtServInfo::_parseLocationBlock(VirtServInfo::configstream_iterator& it)
 	// Get parent autoindex directive if none was defined.
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_autoindex == -1)
 		m_virtserv_vec.back().m_routes_vec.back().m_autoindex = m_virtserv_vec.back().m_default_route_options.m_autoindex;
-	// Get cgi_setup if none defined
-	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.empty() )
+	// Get upload_store if none defined
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_upload_store.empty() )
 		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_default_route_options.m_cgi_extension;
 	// Put all methods to true if 0
 	if ( m_virtserv_vec.back().m_routes_vec.back().m_methods == 0 )
 		m_virtserv_vec.back().m_routes_vec.back().m_methods.set();
-	// Inherit upload_store if none
-	if ( m_virtserv_vec.back().m_routes_vec.back().m_upload_store.first.empty() )
-		m_virtserv_vec.back().m_routes_vec.back().m_upload_store = m_virtserv_vec.back().m_default_route_options.m_upload_store;
+	// Inherit cgi_setup if none
+	if ( m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.first.empty() )
+		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = m_virtserv_vec.back().m_default_route_options.m_cgi_extension;
 	// Check for end delimiter
+}
+
+void VirtServInfo::_parseLocationUploadStore(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_routes_vec.back().m_upload_store = *it;
+	++it;
+	if (*it != ";")
+		throw ConfigFileError("missing ; after upload_store directive in location block");
+	else
+		++it;
 }
 
 void VirtServInfo::_parseLocationCgiSetup(VirtServInfo::configstream_iterator& it)
@@ -349,24 +361,12 @@ void VirtServInfo::_parseLocationCgiSetup(VirtServInfo::configstream_iterator& i
 	++it;
 	if ((*it)[0] != '.')
 		throw ConfigFileError("cgi_setup directive in location block must start with a '.'");
-	m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension = *it;
-	++it;
-	if (*it != ";")
-		throw ConfigFileError("missing ; after cgi_setup directive in location block");
-	else
-		++it;
-}
-
-void VirtServInfo::_parseLocationUploadStore(VirtServInfo::configstream_iterator& it)
-{
-	// Can only have one argument
-	++it;
-	m_virtserv_vec.back().m_routes_vec.back().m_upload_store.first = *it; // upload dir
+	m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.first = *it; // extension
 	++it;
 	// Optional executable name
 	if (*it != ";")
 	{
-		m_virtserv_vec.back().m_routes_vec.back().m_upload_store.second = *it; // executable name
+		m_virtserv_vec.back().m_routes_vec.back().m_cgi_extension.second = *it; // executable name
 		++it;
 	}
 	if (*it != ";")
@@ -494,28 +494,30 @@ void VirtServInfo::_parseClientMaxBodySize(VirtServInfo::configstream_iterator& 
 		++it;
 }
 
-void VirtServInfo::_parseCgiSetup(VirtServInfo::configstream_iterator& it)
-{
-	// Can only have one argument
-	++it;
-	m_virtserv_vec.back().m_default_route_options.m_cgi_extension = *it;
-	++it;
-	if (*it != ";")
-		throw ConfigFileError("missing ; after cgi_setup directive in server block");
-	else
-		++it;
-}
-
 void VirtServInfo::_parseUploadStore(VirtServInfo::configstream_iterator& it)
 {
 	// Can only have one argument
 	++it;
-	m_virtserv_vec.back().m_default_route_options.m_upload_store.first = *it; // upload dir
+	m_virtserv_vec.back().m_default_route_options.m_upload_store = *it;
+	++it;
+	if (*it != ";")
+		throw ConfigFileError("missing ; after upload_store directive in server block");
+	else
+		++it;
+}
+
+void VirtServInfo::_parseCgiSetup(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	if ((*it)[0] != '.')
+		throw ConfigFileError("cgi_setup directive in location block must start with a '.'");
+	m_virtserv_vec.back().m_default_route_options.m_cgi_extension.first = *it; // extension
 	++it;
 	// Optional executable name
 	if (*it != ";")
 	{
-		m_virtserv_vec.back().m_default_route_options.m_upload_store.second = *it; // executable name
+		m_virtserv_vec.back().m_default_route_options.m_cgi_extension.second = *it; // executable name
 		++it;
 	}
 	if (*it != ";")
