@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 12:39:40 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 16:21:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,10 @@ namespace HTTP
 			header.setReasonPhrase(StatusInfoPages::get()[Created].phrase);
 
 			header.addField(Field::Location(), m_header_info.request_line);
+		}
+		else if (m_request_type == CGI)
+		{
+			
 		}
 	}
 

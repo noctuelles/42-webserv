@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 15:11:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/11/30 16:27:26 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ namespace HTTP
 		m_route(NULL),
 		m_bounded_sock(),
 		m_data_buff(IO::ConnectionSocket::MaxSendBufferSize),
+		m_data(),
 		m_page_to_send(),
 		m_file_handle(),
 		m_ofile_handle(),
@@ -116,6 +117,7 @@ namespace HTTP
 				{
 					if (m_request_type == FILE_UPLOAD)
 					{
+						// File uploading
 						(*m_multipart_handler)(buff, it);
 
 						if (m_multipart_handler->getState() == MultiPartHandler::ST_DONE)
@@ -123,6 +125,12 @@ namespace HTTP
 							delete (m_multipart_handler);
 							_setState(PROCESSING_RESPONSE_HEADER);
 						}
+					}
+					else if (m_request_type == CGI)
+					{
+						// Here we pass the data of the client to the CGI script.
+						// m_cgi_handler.write(buff, iterator...)
+						//
 					}
 				}
 				else
