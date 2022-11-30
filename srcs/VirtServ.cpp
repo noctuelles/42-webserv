@@ -48,12 +48,12 @@ std::ostream& operator<<(std::ostream& os, const VirtServ::RouteOptions& routein
 	os << (routeinfo.m_methods.test(HTTP::Delete) ? " DELETE " : "");
 	os << '\n';
 
-	os	<< "\t\tcgi_setup:\t";
-	os << routeinfo.m_cgi_extension;
+	os	<< "\t\tupload_store:\t";
+	os << routeinfo.m_upload_store;
 	os << '\n';
 
-	os	<< "\t\tupload_store:\t";
-	os << routeinfo.m_upload_store.first << " " << routeinfo.m_upload_store.second;
+	os	<< "\t\tcgi_setup:\t";
+	os << routeinfo.m_cgi_extension.first << " " << routeinfo.m_cgi_extension.second;
 	os << '\n';
 
 	os << "\t\t-------------------------\n";
@@ -105,12 +105,12 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 	os << (servinfo.m_default_route_options.m_methods.test(HTTP::Delete) ? " DELETE " : "");
 	os << '\n';
 
-	os	<< "\tcgi_setup:\t";
-	os << servinfo.m_default_route_options.m_cgi_extension;
+	os	<< "\tupload_store:\t";
+	os << servinfo.m_default_route_options.m_upload_store;
 	os << '\n';
 
-	os	<< "\tupload_store:\t";
-	os << servinfo.m_default_route_options.m_upload_store.first << " " << servinfo.m_default_route_options.m_upload_store.second;
+	os	<< "\tcgi_setup:\t";
+	os << servinfo.m_default_route_options.m_cgi_extension.first << " " << servinfo.m_default_route_options.m_cgi_extension.second;
 	os << '\n';
 
 	os	<< "\tlocation blocks:\n";

@@ -7,10 +7,13 @@ server
 	error_page 404 /error_pages/404.html;
 	error_page 405 /error_pages/405.html;
 
+	cgi_setup .php php-cgi;
+
 	location / {
 		root		www/demo_website/;
 
 		allowed_methods GET;
+		cgi_setup .cgi;
 	}
 
 	location /error_pages {
