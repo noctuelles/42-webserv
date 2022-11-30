@@ -13,7 +13,6 @@ server
 		root		www/demo_website/;
 
 		allowed_methods GET;
-		cgi_setup .cgi;
 	}
 
 	location /error_pages {

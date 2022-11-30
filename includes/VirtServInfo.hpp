@@ -115,7 +115,7 @@ class VirtServInfo
 		ConfigFileError(const char *info) throw()
 		{
 			stringstream ss;
-			ss << "Config file errror: " << info << '\n';
+			ss << "Config file error: " << info << '\n';
 			m_what = ss.str();
 		}
 		virtual const char*	what() const throw()			{ return m_what.c_str(); }
