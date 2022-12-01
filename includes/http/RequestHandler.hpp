@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 19:39:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 01:54:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,6 +184,7 @@ namespace HTTP
 
 			CGIScriptHandler			m_cgi_handler;
 			std::string					m_cgi_interpr;
+			size_t						m_content_len;
 
 			/* ############################ Private function ############################ */
 

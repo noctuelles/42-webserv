@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 20:02:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 02:00:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,8 @@ namespace HTTP
 		m_status_code(OK),
 		m_res_info(),
 		m_cgi_handler(),
-		m_cgi_interpr()
+		m_cgi_interpr(),
+		m_content_len()
 	{
 	}
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 20:00:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 02:00:20 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,13 +60,11 @@ namespace HTTP
 					return ;
 				}
 			}
-			else
-			{
-				mode_t	file_mode = IO::getFileMode(m_res_info.path.c_str());
 
-				if (!((file_mode & S_IFMT) & S_IFREG && (file_mode & S_IRUSR)))
-					throw (Exception(NotFound));
-			}
+			mode_t	file_mode = IO::getFileMode(m_res_info.path.c_str());
+
+			if (!((file_mode & S_IFMT) & S_IFREG && (file_mode & S_IRUSR)))
+				throw (Exception(NotFound));
 
 			m_file_handle.open(m_res_info.path.c_str(), ios::in | ios::binary);
 			if (!m_file_handle.is_open()) // at this point, the program MUST be able to open the file.
@@ -92,9 +90,14 @@ namespace HTTP
 				throw (Exception(BadRequest));
 		}
 
+		m_content_len = Utils::stringToIntegral<size_t>(content_len->second);
+		if (m_content_len > m_virtserv->m_max_body_size)
+			throw (Exception(ContentTooLarge));
+
 		if (m_request_type == CGI)
 		{
-
+			m_cgi_handler.addMetaVar("CONTENT_TYPE", content_type->second); 
+			m_cgi_handler.addMetaVar("CONTENT_LENGTH", content_len->second);
 		}
 		else
 		{
@@ -106,11 +109,9 @@ namespace HTTP
 
 			ContentInfo										ctype = FieldParser()(content_type->second);
 			const std::map<string, string>::const_iterator	boundary = ctype.param.find("boundary");
-			size_t											clen = Utils::stringToIntegral<size_t>(content_len->second);
 
 			// Check if the Content-Length does not exceed the max body size.
-			if (clen > (size_t) m_virtserv->m_max_body_size)
-				throw (Exception(ContentTooLarge));
+
 			// Only support multipart/form-data for uploading with POST
 			if (ctype.value != MIME::MultipartFormData().toStr())
 				throw (Exception(NotImplemented));
@@ -123,7 +124,7 @@ namespace HTTP
 					throw (Exception(BadRequest));
 			}
 
-			m_multipart_handler = new MultiPartHandler(m_route->m_upload_store, clen, boundary->second);
+			m_multipart_handler = new MultiPartHandler(m_route->m_upload_store, m_content_len, boundary->second);
 			m_request_type = FILE_UPLOAD;
 		}
 	}
