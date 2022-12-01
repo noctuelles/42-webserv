@@ -19,7 +19,6 @@ using std::bitset;
 
 using std::string;
 using std::vector;
-using std::pair;
 
 struct VirtServ
 {
@@ -29,6 +28,7 @@ struct VirtServ
 			, m_methods(0xFFFFFFFF)
 			, m_upload_store()
 			, m_root()
+			, m_redirect()
 			, m_index_vec()
 			, m_autoindex(-1)
 			, m_cgi_extensions()
@@ -43,6 +43,7 @@ struct VirtServ
 		bitset<HTTP::NbrAvailableMethod>	m_methods;
 		string							m_upload_store;
 		string							m_root;
+		string							m_redirect;
 		vector<string>					m_index_vec;
 		short							m_autoindex;
 		map<string, string>				m_cgi_extensions;

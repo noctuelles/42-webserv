@@ -72,6 +72,7 @@ const VirtServInfo::token_dispatch_t VirtServInfo::m_location_block_dispatch_tab
     {"allowed_methods", &VirtServInfo::_parseLocationAllowedMethods},
     {"upload_store", &VirtServInfo::_parseLocationUploadStore},
     {"cgi_setup", &VirtServInfo::_parseLocationCgiSetup},
+    {"redirect", &VirtServInfo::_parseLocationRedirect},
 };
 
 // Range constructor
@@ -270,6 +271,18 @@ void VirtServInfo::_parseLocationRoot(VirtServInfo::configstream_iterator& it)
 	++it;
 	if (*it != ";")
 		throw ConfigFileError("missing ; after root directive in location block");
+	else
+		++it;
+}
+
+void VirtServInfo::_parseLocationRedirect(VirtServInfo::configstream_iterator& it)
+{
+	// Can only have one argument
+	++it;
+	m_virtserv_vec.back().m_routes_vec.back().m_redirect = *it;
+	++it;
+	if (*it != ";")
+		throw ConfigFileError("missing ; after redirect directive in location block");
 	else
 		++it;
 }

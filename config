@@ -15,8 +15,10 @@ server
 
 	location /error_pages {
 		root	www/err_pages/;
+		redirect http://www.redirect.com/index;
 
 		allowed_methods GET;
+
 	}
 
 	location /upload {

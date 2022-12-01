@@ -174,6 +174,7 @@ class VirtServInfo
 	void _parseLocationAllowedMethods(VirtServInfo::configstream_iterator& it);
 	void _parseLocationCgiSetup(VirtServInfo::configstream_iterator& it); 
 	void _parseLocationUploadStore(VirtServInfo::configstream_iterator& it); 
+	void _parseLocationRedirect(VirtServInfo::configstream_iterator& it); 
 };
 
 #endif /* VIRTSERVINFO_HPP */
