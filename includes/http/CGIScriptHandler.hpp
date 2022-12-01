@@ -8,6 +8,7 @@
 # include <vector>
 
 # include "Http.hpp"
+# include "HeaderFieldParser.hpp"
 
 using std::string;
 using std::vector;;
@@ -20,7 +21,15 @@ namespace HTTP
 
 		static const string			GatewayInterfaceVer;
 		static const size_t			Timeout = 5000;
-		static const size_t			BufferSize = 512;
+		static const size_t			BufferSize = 1024*2;
+
+		struct CGIScriptInfo
+		{
+			size_t												content_length;
+			Buffer												output_buffer;
+			HeaderFieldMap										header_field;
+			std::pair<Buffer::const_iterator, Buffer::const_iterator>	body;
+		};
 
 		CGIScriptHandler();
 		~CGIScriptHandler();
@@ -28,10 +37,12 @@ namespace HTTP
 		void	addMetaVar(const string& var, const string& value);
 		void	addArg(const string& arg);
 
-		void						start(const std::string& interpreter, const std::string& script_path, Method m);
-		const Buffer&				read();
-		size_t						write(const Buffer& buff, Buffer::const_iterator begin);
+		void				start(const std::string& interpreter, const std::string& script_path, Method m);
 
+		void				readOutput();
+		size_t				write(const Buffer& buff, Buffer::const_iterator begin);
+
+		const CGIScriptInfo&	getScriptInfo() {return (m_script_info);}
 		void						closeWriteEnd();
 
 		void	setScriptPath(const string& path);
@@ -41,7 +52,7 @@ namespace HTTP
 		CGIScriptHandler(const CGIScriptHandler& other);
 		CGIScriptHandler operator=(const CGIScriptHandler& rhs);
 
-	std::vector<char>	_buildMetaVar(const string& var, const std::string& value);
+		std::vector<char>	_buildMetaVar(const string& var, const std::string& value);
 
 		pid_t			m_cgi_pid;
 
@@ -49,14 +60,12 @@ namespace HTTP
 		std::vector<char *>				m_cenv;
 
 		struct pollfd		m_fds[2];
-		int				m_write_fd;
-		int				m_read_fd;
+		int					m_write_fd;
+		int					m_read_fd;
 
 		Buffer				m_read_buffer;
-		Buffer				m_cgi_script_output;
-
-		vector<char>		m_post_data;
-		size_t				m_post_data_sent;
+		CGIScriptInfo		m_script_info;
+		HeaderFieldParser	m_header_parser;
 	};
 }
 

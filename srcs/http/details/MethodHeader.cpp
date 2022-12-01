@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 19:49:55 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 13:20:10 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,14 @@ namespace HTTP
 			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
 			header.addField(Field::ContentLength(), Utils::integralToString(m_page_to_send.size()));
 			header.addField(Field::ContentType(), MIME::TextHtml());
+		}
+		else if (m_request_type == CGI)
+		{
+			const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
+
+			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+			header.addField(Field::ContentLength(), Utils::integralToString(script_info.content_length));
+			header.insert(script_info.header_field.begin(), script_info.header_field.end());
 		}
 	}
 

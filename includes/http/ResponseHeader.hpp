@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/27 14:20:16 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:43:47 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 13:18:55 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,13 @@ namespace HTTP
 			void			addField(const Field& field, const std::string& value = "");
 			void			removeField(const Field& field);
 			void			modifyField(const Field& field, const std::string& value);
+
+			template <typename InputIterator>
+				void			insert(InputIterator begin, InputIterator end)
+				{
+					m_header_field.insert(begin, end);
+					m_build_cache = true;
+				}
 
 			std::string&		searchField(const Field& field);
 			const std::string&	searchField(const Field& field) const;

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 19:50:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 13:21:54 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,13 @@ namespace HTTP
 				break;
 
 			case CGI:
+			{
+				const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
+
+				m_data.first = script_info.body.first.base();
+				m_data.second = script_info.content_length;
+				m_state = DONE;
+			}
 				break;
 			default:
 				;

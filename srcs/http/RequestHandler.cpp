@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 02:00:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 12:55:34 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,15 +111,15 @@ namespace HTTP
 
 					if (cgi_interp != m_route->m_cgi_extensions.end())
 					{
-						m_cgi_interpr = cgi_interp->second;
+						m_cgi_interpr = "/usr/local/bin/php-cgi";
 
-						m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
+						/*m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
 						m_cgi_handler.addMetaVar("SCRIPT_NAME", m_res_info.path);
 						m_cgi_handler.addMetaVar("SERVER_NAME", m_header_info.header_field.at(Field::Host()));
 						m_cgi_handler.addMetaVar("SERVER_PROTOCOL", "HTTP/1.1");
 						m_cgi_handler.addMetaVar("REQUEST_METHOD", HTTP::MethodTable[m_header_info.method]);
 						m_cgi_handler.addMetaVar("PATH_INFO", m_res_info.path);
-						m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);
+						m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);*/
 
 						m_request_type = CGI;
 					}
@@ -129,7 +129,10 @@ namespace HTTP
 					(this->*m_method_init_fnct[m_header_info.method])();
 
 					if (m_request_type == CGI)
+					{
 						m_cgi_handler.start(m_cgi_interpr, m_res_info.path, m_header_info.method);
+						m_cgi_handler.readOutput();
+					}
 
 					_setState(FETCHING_REQUEST_BODY);
 				}

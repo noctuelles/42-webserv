@@ -40,7 +40,8 @@ namespace HTTP
 		m_write_fd(),
 		m_read_fd(),
 		m_read_buffer(BufferSize),
-		m_post_data_sent(0)
+		m_script_info(),
+		m_header_parser()
 	{
 		m_env.reserve(12);
 		m_cenv.reserve(12);
@@ -63,8 +64,8 @@ namespace HTTP
 	void	CGIScriptHandler::start(const std::string& interpreter, const std::string& script_path, Method m)
 	{
 		char* const argv[3] = {
-			const_cast<char *>(interpreter.c_str()),
-			const_cast<char *>(script_path.c_str()),
+			"/usr/local/bin/php-cgi",
+			"www/demo_website/info.php",
 			NULL
 		};
 
@@ -121,13 +122,26 @@ namespace HTTP
 
 			m_write_fd = input_pipe[WRITE_END];
 			m_read_fd = output_pipe[READ_END];
+			m_fds[1].fd = m_write_fd;
+			m_fds[0].fd = m_read_fd;
 		}
 	}
 
 #undef READ_END
 #undef WRITE_END
 
-	const Buffer&	CGIScriptHandler::read()
+	void	pullInfo(short revents)
+	{
+		if (revents & POLLIN)
+			std::cerr << "POLLIN ";
+		if (revents & POLLHUP)
+			std::cerr << "POLLHUP ";
+		if (revents & POLLERR)
+			std::cerr << "POLLERR ";
+		std::cerr << '\n';
+	}
+
+	void	CGIScriptHandler::readOutput()
 	{
 		int	nfds;
 		ssize_t r;
@@ -151,18 +165,27 @@ namespace HTTP
 					if (r == 0)
 					{
 						::kill(m_cgi_pid, SIGTERM);
+						break ;
 					}
 					else if (r < 0)
 						;
 					else
 					{
 						m_read_buffer.resize(r);
-						m_cgi_script_output.insert(m_cgi_script_output.end(), m_read_buffer.begin(), m_read_buffer.end());
+						m_script_info.output_buffer.insert(m_script_info.output_buffer.end(), m_read_buffer.begin(), m_read_buffer.end());
 					}
+				}
+				else if (m_fds[0].revents & POLLHUP)
+				{
+					::close(m_read_fd);
+					break ;
 				}
 			}
 		}
-		return (m_cgi_script_output);
+		m_script_info.body.first = m_header_parser(m_script_info.output_buffer, m_script_info.output_buffer.begin());
+		m_script_info.body.second = m_script_info.output_buffer.end();
+		m_script_info.header_field = m_header_parser.get();
+		m_script_info.content_length = std::distance(m_script_info.body.first, m_script_info.body.second);
 	}
 
 	size_t	CGIScriptHandler::write(const Buffer& buff, Buffer::const_iterator begin)
