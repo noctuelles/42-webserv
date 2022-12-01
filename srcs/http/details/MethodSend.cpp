@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 18:33:17 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 21:56:41 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ namespace HTTP
 				break;
 
 			case AUTOINDEX:
-				m_data.first = m_page_to_send.data();
-				m_data.second = m_page_to_send.size();
+				m_data.first = m_autoindex_page.data();
+				m_data.second = m_autoindex_page.size();
 				m_state = DONE;
 				break;
 

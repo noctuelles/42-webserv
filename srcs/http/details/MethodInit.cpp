@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 15:33:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 22:00:53 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ namespace HTTP
 				else // autoindex
 				{
 					m_request_type = AUTOINDEX;
-					m_page_to_send = AutoIndex::generatePage(m_virtserv->m_routes_vec, *m_route, m_header_info.uri.absolute_path, m_res_info.path, m_header_info.uri.query);
+					m_autoindex_page = AutoIndex::generatePage(m_virtserv->m_routes_vec, *m_route, m_header_info.uri.absolute_path, m_res_info.path, m_header_info.uri.query);
 					return ;
 				}
 			}
@@ -104,7 +104,7 @@ namespace HTTP
 			// Check if we can upload in this route.
 			mode_t	file_mode = IO::getFileMode(m_route->m_upload_store.c_str());
 
-			if (!((file_mode & S_IFMT) & S_IFDIR && file_mode & S_IWUSR))
+			if (!((file_mode & S_IFMT) & S_IFDIR && file_mode & S_IWUSR) || *m_route->m_upload_store.rbegin() != '/')
 				throw (Exception(Forbidden));
 
 			ContentInfo										ctype = FieldParser()(content_type->second);

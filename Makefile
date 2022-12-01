@@ -9,7 +9,7 @@ DEBUG			= -DDEBUG
 
 ## Our beloved address sanitizer
 ## Just comment out this line to deactivate
-ASAN_FLAG		=  -fsanitize=address
+ASAN_FLAG		=  # -fsanitize=address
 
 MAKEFLAGS		+= --no-builtin-rules
 

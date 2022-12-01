@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 18:04:16 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 21:57:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ namespace HTTP
 		else if (m_request_type == AUTOINDEX)
 		{
 			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
-			header.addField(Field::ContentLength(), Utils::integralToString(m_page_to_send.size()));
+			header.addField(Field::ContentLength(), Utils::integralToString(m_autoindex_page.size()));
 			header.addField(Field::ContentType(), MIME::TextHtml());
 		}
 		else if (m_request_type == CGI)

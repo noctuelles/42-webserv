@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 15:23:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 21:51:05 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,7 +181,7 @@ namespace HTTP
 
 			vector<uint8_t>				m_data_buff;
 			DataInfo					m_data;
-			string						m_page_to_send;
+			string						m_page_to_send, m_autoindex_page;
 
 			ifstream					m_file_handle;
 			HeaderParser				m_header_parser;

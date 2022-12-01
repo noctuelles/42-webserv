@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 18:33:39 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 21:51:32 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ namespace HTTP
 		m_data_buff(IO::ConnectionSocket::MaxSendBufferSize),
 		m_data(),
 		m_page_to_send(),
+		m_autoindex_page(),
 		m_file_handle(),
 		m_header_parser(),
 		m_header_info(),

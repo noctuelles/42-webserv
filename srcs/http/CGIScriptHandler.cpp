@@ -39,8 +39,8 @@ namespace HTTP
 		m_env(),
 		m_cenv(),
 		m_fds(),
-		m_write_fd(),
-		m_read_fd(),
+		m_write_fd(-1),
+		m_read_fd(-1),
 		m_read_buffer(BufferSize),
 		m_script_info(),
 		m_header_parser(),
@@ -49,8 +49,8 @@ namespace HTTP
 	{
 		m_cenv.reserve(15);
 
-		m_fds[1].fd = m_write_fd = -1;
-		m_fds[0].fd = m_read_fd = -1;
+		m_fds[1].fd = m_write_fd;
+		m_fds[0].fd = m_read_fd;
 		m_fds[1].events = POLLOUT;
 		m_fds[0].events = POLLIN;
 	}
@@ -64,14 +64,21 @@ namespace HTTP
 #define READ_END 0
 #define WRITE_END 1
 
+	static void	closePair(int fds[2])
+	{
+		close(fds[0]);
+		close(fds[1]);
+	}
+
 	void	CGIScriptHandler::start(const std::string& interpreter, const std::string& script_path, Method m)
 	{
-		//NOTE: const_cast is safe here; kernel will never attempt to modify argv.
+		//NOTE: const_cast is safe here; the kernel will never attempt to modify argv.
 		char* const	argv[3] = {
 			const_cast<char*>(interpreter.c_str()),
 			const_cast<char*>(script_path.c_str()),
 			NULL
 		};
+
 		int			input_pipe[2]		= {-1, -1};
 		int			output_pipe[2]		= {-1, -1};
 
@@ -84,14 +91,16 @@ namespace HTTP
 		}
 		if (::pipe(output_pipe) < 0)
 		{
-			close(input_pipe[READ_END]);
-			close(input_pipe[WRITE_END]);
+			closePair(input_pipe);
 			throw (RequestHandler::Exception(InternalServerError));
 		}
 
 		m_cgi_pid = ::fork();
 		if (m_cgi_pid < 0)
+		{
+			closePair(input_pipe); closePair(output_pipe);
 			throw (RequestHandler::Exception(InternalServerError));
+		}
 		else if (m_cgi_pid == 0) // Child reads input pipe and write ouptut pipe
 		{
 			try
@@ -100,15 +109,24 @@ namespace HTTP
 				{ 
 					close(input_pipe[WRITE_END]);
 					if (::dup2(input_pipe[READ_END], STDIN_FILENO) < 0)
+					{
+						close(input_pipe[READ_END]); closePair(output_pipe);
 						throw std::runtime_error("dup2");
+					}
 					close(input_pipe[READ_END]);
 				}
 				{
 					close(output_pipe[READ_END]);
 					if (dup2(output_pipe[WRITE_END], STDOUT_FILENO) < 0)
+					{
+						close(output_pipe[WRITE_END]); closePair(input_pipe);
 						throw std::runtime_error("dup2");
+					}
 					if (dup2(output_pipe[WRITE_END], STDERR_FILENO) < 0)
+					{
+						close(output_pipe[WRITE_END]); closePair(input_pipe);
 						throw std::runtime_error("dup2");
+					}
 					close(output_pipe[WRITE_END]);
 				}
 
@@ -124,8 +142,7 @@ namespace HTTP
 			{
 				Log().get(FATAL) << "Failed to set up CGI in forked process: "
 									<< e.what() << ": "
-									<< strerror(errno)
-									<< "\nExiting forked process...\n";
+									<< strerror(errno) << ". Exiting...\n";
 				::exit(42);
 			}
 		}
@@ -138,7 +155,7 @@ namespace HTTP
 			::close(output_pipe[WRITE_END]); // Parent does not write to output pipe
 
 			m_write_fd = m_fds[1].fd = input_pipe[WRITE_END];
-			m_read_fd = m_fds[0].fd = output_pipe[READ_END];
+			m_read_fd  = m_fds[0].fd = output_pipe[READ_END];
 		}
 	}
 
@@ -227,13 +244,6 @@ namespace HTTP
 		m_wrote = 0;
 	}
 
-	std::ostringstream&	CGIScriptHandler::log(LogLevel lvl) const
-	{
-		std::ostringstream&	os = ::Log().get(lvl);
-		os << "Child [" << m_cgi_pid << "] ";
-		return (os);
-	}
-
 	std::vector<char>	CGIScriptHandler::_buildMetaVar(const string& var, const std::string& value)
 	{
 		std::vector<char>	cvar(var.begin(), var.end());
@@ -246,7 +256,9 @@ namespace HTTP
 
 	CGIScriptHandler::~CGIScriptHandler()
 	{
-		::close(m_write_fd);
-		::close(m_read_fd);
+		if (m_write_fd != -1)
+			::close(m_write_fd);
+		if (m_read_fd != -1)
+			::close(m_read_fd);
 	}
 }

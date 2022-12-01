@@ -6,6 +6,7 @@ server
 
 	location /
 	{
+		autoindex		 on;
 		root			www/demo_website/;
 		allowed_methods	GET;
 	}
@@ -21,9 +22,9 @@ server
 
 	location /upload
 	{
-		root			www/post/;
-		upload_store	uploaded_files/;
+		root			www/upload/;
+		upload_store	www/demo_website/;
 
-		allowed_methods	GET	POST;
+		allowed_methods	GET POST DELETE;
 	}
 }
