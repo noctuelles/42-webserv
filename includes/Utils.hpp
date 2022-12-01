@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:10:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 16:30:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 16:09:08 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ namespace Utils
 	FdPair	pipe();
 	std::vector<char>	getCStr(const std::string& str);
 	std::string			getFileExtension(const std::string& str);
+	std::string			basename(const std::string& str);
 
 	const VirtServ::RouteOptions&	findRoute(const std::string& uri, const VirtServ& virtserv);
 

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 13:21:54 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 18:05:30 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,11 +57,28 @@ namespace HTTP
 
 	void	RequestHandler::_methodSendPost()
 	{
+		switch (m_request_type)
+		{
+			case FILE_UPLOAD:
+				m_data.first = m_upload_page.data();
+				m_data.second = m_upload_page.size();
+				m_state = DONE;
+				break;
+			case CGI:
+			{
+				const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
+
+				m_data.first = script_info.body.first.base();
+				m_data.second = script_info.content_length;
+				m_state = DONE;
+			}
+				break;
+			default:
+				;
+		}
 		if (m_request_type == FILE_UPLOAD)
 		{
-			m_data.first = m_upload_page.data();
-			m_data.second = m_upload_page.size();
-			m_state = DONE;
+
 		}
 	}
 

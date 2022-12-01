@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 12:55:34 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 18:03:40 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "WebServ.hpp"
 #include "FieldParser.hpp"
 #include "Log.hpp"
+#include <arpa/inet.h>
 #include <ios>
 #include <utility>
 #include <vector>
@@ -69,7 +70,7 @@ namespace HTTP
 		m_virtserv_map(virt_serv_map),
 		m_virtserv(NULL),
 		m_route(NULL),
-		m_bounded_sock(),
+		m_conn_info(),
 		m_data_buff(IO::ConnectionSocket::MaxSendBufferSize),
 		m_data(),
 		m_page_to_send(),
@@ -103,23 +104,28 @@ namespace HTTP
 					_parseGeneralHeaderFields();
 
 					m_res_info.path = m_header_info.uri.absolute_path;
-					m_res_info.extension = Utils::getFileExtension(m_res_info.path);
 					m_res_info.path.erase(0, m_route->m_location_match.length());
 					m_res_info.path.insert(0, m_route->m_root);
+					m_res_info.extension = Utils::getFileExtension(m_res_info.path);
 
 					map<string, string>::const_iterator	cgi_interp = m_route->m_cgi_extensions.find(m_res_info.extension);
 
 					if (cgi_interp != m_route->m_cgi_extensions.end())
 					{
-						m_cgi_interpr = "/usr/local/bin/php-cgi";
+						m_cgi_interpr = cgi_interp->second;
 
-						/*m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
+						m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
+						m_cgi_handler.addMetaVar("REMOTE_HOST", "");
+						m_cgi_handler.addMetaVar("REMOTE_ADDR", m_conn_info.peer_ipv4);
 						m_cgi_handler.addMetaVar("SCRIPT_NAME", m_res_info.path);
+						m_cgi_handler.addMetaVar("SCRIPT_FILENAME", m_res_info.path);
 						m_cgi_handler.addMetaVar("SERVER_NAME", m_header_info.header_field.at(Field::Host()));
+						m_cgi_handler.addMetaVar("SERVER_PORT", m_conn_info.server_port);
+						m_cgi_handler.addMetaVar("REDIRECT_STATUS", "200");
 						m_cgi_handler.addMetaVar("SERVER_PROTOCOL", "HTTP/1.1");
+						m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);
 						m_cgi_handler.addMetaVar("REQUEST_METHOD", HTTP::MethodTable[m_header_info.method]);
 						m_cgi_handler.addMetaVar("PATH_INFO", m_res_info.path);
-						m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);*/
 
 						m_request_type = CGI;
 					}
@@ -131,7 +137,11 @@ namespace HTTP
 					if (m_request_type == CGI)
 					{
 						m_cgi_handler.start(m_cgi_interpr, m_res_info.path, m_header_info.method);
-						m_cgi_handler.readOutput();
+						// for POST request, we need to send the body first ! For GET request, we can read the CGI script output directly.
+						if (m_header_info.method == Get)
+							m_cgi_handler.readOutput();
+						else
+							m_cgi_handler.initWriting(m_content_len);
 					}
 
 					_setState(FETCHING_REQUEST_BODY);
@@ -148,14 +158,17 @@ namespace HTTP
 						if (m_multipart_handler->getState() == MultiPartHandler::ST_DONE)
 						{
 							delete (m_multipart_handler);
+							m_multipart_handler = NULL;
 							_setState(PROCESSING_RESPONSE_HEADER);
 						}
 					}
 					else if (m_request_type == CGI)
 					{
-						// Here we pass the data of the client to the CGI script.
-						// m_cgi_handler.write(buff, iterator...)
-						//
+						if (m_cgi_handler.write(buff, it) == true)
+						{
+							m_cgi_handler.readOutput();
+							_setState(PROCESSING_RESPONSE_HEADER);
+						}
 					}
 				}
 				else
@@ -211,6 +224,11 @@ namespace HTTP
 			respHeader.addField(Field::Server(), WebServ::Version);
 			respHeader.addField(Field::Connection(), "closed");
 
+			if (m_request_type == CGI)
+			{
+
+			}
+
 			(this->*m_method_header_fnct[m_header_info.method])(respHeader);
 
 			m_page_to_send.assign(respHeader.toString());
@@ -225,9 +243,16 @@ namespace HTTP
 		return (m_state);
 	}
 
-	void	RequestHandler::setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock)
+	void			RequestHandler::setConnBoundedSock(const struct sockaddr_in& bounded_sock)
 	{
-		m_bounded_sock = bounded_sock;
+		m_conn_info.bounded_sock = bounded_sock;
+		m_conn_info.server_port = Utils::integralToString(::ntohs(m_conn_info.bounded_sock.sin_port));
+	}
+
+	void			RequestHandler::setConnPeerSock(const struct sockaddr_in& peer_sock)
+	{
+		m_conn_info.peer_sock = peer_sock;
+		m_conn_info.peer_ipv4 = ::inet_ntoa(peer_sock.sin_addr);
 	}
 
 	DataInfo	RequestHandler::getDataToSend() const
@@ -260,13 +285,13 @@ namespace HTTP
 
 	const vector<VirtServ*>&	RequestHandler::_getBoundedVirtServ()
 	{
-		VirtServInfo::VirtServMap::const_iterator	it = m_virtserv_map.find(m_bounded_sock);
+		VirtServInfo::VirtServMap::const_iterator	it = m_virtserv_map.find(m_conn_info.bounded_sock);
 
 		if (it != m_virtserv_map.end())
 			return (it->second);
 		else
 		{
-			sockaddr_in	tmp_sock = m_bounded_sock;
+			sockaddr_in	tmp_sock = m_conn_info.bounded_sock;
 
 			tmp_sock.sin_addr.s_addr = INADDR_ANY;
 			return (m_virtserv_map.at(tmp_sock));

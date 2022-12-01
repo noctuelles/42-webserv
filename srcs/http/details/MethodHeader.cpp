@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 13:20:10 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 18:04:16 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,18 @@ namespace HTTP
 		else if (m_request_type == CGI)
 		{
 			const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
+			const HeaderFieldMap::const_iterator	status_field = script_info.header_field.find(Field::Status());
 
-			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
-			header.addField(Field::ContentLength(), Utils::integralToString(script_info.content_length));
 			header.insert(script_info.header_field.begin(), script_info.header_field.end());
+			if (status_field != script_info.header_field.end())
+			{
+				header.setReasonPhrase(status_field->second);
+				header.removeField(Field::Status());
+			}
+			else
+				header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+
+			header.addField(Field::ContentLength(), Utils::integralToString(script_info.content_length));
 		}
 	}
 
@@ -63,7 +71,20 @@ namespace HTTP
 		}
 		else if (m_request_type == CGI)
 		{
-			
+			// Same as GET, for flexibility.
+			const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
+			const HeaderFieldMap::const_iterator	status_field = script_info.header_field.find(Field::Status());
+
+			header.insert(script_info.header_field.begin(), script_info.header_field.end());
+			if (status_field != script_info.header_field.end())
+			{
+				header.setReasonPhrase(status_field->second);
+				header.removeField(Field::Status());
+			}
+			else
+				header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+
+			header.addField(Field::ContentLength(), Utils::integralToString(script_info.content_length));
 		}
 	}
 

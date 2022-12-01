@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 01:54:48 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 15:23:26 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,13 +84,22 @@ namespace HTTP
 				std::string	extension;
 			};
 
+			struct ConnInfo
+			{
+				struct sockaddr_in	bounded_sock;
+				struct sockaddr_in	peer_sock;
+				std::string	peer_ipv4;
+				std::string	server_port;
+			};
+
 			RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
 			~RequestHandler();
 
 			State		fetchIncomingData(const Buffer& buff);
 			State		prepareOutcomingData();
 
-			void			setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
+			void			setConnBoundedSock(const struct sockaddr_in& bounded_sock);
+			void			setConnPeerSock(const struct sockaddr_in& peer_sock);
 
 			DataInfo		getDataToSend() const;
 			StatusCode		getStatusCode() const;
@@ -168,7 +177,7 @@ namespace HTTP
 			const VirtServInfo::VirtServMap&	m_virtserv_map;
 			const VirtServ*						m_virtserv;
 			const VirtServ::RouteOptions*		m_route;
-			struct sockaddr_in					m_bounded_sock;
+			ConnInfo							m_conn_info;
 
 			vector<uint8_t>				m_data_buff;
 			DataInfo					m_data;

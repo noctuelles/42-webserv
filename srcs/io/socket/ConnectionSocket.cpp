@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 13:35:24 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 15:24:23 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,8 @@ namespace IO
 			throw (std::runtime_error("::getsockname"));
 		if (getpeername(fd, reinterpret_cast<struct sockaddr*>(&m_peer_sockaddr), &m_len) < 0)
 			throw (std::runtime_error("::getpeername"));
-		m_request_handler.setConnectionBoundedSocket(m_sockaddr);
+		m_request_handler.setConnPeerSock(m_peer_sockaddr);
+		m_request_handler.setConnBoundedSock(m_sockaddr);
 	}
 
 	const struct sockaddr_in&	ConnectionSocket::getPeerSock() const

@@ -6,6 +6,7 @@
 #include "RequestHandler.hpp"
 #include "Utils.hpp"
 #include "Log.hpp"
+#include "StatusInfoPages.hpp"
 
 #include <cassert>
 #include <csignal>
@@ -17,6 +18,7 @@
 #include <iostream>
 #include <iterator>
 #include <ostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <sys/poll.h>
@@ -41,10 +43,11 @@ namespace HTTP
 		m_read_fd(),
 		m_read_buffer(BufferSize),
 		m_script_info(),
-		m_header_parser()
+		m_header_parser(),
+		m_body_len(),
+		m_wrote()
 	{
-		m_env.reserve(12);
-		m_cenv.reserve(12);
+		m_cenv.reserve(15);
 
 		m_fds[1].fd = m_write_fd = -1;
 		m_fds[0].fd = m_read_fd = -1;
@@ -63,121 +66,123 @@ namespace HTTP
 
 	void	CGIScriptHandler::start(const std::string& interpreter, const std::string& script_path, Method m)
 	{
-		char* const argv[3] = {
-			"/usr/local/bin/php-cgi",
-			"www/demo_website/info.php",
+		//NOTE: const_cast is safe here; kernel will never attempt to modify argv.
+		char* const	argv[3] = {
+			const_cast<char*>(interpreter.c_str()),
+			const_cast<char*>(script_path.c_str()),
 			NULL
 		};
+		int			input_pipe[2]		= {-1, -1};
+		int			output_pipe[2]		= {-1, -1};
 
-		// NULL terminate env
 		m_cenv.push_back(NULL);
 
-		int input_pipe[2] = {-1, -1};
-		int	output_pipe[2] = {-1, -1};
-
-		if (m == HTTP::Post)
+		if (m == Post)
+		{
 			if (::pipe(input_pipe) < 0)
-				throw std::runtime_error("pipe");
+				throw (RequestHandler::Exception(InternalServerError));
+		}
 		if (::pipe(output_pipe) < 0)
-			throw std::runtime_error("pipe");
+		{
+			close(input_pipe[READ_END]);
+			close(input_pipe[WRITE_END]);
+			throw (RequestHandler::Exception(InternalServerError));
+		}
 
 		m_cgi_pid = ::fork();
 		if (m_cgi_pid < 0)
-			throw std::runtime_error("fork");
+			throw (RequestHandler::Exception(InternalServerError));
 		else if (m_cgi_pid == 0) // Child reads input pipe and write ouptut pipe
 		{
-			try {
+			try
+			{
 				if (m == HTTP::Post)
 				{ 
-					// Child does write to input pipe
-					::close(input_pipe[WRITE_END]);
-					// input pipe read end must become stdin
+					close(input_pipe[WRITE_END]);
 					if (::dup2(input_pipe[READ_END], STDIN_FILENO) < 0)
 						throw std::runtime_error("dup2");
-					::close(input_pipe[READ_END]);
+					close(input_pipe[READ_END]);
+				}
+				{
+					close(output_pipe[READ_END]);
+					if (dup2(output_pipe[WRITE_END], STDOUT_FILENO) < 0)
+						throw std::runtime_error("dup2");
+					if (dup2(output_pipe[WRITE_END], STDERR_FILENO) < 0)
+						throw std::runtime_error("dup2");
+					close(output_pipe[WRITE_END]);
 				}
 
-				 // Child does not read from output pipe
-				::close(output_pipe[READ_END]);
-				// output pipe write end must become stdout
-				if (::dup2(output_pipe[WRITE_END], STDOUT_FILENO) < 0)
-					throw std::runtime_error("dup2");
-				::close(output_pipe[WRITE_END]);
-				::execve(interpreter.c_str(), argv, m_cenv.data());
-				throw std::runtime_error("execve");
+				execve(interpreter.c_str(), argv, m_cenv.data());
+
+				std::cout << "Status: " << StatusInfoPages::get()[InternalServerError].phrase << "\r\n"
+					<< "Content-Type: text/html\r\n\r\n"
+					<< StatusInfoPages::get()[InternalServerError].page;
+
+				::exit(42);
 			}
 			catch (std::exception& e)
 			{
-				Log().get(WARNING) << "Failed to set up CGI in forked process: "
+				Log().get(FATAL) << "Failed to set up CGI in forked process: "
 									<< e.what() << ": "
 									<< strerror(errno)
 									<< "\nExiting forked process...\n";
 				::exit(42);
 			}
 		}
-		else // Parent writes to input pipe and reads from output pipe
+		else
 		{
+			Log().get(INFO) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
+				<< " launched.\n";
+
 			::close(input_pipe[READ_END]); // Parent does not read from input pipe
 			::close(output_pipe[WRITE_END]); // Parent does not write to output pipe
 
-			m_write_fd = input_pipe[WRITE_END];
-			m_read_fd = output_pipe[READ_END];
-			m_fds[1].fd = m_write_fd;
-			m_fds[0].fd = m_read_fd;
+			m_write_fd = m_fds[1].fd = input_pipe[WRITE_END];
+			m_read_fd = m_fds[0].fd = output_pipe[READ_END];
 		}
 	}
 
 #undef READ_END
 #undef WRITE_END
 
-	void	pullInfo(short revents)
-	{
-		if (revents & POLLIN)
-			std::cerr << "POLLIN ";
-		if (revents & POLLHUP)
-			std::cerr << "POLLHUP ";
-		if (revents & POLLERR)
-			std::cerr << "POLLERR ";
-		std::cerr << '\n';
-	}
-
 	void	CGIScriptHandler::readOutput()
 	{
 		int	nfds;
 		ssize_t r;
 
-		// while loop is here to send all data before making non blocking reads on the ouptut
-		while (1)
+		while (1) // Read the whole CGI Output at once; we except EOF.
 		{
-			nfds = ::poll(m_fds, 2, -1);
-			if (nfds == 0) // timed out
+			nfds = ::poll(m_fds, 2, Timeout);
+			if (nfds == 0)
 			{
 				kill(m_cgi_pid, SIGTERM);
-				throw RequestHandler::Exception(InternalServerError);
+				Log().get(WARNING) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
+					<< " took too long to send data.\n";
+				throw RequestHandler::Exception(RequestTimeout);
 			}
-			if (m_fds[0].revents) // Must before POLLHUP 
+			if (m_fds[0].revents)
 			{
 				if (m_fds[0].revents & POLLIN)
 				{
-					// poll guarantees r > -1 because pipe has only one consumer
 					m_read_buffer.resize(BufferSize);
-					r = ::read(m_read_fd, m_read_buffer.data(), m_read_buffer.size()); 
-					if (r == 0)
-					{
-						::kill(m_cgi_pid, SIGTERM);
-						break ;
-					}
-					else if (r < 0)
-						;
-					else
-					{
-						m_read_buffer.resize(r);
-						m_script_info.output_buffer.insert(m_script_info.output_buffer.end(), m_read_buffer.begin(), m_read_buffer.end());
-					}
+					r = read(m_read_fd, m_read_buffer.data(), m_read_buffer.size()); 
+					m_read_buffer.resize(r);
+					m_script_info.output_buffer.insert(m_script_info.output_buffer.end(), m_read_buffer.begin(), m_read_buffer.end());
 				}
 				else if (m_fds[0].revents & POLLHUP)
 				{
-					::close(m_read_fd);
+					int	wstatus;
+
+					waitpid(m_cgi_pid, &wstatus, WNOHANG);
+					if (!WIFEXITED(wstatus))
+					{
+						kill(m_cgi_pid, SIGTERM);
+						Log().get(WARNING) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
+							<< " finished sending data but didn't end.\n";
+					}
+					else
+						Log().get(INFO) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
+							<< " successfully exited with return code " << Color::Modifier(1, Color::FG_YELLOW) << WEXITSTATUS(wstatus) << Color::Modifier::rst() << ".\n";
 					break ;
 				}
 			}
@@ -188,29 +193,45 @@ namespace HTTP
 		m_script_info.content_length = std::distance(m_script_info.body.first, m_script_info.body.second);
 	}
 
-	size_t	CGIScriptHandler::write(const Buffer& buff, Buffer::const_iterator begin)
+	bool	CGIScriptHandler::write(const Buffer& buff, Buffer::const_iterator begin)
 	{
-		int		nfds;
-		ssize_t	bytes_wrote = 0;
+		int																nfds;
 		std::iterator_traits<Buffer::const_iterator>::difference_type	to_write = std::distance(begin, buff.end());
 
 		if (to_write == 0)
 			return (0);
 		nfds = ::poll(m_fds, 2, -1);
-		if (nfds == 0) // timed out
+		if (nfds == 0) 
 		{
 			kill(m_cgi_pid, SIGTERM);
+			Log().get(WARNING) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
+					<< " took too long to accept data.\n";
 			throw RequestHandler::Exception(InternalServerError);
 		}
-		if (m_fds[1].revents) // Must before POLLHUP 
+		if (m_fds[1].revents)
 		{
 			if (m_fds[1].revents & POLLOUT)
-			{
-				bytes_wrote = ::write(m_write_fd, reinterpret_cast<const void*>(begin.base()), to_write);
-			}
+				m_wrote += ::write(m_write_fd, reinterpret_cast<const void*>(begin.base()), to_write);
 		}
+		if (m_wrote == m_body_len)
+		{
+			close(m_write_fd);
+			m_write_fd = m_fds[1].fd = -1;
+		}
+		return (m_wrote == m_body_len);
+	}
 
-		return (bytes_wrote);
+	void	CGIScriptHandler::initWriting(size_t content_length)
+	{
+		m_body_len = content_length;
+		m_wrote = 0;
+	}
+
+	std::ostringstream&	CGIScriptHandler::log(LogLevel lvl) const
+	{
+		std::ostringstream&	os = ::Log().get(lvl);
+		os << "Child [" << m_cgi_pid << "] ";
+		return (os);
 	}
 
 	std::vector<char>	CGIScriptHandler::_buildMetaVar(const string& var, const std::string& value)
@@ -225,7 +246,7 @@ namespace HTTP
 
 	CGIScriptHandler::~CGIScriptHandler()
 	{
-		close(m_write_fd);
-		close(m_read_fd);
+		::close(m_write_fd);
+		::close(m_read_fd);
 	}
 }

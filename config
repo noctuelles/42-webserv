@@ -4,27 +4,26 @@ server
 	server_name				localhost:8080;
 	client_max_body_size	999999999;
 
-
-	location / {
-		root		www/demo_website/;
-
-		allowed_methods GET;
-		cgi_setup .php php-cgi;
-		cgi_setup .py python3;
+	location /
+	{
+		root			www/demo_website/;
+		allowed_methods	GET;
 	}
 
-	location /error_pages {
-		root	www/err_pages/;
-		redirect http://www.redirect.com/index;
+	location /cgi-bin
+	{
+		root			www/demo_website/cgi_showcase/;
+		allowed_methods	GET POST;
 
-		allowed_methods GET;
-
+		cgi_setup	.py		/usr/bin/python3;
+		cgi_setup	.php	/usr/bin/php-cgi;
 	}
 
-	location /upload {
-		root	www/post/;
-		upload_store uploaded_files/;
+	location /upload
+	{
+		root			www/post/;
+		upload_store	uploaded_files/;
 
-		allowed_methods GET POST;
+		allowed_methods	GET	POST;
 	}
 }

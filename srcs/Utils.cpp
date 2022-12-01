@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 16:31:46 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 16:10:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,14 @@ namespace Utils
 			return (str);
 		else
 			return (str.substr(dot_pos, str.length()));
+	}
+
+	std::string	basename(const std::string& str)
+	{
+		std::vector<char>	basen(str.begin(), str.end());
+
+		basen.push_back('\0');
+		return (std::string(::basename(basen.data())));
 	}
 
 	const VirtServ::RouteOptions&	findRoute(const std::string& uri, const VirtServ& virtserv)
