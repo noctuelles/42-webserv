@@ -131,5 +131,42 @@ namespace HTTP
 
 	void	RequestHandler::_methodInitDelete()
 	{
+		errno = 0;
+		::unlink(m_res_info.path.c_str());
+		std::cerr << BRED << "DELETE " << RESET << "unlink: " << strerror(errno) << '\n';
+		switch (errno)
+		{
+			case 0:
+				return;
+			case EISDIR:
+				errno = 0;
+				rmdir(m_res_info.path.c_str());
+				std::cerr << BRED << "DELETE " << RESET << "rmdir: " << strerror(errno) << '\n';
+				switch (errno)
+				{
+					case 0:
+						return;
+					case ENOENT:
+					case ENOTDIR:
+					case EFAULT:
+						throw (Exception(NotFound));
+					case EPERM:
+					case EACCES:
+					case EROFS:
+						throw (Exception(Forbidden));
+					default:
+						throw (Exception(InternalServerError));
+				}
+			case ENOENT:
+			case ENOTDIR:
+			case EFAULT:
+				throw (Exception(NotFound));
+			case EPERM:
+			case EACCES:
+			case EROFS:
+				throw (Exception(Forbidden));
+			default:
+				throw (Exception(InternalServerError));
+		}
 	}
 }

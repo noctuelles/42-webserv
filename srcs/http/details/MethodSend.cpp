@@ -84,7 +84,13 @@ namespace HTTP
 
 	void	RequestHandler::_methodSendDelete()
 	{
+		m_page_to_send.assign("Succesfully deleted ");
+		m_page_to_send.append(m_res_info.path);
+		m_page_to_send.append("\n");
 
+		m_data.first = m_page_to_send.data();
+		m_data.second = m_page_to_send.size();
+		m_state = DONE;
 	}
 
 	void	RequestHandler::_methodSendError()

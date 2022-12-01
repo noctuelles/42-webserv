@@ -90,7 +90,7 @@ namespace HTTP
 
 	void	RequestHandler::_methodHeaderDelete(ResponseHeader& header)
 	{
-		(void) header;
+		header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
 	}
 
 	void	RequestHandler::_methodHeaderError(ResponseHeader& header)
