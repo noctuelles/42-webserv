@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 18:05:30 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 18:33:17 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,10 +75,6 @@ namespace HTTP
 				break;
 			default:
 				;
-		}
-		if (m_request_type == FILE_UPLOAD)
-		{
-
 		}
 	}
 

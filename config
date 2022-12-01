@@ -10,10 +10,10 @@ server
 		allowed_methods	GET;
 	}
 
-	location /cgi-bin
+	location /cgi
 	{
-		root			www/demo_website/cgi_showcase/;
-		allowed_methods	GET POST;
+		root			cgi-bin/;
+		allowed_methods	GET	POST;
 
 		cgi_setup	.py		/usr/bin/python3;
 		cgi_setup	.php	/usr/bin/php-cgi;

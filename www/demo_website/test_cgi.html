@@ -1,0 +1,55 @@
+<html>
+	<center><h1>Uploading a file using a CGI Script with POST request</h1></center>
+
+	<center><body>
+	   <form enctype = "multipart/form-data" action = "/cgi/upload.py" method = "post">
+	   <input type = "file" name = "filename" />
+	   <p><input type = "submit" value = "Upload" /></p>
+	   </form>
+		</body></center>
+	<hr>
+
+	<center><h1>Print the PHP info webpage</h1></center>
+
+	<body>
+	   <form action = "/cgi/info.php" method = "GET">
+		   <center><p><input type = "submit" value = "Yes! Show me" /></p></center>
+	   </form>
+	</body>
+	<hr>
+
+	<center><h1>Launch a script that timeout</h1></center>
+	<body>
+	   <form action = "/cgi/timeout_script.py" method = "GET">
+		   <center><p><input type = "submit" value = "Yes! Break me" /></p></center>
+	   </form>
+	</body>
+	<hr>
+
+	<center><h1>Launch a script that is malformed</h1></center>
+	<body>
+	   <form action = "/cgi/bad_py_script.py" method = "GET">
+		   <center><p><input type = "submit" value = "Yes! Break me" /></p></center>
+	   </form>
+	</body>
+	<hr>
+
+	<center><h1>Do you wonder what the date is ? Ask this to PHP</h1></center>
+	<body>
+	   <form action = "/cgi/get_current_date.php" method = "GET">
+		   <center><p><input type = "submit" value = "What time is it PHP ?" /></p></center>
+	   </form>
+	</body>
+	<hr>
+
+	<center><h1>Print CGI Meta Variables</h1></center>
+	<body>
+	   <form action = "/cgi/env_var.py" method = "GET">
+		   <center><p><input type = "submit" value = "Let's see that" /></p></center>
+	   </form>
+	</body>
+	<hr>
+
+	<center><i>plouvel & tpouget</i></center>
+
+</html>

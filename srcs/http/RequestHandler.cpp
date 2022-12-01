@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 18:03:40 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 18:33:39 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -223,11 +223,6 @@ namespace HTTP
 			respHeader.addField(Field::Date(), Utils::getRFC822NowDate());
 			respHeader.addField(Field::Server(), WebServ::Version);
 			respHeader.addField(Field::Connection(), "closed");
-
-			if (m_request_type == CGI)
-			{
-
-			}
 
 			(this->*m_method_header_fnct[m_header_info.method])(respHeader);
 
