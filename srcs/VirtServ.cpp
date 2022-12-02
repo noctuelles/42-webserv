@@ -31,6 +31,10 @@ std::ostream& operator<<(std::ostream& os, const VirtServ::RouteOptions& routein
 	os << routeinfo.m_root;
 	os << '\n';
 
+	os	<< "\t\tredirect:\t" ;
+	os << routeinfo.m_redirect;
+	os << '\n';
+
 	os	<< "\t\tautoindex:\t";
 	os << (bool) routeinfo.m_autoindex;
 	os << '\n';
@@ -61,6 +65,7 @@ std::ostream& operator<<(std::ostream& os, const VirtServ::RouteOptions& routein
 			os << it->first << " --> " << it->second << " | " ;
 	}
 	os << '\n';
+
 
 	os << "\t\t-------------------------\n";
 
@@ -123,6 +128,7 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 		else
 			os << it->first << " --> " << it->second << " | " ;
 	}
+
 	os << '\n';
 
 	os	<< "\tlocation blocks:\n";

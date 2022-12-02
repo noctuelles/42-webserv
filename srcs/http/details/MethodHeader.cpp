@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 11:32:18 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 21:57:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,22 +26,38 @@ namespace HTTP
 
 		if (m_request_type == FILE)
 		{
-			MIME		mime = getMimeFromFileExtension(m_ressource_path.c_str());
-			size_t		fileSize = IO::getFileSize(m_ressource_path.c_str());
+			MIME		mime = getMimeFromFileExtension(m_res_info.path.c_str());
+			size_t		fileSize = IO::getFileSize(m_res_info.path.c_str());
 
 			header.addField(Field::ContentLength(), Utils::integralToString(fileSize));
 			header.addField(Field::ContentType(), mime);
 			if (mime == MIME::ApplicationOctetStream())
 			{
-				header.addField(Field::ContentDisposition(), string("attachment; filename=\"").append(::basename(m_ressource_path.c_str())).append("\""));
+				header.addField(Field::ContentDisposition(), string("attachment; filename=\"").append(::basename(m_res_info.path.c_str())).append("\""));
 				header.addField(Field::ContentTransferEncoding(), "binary");
 			}
 		}
 		else if (m_request_type == AUTOINDEX)
 		{
 			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
-			header.addField(Field::ContentLength(), Utils::integralToString(m_page_to_send.size()));
+			header.addField(Field::ContentLength(), Utils::integralToString(m_autoindex_page.size()));
 			header.addField(Field::ContentType(), MIME::TextHtml());
+		}
+		else if (m_request_type == CGI)
+		{
+			const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
+			const HeaderFieldMap::const_iterator	status_field = script_info.header_field.find(Field::Status());
+
+			header.insert(script_info.header_field.begin(), script_info.header_field.end());
+			if (status_field != script_info.header_field.end())
+			{
+				header.setReasonPhrase(status_field->second);
+				header.removeField(Field::Status());
+			}
+			else
+				header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+
+			header.addField(Field::ContentLength(), Utils::integralToString(script_info.content_length));
 		}
 	}
 
@@ -53,11 +69,28 @@ namespace HTTP
 
 			header.addField(Field::Location(), m_header_info.request_line);
 		}
+		else if (m_request_type == CGI)
+		{
+			// Same as GET, for flexibility.
+			const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
+			const HeaderFieldMap::const_iterator	status_field = script_info.header_field.find(Field::Status());
+
+			header.insert(script_info.header_field.begin(), script_info.header_field.end());
+			if (status_field != script_info.header_field.end())
+			{
+				header.setReasonPhrase(status_field->second);
+				header.removeField(Field::Status());
+			}
+			else
+				header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+
+			header.addField(Field::ContentLength(), Utils::integralToString(script_info.content_length));
+		}
 	}
 
 	void	RequestHandler::_methodHeaderDelete(ResponseHeader& header)
 	{
-		(void) header;
+		header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
 	}
 
 	void	RequestHandler::_methodHeaderError(ResponseHeader& header)
@@ -70,7 +103,9 @@ namespace HTTP
 			header.addField(Field::ContentLength(), Utils::integralToString(StatusInfoPages::get()[m_status_code].page.size()));
 		}
 		else if (m_request_type == REDIRECT_ERROR)
-			header.addField(Field::Location(), m_ressource_path);
+		{
+			header.addField(Field::Location(), m_res_info.path);
+		}
 
 		if (m_status_code == MethodNotAllowed)
 		{

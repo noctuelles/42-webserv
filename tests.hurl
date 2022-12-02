@@ -1,0 +1,19 @@
+DELETE http://localhost:8080/todelete/file1
+DELETE http://localhost:8080/todelete/file2
+DELETE http://localhost:8080/todelete/file3
+DELETE http://localhost:8080/todelete/file4
+DELETE http://localhost:8080/todelete/file5
+DELETE http://localhost:8080/todelete/file6
+DELETE http://localhost:8080/todelete/file7
+DELETE http://localhost:8080/todelete/file8
+DELETE http://localhost:8080/todelete/file9
+
+DELETE http://localhost:8080/todelete/dir1
+DELETE http://localhost:8080/todelete/dir2
+DELETE http://localhost:8080/todelete/dir3
+DELETE http://localhost:8080/todelete/dir4
+DELETE http://localhost:8080/todelete/dir5
+DELETE http://localhost:8080/todelete/dir6
+DELETE http://localhost:8080/todelete/dir7
+DELETE http://localhost:8080/todelete/dir8
+DELETE http://localhost:8080/todelete/dir9

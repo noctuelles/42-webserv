@@ -2,8 +2,9 @@ server
 {
 	listen					0.0.0.0:8080;
 	server_name				localhost:8080;
-	client_max_body_size	1000;
+	client_max_body_size	999999999;
 
+<<<<<<< HEAD
 	error_page 404 /error_pages/404.html;
 	error_page 405 /error_pages/405.html;
 
@@ -13,11 +14,29 @@ server
 		root		www/demo_website/;
 
 		allowed_methods GET;
+=======
+	location /
+	{
+		autoindex		 on;
+		root			www/demo_website/;
+		allowed_methods	GET;
+>>>>>>> CGI_Merge
 	}
 
-	location /error_pages {
-		root	www/err_pages/;
+	location /cgi
+	{
+		root			cgi-bin/;
+		allowed_methods	GET	POST;
 
-		allowed_methods GET;
+		cgi_setup	.py		/usr/bin/python3;
+		cgi_setup	.php	/usr/bin/php-cgi;
+	}
+
+	location /upload
+	{
+		root			www/upload/;
+		upload_store	www/demo_website/;
+
+		allowed_methods	GET POST DELETE;
 	}
 }

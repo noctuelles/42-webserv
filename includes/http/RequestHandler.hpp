@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 11:15:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 21:51:05 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 # include "HeaderParser.hpp"
 # include "ResponseHeader.hpp"
 # include "MultiPartHandler.hpp"
+# include "CGIScriptHandler.hpp"
 # include "SocketTypes.hpp"
 # include "VirtServ.hpp"
 # include "VirtServInfo.hpp"
@@ -77,13 +78,28 @@ namespace HTTP
 					StatusCode m_code;
 			};
 
+			struct RessourceInfo
+			{
+				std::string	path;
+				std::string	extension;
+			};
+
+			struct ConnInfo
+			{
+				struct sockaddr_in	bounded_sock;
+				struct sockaddr_in	peer_sock;
+				std::string	peer_ipv4;
+				std::string	server_port;
+			};
+
 			RequestHandler(const VirtServInfo::VirtServMap& virt_serv_map);
 			~RequestHandler();
 
 			State		fetchIncomingData(const Buffer& buff);
 			State		prepareOutcomingData();
 
-			void			setConnectionBoundedSocket(const struct sockaddr_in& bounded_sock);
+			void			setConnBoundedSock(const struct sockaddr_in& bounded_sock);
+			void			setConnPeerSock(const struct sockaddr_in& peer_sock);
 
 			DataInfo		getDataToSend() const;
 			StatusCode		getStatusCode() const;
@@ -154,27 +170,30 @@ namespace HTTP
 			static const methodInitFnct				m_method_init_fnct[HTTP::NbrAvailableMethod];
 			static const methodHeaderFnct			m_method_header_fnct[HTTP::NbrAvailableMethod + 1];
 			static const methodSendFnct				m_method_send_fnct[HTTP::NbrAvailableMethod + 1];
+			static const std::string				m_upload_page;
 
 			State								m_state;
 			Type								m_request_type;
 			const VirtServInfo::VirtServMap&	m_virtserv_map;
 			const VirtServ*						m_virtserv;
 			const VirtServ::RouteOptions*		m_route;
-			struct sockaddr_in					m_bounded_sock;
+			ConnInfo							m_conn_info;
 
 			vector<uint8_t>				m_data_buff;
-			const void*					m_data_to_send;
-			size_t						m_data_to_send_size;
-			string						m_page_to_send;
+			DataInfo					m_data;
+			string						m_page_to_send, m_autoindex_page;
 
 			ifstream					m_file_handle;
-			ofstream					m_ofile_handle;
 			HeaderParser				m_header_parser;
 			HeaderInfo					m_header_info;
 			MultiPartHandler*			m_multipart_handler;
 
 			StatusCode					m_status_code;
-			string						m_ressource_path;
+			RessourceInfo				m_res_info;
+
+			CGIScriptHandler			m_cgi_handler;
+			std::string					m_cgi_interpr;
+			size_t						m_content_len;
 
 			/* ############################ Private function ############################ */
 

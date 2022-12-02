@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 18:05:51 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 11:04:49 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 15:44:11 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ namespace HTTP
 	typedef std::vector<HeaderField>			HeaderFieldVector;
 
 	typedef std::vector<uint8_t>				Buffer;
+	typedef std::pair<const void*, size_t>		DataInfo;
 
 	/* Supported status code. Vim users, press 'gx' to open links (with the cursor under the link obviously). */
 
@@ -158,6 +159,7 @@ namespace HTTP
 			static inline Field	Allow()						{return Field("Allow");}
 			static inline Field	TransferEncoding()			{return Field("Transfer-Encoding");}
 			static inline Field	Location()					{return Field("Location");}
+			static inline Field	Status()					{return Field("Status");}
 
 			inline const ci_string&	str() const
 			{

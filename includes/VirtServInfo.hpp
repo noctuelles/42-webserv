@@ -111,16 +111,20 @@ class VirtServInfo
 
 	class ConfigFileError : public std::exception
 	{
-	public:
+	  public:
+
 		ConfigFileError(const char *info) throw()
 		{
 			stringstream ss;
-			ss << "Config file error: " << info << '\n';
+			ss << BRED << "Config file error: " << RESET << info << '\n';
 			m_what = ss.str();
 		}
+
 		virtual const char*	what() const throw()			{ return m_what.c_str(); }
+
 		~ConfigFileError() throw() {};
-	private:
+
+	  private:
 		string					m_what;
 	};
 
@@ -170,6 +174,7 @@ class VirtServInfo
 	void _parseLocationAllowedMethods(VirtServInfo::configstream_iterator& it);
 	void _parseLocationCgiSetup(VirtServInfo::configstream_iterator& it); 
 	void _parseLocationUploadStore(VirtServInfo::configstream_iterator& it); 
+	void _parseLocationRedirect(VirtServInfo::configstream_iterator& it); 
 };
 
 #endif /* VIRTSERVINFO_HPP */

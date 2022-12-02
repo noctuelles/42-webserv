@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 22:46:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/01 16:10:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,24 @@ namespace Utils
 
 		cstr.push_back('\0');
 		return (cstr);
+	}
+
+	std::string	getFileExtension(const std::string& str)
+	{
+		std::string::size_type	dot_pos = str.rfind('.');
+
+		if (dot_pos == std::string::npos)
+			return (str);
+		else
+			return (str.substr(dot_pos, str.length()));
+	}
+
+	std::string	basename(const std::string& str)
+	{
+		std::vector<char>	basen(str.begin(), str.end());
+
+		basen.push_back('\0');
+		return (std::string(::basename(basen.data())));
 	}
 
 	const VirtServ::RouteOptions&	findRoute(const std::string& uri, const VirtServ& virtserv)

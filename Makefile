@@ -1,11 +1,15 @@
 ###################
 ##  VARIABLES   ##
 ##################
+
+## Program will look for webserv.conf if not defined
 DEFAULT_CONFIG	= config
+
 DEBUG			= -DDEBUG
 
 ## Our beloved address sanitizer
-ASAN_FLAG		=  -fsanitize=address
+## Just comment out this line to deactivate
+ASAN_FLAG		=  # -fsanitize=address
 
 MAKEFLAGS		+= --no-builtin-rules
 
@@ -41,17 +45,11 @@ DEFINES			= ${DEBUG} -DDEFAULT_CONFIG=\"$(DEFAULT_CONFIG)\"
 CPPFLAGS		+= $(INCLUDE_FLAGS) $(IMACROS_FLAGS) $(DEFINES) -MMD #output .d dependencies rules to be included
 
 ## Compile flags
-CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 -fsanitize=address
-ifdef DEBUG
-CXXFLAGS		+= -Wno-unused
-else
-CXXFLAGS		+= -Werror 
-endif
+CXXFLAGS		= -Wall -Wextra -std=c++98 -g3 ${ASAN_FLAG}
 
 ## Link flags
-LDFLAGS			=	-fsanitize=address
+LDFLAGS			=	${ASAN_FLAG}
 LDLIBS			=
-
 
 RM				= rm -rf
 
@@ -80,6 +78,6 @@ re:						fclean all
 print_name:				
 						@echo "$(NAME)"
 
--include $(OBJS/DEPS)
+-include $(PATH/DEPS)
 
 .PHONY:			all clean fclean re print_name
