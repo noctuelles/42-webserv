@@ -194,16 +194,13 @@ namespace HTTP
 					int	wstatus;
 
 					waitpid(m_cgi_pid, &wstatus, WNOHANG);
-					if (!WIFEXITED(wstatus))
-						Log().get(WARNING) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
-							<< " finished sending data but didn't end.\n";
-					else
+					if (WIFEXITED(wstatus))
 					{
 						Log().get(INFO) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
 							<< " successfully exited with return code " << Color::Modifier(1, Color::FG_YELLOW) << WEXITSTATUS(wstatus) << Color::Modifier::rst() << ".\n";
 						m_cgi_pid = -1;
+						break ;
 					}
-					break ;
 				}
 			}
 		}
