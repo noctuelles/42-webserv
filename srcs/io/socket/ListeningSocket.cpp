@@ -6,13 +6,14 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:38:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 15:47:41 by tpouget          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ListeningSocket.hpp"
 #include "EPoll.hpp"
 #include "WebServ.hpp"
+#include "Log.hpp"
 #include <stdexcept>
 #include <sys/socket.h>
 #include <string.h>
@@ -22,6 +23,7 @@
 #include <iostream>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sstream>
 
 namespace IO
 {
@@ -76,18 +78,21 @@ namespace IO
 		bind(sockaddr);
 	}
 
-	void	ListeningSocket::bind(sockaddr_in sockaddr)
+	void	ListeningSocket::bind(sockaddr_in)
 	{
 		if (::bind(m_fd, (struct sockaddr*) &m_sockaddr, sizeof(m_sockaddr)) < 0)
 		{
 			if (errno != EADDRINUSE)
-				throw (std::runtime_error("bind"));
-#ifdef DEBUG
+			{
+				stringstream ss;
+				ss << "Bad address in after listen directive: ";
+				ss << inet_ntoa(m_sockaddr.sin_addr);
+				throw VirtServInfo::ConfigFileError(ss.str().c_str());
+			}
 			else
-				std::cout << "Warning: Attempt to bind socket "<< m_fd
-					<< " on " << inet_ntoa(m_sockaddr.sin_addr) << ":" << m_sockaddr.sin_port
+				Log().get(WARNING) << "Attempt to bind socket "<< m_fd
+					<< " on " << inet_ntoa(m_sockaddr.sin_addr) << ":" << htons(m_sockaddr.sin_port)
 					<<". host:port already bound to another socket\n";
-#endif
 		}
 	}
 

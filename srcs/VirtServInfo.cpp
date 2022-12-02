@@ -96,13 +96,13 @@ const vector< VirtServInfo::token_dispatch_t > VirtServInfo::m_location_block_di
 	{
 		ifs.open(config);
 		if (not ifs)
-			throw std::runtime_error("Could not open config file passed in paramater");
+			throw ConfigFileError("Could not open config file passed in paramater");
 	}
 	else
 	{
 		ifs.open(DEFAULT_CONFIG);
 		if (not ifs)
-			throw std::runtime_error("Could not open defaut config file: " DEFAULT_CONFIG );
+			throw ConfigFileError("Could not open defaut config file: " DEFAULT_CONFIG );
 	}
 
 	VirtServInfo::configstream_iterator it(ifs);
