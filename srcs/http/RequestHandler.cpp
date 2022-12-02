@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 13:53:20 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 16:23:24 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,7 @@ namespace HTTP
 				if (custom_page != m_virtserv->m_error_page_map.end())
 				{
 					m_request_type = REDIRECT_ERROR;
+					m_status_code = SeeOther;
 					m_res_info.path = custom_page->second;
 				}
 			}

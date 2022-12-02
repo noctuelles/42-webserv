@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:45:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:21:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 16:16:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,7 +187,7 @@ namespace HTTP
 				files.push_front(parent_dir);
 			else
 			{
-				//TODO:...
+				(void) routes;
 			}
 			return (generateHTML(files, req_uri));
 		}
