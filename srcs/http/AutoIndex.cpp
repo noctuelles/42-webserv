@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:45:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 16:16:21 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 16:59:26 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ namespace HTTP
 				<< "		<h1>Index of " << req_uri << "</h1>\n"
 				<< "		<table cellspacing=\"8px\" cellpadding=\"4px\">\n"
 				<< "			<tr>\n"
-				<< "				<th valign=\"top\"><img src=\"/images/down-arrow.png\" alt=\"[ICO]\">\n"
+				<< "				<th valign=\"top\"><img src=\"/img/down-arrow.png\" alt=\"[ICO]\">\n"
 				<< "				<th><a href=\"?byName\">Name</a></th>\n"
 				<< "				<th><a href=\"?byDate\">Last Modified</a></th>\n"
 				<< "				<th><a href=\"?bySize\">Size</a></th>\n"
@@ -99,13 +99,12 @@ namespace HTTP
 			for (std::list<FileInfo>::const_iterator it = files.begin(); it != files.end(); it++)
 			{
 				ss << "			<tr>\n"
-					<<"				<td valign=\"top\"><img src=\"/images/";
+					<<"				<td valign=\"top\"><img src=\"/img/";
 				if (it->is_a_dir)
 					ss << "folder.png\" alt=\"[DIR]\"></td>\n";
 				else
 					ss << "file.png\" alt=\"[FILE]\"></td>\n";
-				ss
-					<<"				<td><a href=\"" << it->name_info.first << "\">" << it->name_info.second << "</a></td>\n"
+				ss <<"				<td><a href=\"" << it->name_info.first << "\">" << it->name_info.second << "</a></td>\n"
 					<<"				<td align=\"right\"><i>" << it->last_modified.second << "</i></td>\n"
 					<<"				<td align=\"right\"><b>" << it->size.second << "</b></td>\n"
 					<<"			</tr>\n";
@@ -160,6 +159,7 @@ namespace HTTP
 							creq_uri.push_back('\0');
 
 							parent_dir = FileInfo(::dirname(creq_uri.data()), "Parent Directory", sbuf.st_ctim.tv_sec, true);
+							parent_dir.name_info.first.push_back('/');
 						}
 						else
 						{

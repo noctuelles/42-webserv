@@ -4,13 +4,10 @@ server
 	server_name				localhost:8080;
 	client_max_body_size	1000000000;
 
-	error_page 404 https://http.cat/404;
-	error_page 400 https://http.cat/400;
-	error_page 201 https://http.cat/201;
 
 	location /
 	{
-		root			www/a_website/;
+		root			www/another_website/;
 		allowed_methods	GET;
 	}
 
@@ -30,7 +27,7 @@ server
 		allowed_methods	GET POST;
 	}
 
-	location /my-uploaded-files
+	location /my-uploaded-files/
 	{
 		root	uploaded_files/;
 		autoindex	on;
@@ -41,5 +38,11 @@ server
 	{
 		redirect	https://google.com;
 		allowed_methods	GET;
+	}
+
+	location /img
+	{
+		root www/;
+		allowed_methods GET;
 	}
 }
