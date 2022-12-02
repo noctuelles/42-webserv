@@ -268,7 +268,7 @@ namespace HTTP
 	CGIScriptHandler::~CGIScriptHandler()
 	{
 		if (m_cgi_pid != -1)
-			::kill(m_cgi_pid, SIGTERM);
+			::kill(m_cgi_pid, SIGKILL);
 		if (m_write_fd != -1)
 			::close(m_write_fd);
 		if (m_read_fd != -1)

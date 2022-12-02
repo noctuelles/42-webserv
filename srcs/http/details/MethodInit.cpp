@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 20:51:50 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 21:05:05 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,7 @@ namespace HTTP
 		using std::ifstream;
 
 		if (m_request_type == CGI)
-		{
 			m_cgi_handler.addMetaVar("QUERY_STRING", m_header_info.uri.query);
-		}
 		else if (m_request_type == FILE)
 		{
 			if (*m_res_info.path.rbegin() == '/')
@@ -130,6 +128,8 @@ namespace HTTP
 
 	void	RequestHandler::_methodInitDelete()
 	{
+		if (m_request_type == CGI)
+			throw (Exception(NotImplemented));
 		errno = 0;
 		::unlink(m_res_info.path.c_str());
 		switch (errno)

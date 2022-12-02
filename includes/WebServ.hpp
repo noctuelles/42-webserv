@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 16:29:22 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 21:53:04 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,20 +32,18 @@ class WebServ
 
 		static const size_t			MaxErrorPageSize		= 2097152; // 2MB
 		static const unsigned int	MaxPendingConnection	= 5;
-		static const time_t			ConnectionTimeout		= 20; // in seconds.
+		static const time_t			ConnectionTimeout		= 1000; // in seconds.
 		static const std::string	Version;
 
 		WebServ(const char *config_filename);
 		~WebServ();
 
-		void	addListener(in_port_t port);
-		int		run();
-
-		const VirtServInfo&		getVirtServInfo() const { return m_virtserv_info; }
+		static void	sigHandler(int signum);
+		int			run();
 
 	private:
 
-		static const int	TimeoutCheckOccurence = 1000;
+		static const int	TimeoutCheckOccurence = 100;
 
 		struct DeleteAndNullifyTimeoutSocket : std::unary_function<IO::InternetSocket*&, void>
 		{
@@ -68,10 +66,9 @@ class WebServ
 				}
 		};
 
-		IO::EPoll				m_poller;
+		IO::EPoll			m_poller;
 		InSockVector		m_socks;
 		VirtServInfo		m_virtserv_info;
-		bool				m_should_run;
 
 		WebServ(const WebServ& other);
 		WebServ&	operator=(const WebServ& rhs);

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 21:36:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 21:49:36 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,12 @@
 #include <exception>
 #include <functional>
 #include <netinet/in.h>
+#include <stdexcept>
 #include <string>
 #include <memory>
 #include <utility>
 #include <iostream>
+#include <signal.h>
 #include "Log.hpp"
 
 const std::string	WebServ::Version("webserv/0.1");
@@ -31,9 +33,17 @@ const std::string	WebServ::Version("webserv/0.1");
 WebServ::WebServ(const char *config_filename)
 	: m_poller(),
 	m_socks(),
-	m_virtserv_info(config_filename),
-	m_should_run(true)
+	m_virtserv_info(config_filename)
 {
+	struct sigaction	int_act;
+
+	std::memset(&int_act, 0, sizeof(struct sigaction));
+	::sigemptyset(&int_act.sa_mask);
+	int_act.sa_handler = sigHandler;
+
+	if (::sigaction(SIGINT, &int_act, NULL) < 0)
+		throw (std::runtime_error("sigaction"));
+
 	// Init listening_sockets and add them to watchlist
 	VirtServInfo::iterator it  = m_virtserv_info.begin();
 	VirtServInfo::iterator end = m_virtserv_info.end();
@@ -45,13 +55,9 @@ WebServ::WebServ(const char *config_filename)
 	}
 }
 
-void	WebServ::addListener(in_port_t port)
+void	WebServ::sigHandler(int signum)
 {
-	IO::ListeningSocket*	ptr = new IO::ListeningSocket(INADDR_ANY, port);
-
-	m_socks.push_back(ptr);
-	ptr->listen(MaxPendingConnection); // CAN THROW
-	m_poller.add(*ptr, IO::EPoll::Event::In(), ptr); // CAN THROW
+	(void) signum;
 }
 
 int	WebServ::run()
@@ -59,16 +65,24 @@ int	WebServ::run()
 	using namespace IO;
 
 	assert(!m_socks.empty());
-	while (m_should_run)
+	while (true)
 	{
-		if (!m_poller.waitForEvents(TimeoutCheckOccurence))
-			_removeTimeoutSocket();
+		try
+		{
+			if (!m_poller.waitForEvents(TimeoutCheckOccurence))
+				_removeTimeoutSocket();
+		}
+		catch (const std::runtime_error& e)
+		{
+			std::cerr << '\n';
+			::Log().get(FATAL) << "Interrupted by SIGINT...\n";
+			return (-1);
+		}
+
 		for (EPoll::iterator it = m_poller.begin(); it != m_poller.end(); it++)
 		{
 			InternetSocket*		inSockPtr = static_cast<InternetSocket*>(it->data.ptr);
 
-			if (it->events & EPOLLHUP || it->events & EPOLLERR)
-			{ _removeSocket(inSockPtr); continue; }
 			try
 			{
 				if (it->events & EPOLLIN)
@@ -96,15 +110,18 @@ int	WebServ::run()
 						case ConnectionSocket::DISCONNECT:
 							_removeSocket(inSockPtr);
 							break;
-						case ConnectionSocket::READING:
-							// Keep-alive...
-							break;
 					}
 				}
+				else if (it->events & EPOLLHUP)
+					_removeSocket(inSockPtr);
 			}
 			catch (const std::runtime_error& err)
 			{
-				return (-1);
+				::Log().get(FATAL) << "syscall has failed: " << err.what() << ": " << strerror(errno) << ".\n";
+			}
+			catch (const std::exception& e)
+			{
+				::Log().get(FATAL) << "a major problem occured and the server couldn't fullfill the request.\n";
 			}
 		}
 	}
