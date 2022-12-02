@@ -116,21 +116,6 @@ std::ostream& operator<<(std::ostream& os, const VirtServ& servinfo)
 	os << (servinfo.m_default_route_options.m_methods.test(HTTP::Delete) ? " DELETE " : "");
 	os << '\n';
 
-	os	<< "\tupload_store:\t";
-	os << servinfo.m_default_route_options.m_upload_store;
-	os << '\n';
-
-	os	<< "\t\tcgi_setup:\t";
-	for (map<string, string>::const_iterator it = servinfo.m_default_route_options.m_cgi_extensions.begin(); it != servinfo.m_default_route_options.m_cgi_extensions.end(); ++it)
-	{
-		if (it->second.empty())
-			os << it->first << " | ";
-		else
-			os << it->first << " --> " << it->second << " | " ;
-	}
-
-	os << '\n';
-
 	os	<< "\tlocation blocks:\n";
 	for (size_t i = 0; i < servinfo.m_routes_vec.size(); ++i)
 	{
