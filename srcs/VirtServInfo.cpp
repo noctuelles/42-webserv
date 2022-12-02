@@ -103,6 +103,8 @@ const vector< VirtServInfo::token_dispatch_t > VirtServInfo::m_location_block_di
 	}
 	else
 	{
+		if (IO::isADirectory(DEFAULT_CONFIG))
+			throw ConfigFileError("Default config " DEFAULT_CONFIG " is a directory");
 		ifs.open(DEFAULT_CONFIG);
 		if (not ifs)
 			throw ConfigFileError("Could not open defaut config file: " DEFAULT_CONFIG );
@@ -117,6 +119,8 @@ const vector< VirtServInfo::token_dispatch_t > VirtServInfo::m_location_block_di
 	// Copy the virtserv addresses into a map<sockaddr_in, vec_of_virtserv_refs>
 	vector< VirtServ >::iterator	virtserv		= m_virtserv_vec.begin();
 	vector< VirtServ >::iterator	end				= m_virtserv_vec.end();
+	if (virtserv == end)
+		throw ConfigFileError("Empty configuration file" );
 	for (; virtserv != end; ++virtserv)
 	{
 		vector< sockaddr_in >&			m_sockaddr_vec	= virtserv->m_sockaddr_vec;
@@ -516,7 +520,7 @@ void VirtServInfo::_parseClientMaxBodySize(VirtServInfo::configstream_iterator& 
 {
 	// Can only have one argument
 	++it;
-	m_virtserv_vec.back().m_max_body_size = xatol(*it, "Config file error: Invalid number after client_max_body_size directive in server block");
+	m_virtserv_vec.back().m_max_body_size = xatol(*it, "Invalid number after client_max_body_size directive in server block");
 	++it;
 	if (*it != ";")
 		throw ConfigFileError("missing ; after client_max_body_size directive in server block");
