@@ -6,11 +6,12 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:45:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 16:59:26 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 20:55:59 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "AutoIndex.hpp"
+#include "Utils.hpp"
 #include "VirtServ.hpp"
 #include "RequestHandler.hpp"
 
@@ -119,7 +120,7 @@ namespace HTTP
 			return (ss.str());
 		}
 
-		const string	generatePage(const vector<VirtServ::RouteOptions>& routes, const VirtServ::RouteOptions& curr_route,
+		const string	generatePage(const VirtServ& virtserv, const VirtServ::RouteOptions& curr_route,
 				const string& req_uri, const string& path, const string& query)
 		{
 			Dir					dir(path.c_str());
@@ -157,9 +158,13 @@ namespace HTTP
 						{
 							vector<char>	creq_uri(req_uri.begin(), req_uri.end());
 							creq_uri.push_back('\0');
+							::dirname(creq_uri.data());
+							creq_uri.resize(strlen(creq_uri.data()));
+							std::string	path(creq_uri.begin(), creq_uri.end());
 
-							parent_dir = FileInfo(::dirname(creq_uri.data()), "Parent Directory", sbuf.st_ctim.tv_sec, true);
-							parent_dir.name_info.first.push_back('/');
+							if (path != "/")
+								path.push_back('/');
+							parent_dir = FileInfo(path, "Parent Directory", sbuf.st_ctim.tv_sec, true);
 						}
 						else
 						{
@@ -183,11 +188,14 @@ namespace HTTP
 
 			// Determine if the parent directory should be displayed.
 
-			if (req_uri != "/" && parent_dir.name_info.first.compare(0, curr_route.m_location_match.length(), curr_route.m_location_match) == 0)
-				files.push_front(parent_dir);
-			else
+			if (req_uri != "/")
 			{
-				(void) routes;
+				const VirtServ::RouteOptions&	parent_route = Utils::findRoute(parent_dir.name_info.first, virtserv);
+
+				if (parent_dir.name_info.first.compare(0, curr_route.m_location_match.length(), curr_route.m_location_match) == 0)
+					files.push_front(parent_dir);
+				else if (parent_route.m_autoindex)
+						files.push_front(parent_dir);
 			}
 			return (generateHTML(files, req_uri));
 		}

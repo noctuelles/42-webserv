@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 16:23:24 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 20:35:12 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,13 @@
 #include "Log.hpp"
 #include <arpa/inet.h>
 #include <ios>
+#include <iterator>
 #include <utility>
 #include <vector>
 #include <algorithm>
 #include <iostream>
 #include "StatusInfoPages.hpp"
+#include "Functor.hpp"
 
 using std::make_pair;
 using std::vector;
@@ -114,6 +116,8 @@ namespace HTTP
 						m_res_info.path = m_header_info.uri.absolute_path;
 						m_res_info.path.erase(0, m_route->m_location_match.length());
 						m_res_info.path.insert(0, m_route->m_root);
+						m_res_info.path = Utils::RemoveDuplicate(m_res_info.path, Functor::CharDuplicate('/'));
+						m_header_info.uri.absolute_path = Utils::RemoveDuplicate(m_header_info.uri.absolute_path, Functor::CharDuplicate('/'));
 						m_res_info.extension = Utils::getFileExtension(m_res_info.path);
 
 						map<string, string>::const_iterator	cgi_interp = m_route->m_cgi_extensions.find(m_res_info.extension);
@@ -125,7 +129,7 @@ namespace HTTP
 							m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
 							m_cgi_handler.addMetaVar("REMOTE_HOST", "");
 							m_cgi_handler.addMetaVar("REMOTE_ADDR", m_conn_info.peer_ipv4);
-							m_cgi_handler.addMetaVar("SCRIPT_NAME", m_res_info.path);
+							m_cgi_handler.addMetaVar("SCRIPT_NAME", Utils::basename(m_res_info.path));
 							m_cgi_handler.addMetaVar("SCRIPT_FILENAME", m_res_info.path);
 							m_cgi_handler.addMetaVar("SERVER_NAME", m_header_info.header_field.at(Field::Host()));
 							m_cgi_handler.addMetaVar("SERVER_PORT", m_conn_info.server_port);

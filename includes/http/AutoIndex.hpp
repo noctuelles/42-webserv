@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:33:04 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 18:20:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 20:50:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ namespace HTTP
 				Dir operator=(const Dir& rhs);
 		};
 
-		const string	generatePage(const vector<VirtServ::RouteOptions>& routes, const VirtServ::RouteOptions& curr_route,
+		const string	generatePage(const VirtServ& virtserv, const VirtServ::RouteOptions& curr_route,
 				const string& req_uri, const string& path, const string& query);
 	}
 }

@@ -13,7 +13,7 @@ ASAN_FLAG		= -fsanitize=address
 
 MAKEFLAGS		+= --no-builtin-rules
 
-CXX				= clang++
+CXX				= g++
 
 SHELL			= bash
 

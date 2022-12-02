@@ -172,17 +172,20 @@ namespace HTTP
 			nfds = ::poll(m_fds, 2, Timeout);
 			if (nfds == 0)
 			{
-				kill(m_cgi_pid, SIGTERM);
 				Log().get(WARNING) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
 					<< " took too long to send data.\n";
-				throw RequestHandler::Exception(RequestTimeout);
+				throw (RequestHandler::Exception(InternalServerError));
 			}
 			if (m_fds[0].revents)
 			{
-				if (m_fds[0].revents & POLLIN)
+				if (m_fds[0].revents & POLLERR)
+					throw (RequestHandler::Exception(InternalServerError));
+				else if (m_fds[0].revents & POLLIN)
 				{
 					m_read_buffer.resize(BufferSize);
 					r = read(m_read_fd, m_read_buffer.data(), m_read_buffer.size()); 
+					if (r < 0)
+						throw (RequestHandler::Exception(InternalServerError));
 					m_read_buffer.resize(r);
 					m_script_info.output_buffer.insert(m_script_info.output_buffer.end(), m_read_buffer.begin(), m_read_buffer.end());
 				}
@@ -192,14 +195,14 @@ namespace HTTP
 
 					waitpid(m_cgi_pid, &wstatus, WNOHANG);
 					if (!WIFEXITED(wstatus))
-					{
-						kill(m_cgi_pid, SIGTERM);
 						Log().get(WARNING) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
 							<< " finished sending data but didn't end.\n";
-					}
 					else
+					{
 						Log().get(INFO) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
 							<< " successfully exited with return code " << Color::Modifier(1, Color::FG_YELLOW) << WEXITSTATUS(wstatus) << Color::Modifier::rst() << ".\n";
+						m_cgi_pid = -1;
+					}
 					break ;
 				}
 			}
@@ -214,21 +217,29 @@ namespace HTTP
 	{
 		int																nfds;
 		std::iterator_traits<Buffer::const_iterator>::difference_type	to_write = std::distance(begin, buff.end());
+		ssize_t															wrote;
 
 		if (to_write == 0)
-			return (0);
+			return (false);
 		nfds = ::poll(m_fds, 2, -1);
 		if (nfds == 0) 
 		{
-			kill(m_cgi_pid, SIGTERM);
 			Log().get(WARNING) << "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_cgi_pid << Color::Modifier::rst() << "]"
 					<< " took too long to accept data.\n";
-			throw RequestHandler::Exception(InternalServerError);
+			throw (RequestHandler::Exception(InternalServerError));
 		}
 		if (m_fds[1].revents)
 		{
-			if (m_fds[1].revents & POLLOUT)
-				m_wrote += ::write(m_write_fd, reinterpret_cast<const void*>(begin.base()), to_write);
+			if (m_fds[1].revents & POLLERR)
+				throw (RequestHandler::Exception(InternalServerError));
+			else if (m_fds[1].revents & POLLOUT)
+			{
+				wrote = ::write(m_write_fd, reinterpret_cast<const void*>(begin.base()), to_write);
+				if (wrote < 0)
+					throw (RequestHandler::Exception(InternalServerError));
+				else
+					m_wrote += wrote;
+			}
 		}
 		if (m_wrote == m_body_len)
 		{
@@ -256,6 +267,8 @@ namespace HTTP
 
 	CGIScriptHandler::~CGIScriptHandler()
 	{
+		if (m_cgi_pid != -1)
+			::kill(m_cgi_pid, SIGTERM);
 		if (m_write_fd != -1)
 			::close(m_write_fd);
 		if (m_read_fd != -1)

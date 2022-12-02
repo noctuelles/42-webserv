@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 16:30:33 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 20:51:50 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ namespace HTTP
 				else // autoindex
 				{
 					m_request_type = AUTOINDEX;
-					m_autoindex_page = AutoIndex::generatePage(m_virtserv->m_routes_vec, *m_route, m_header_info.uri.absolute_path, m_res_info.path, m_header_info.uri.query);
+					m_autoindex_page = AutoIndex::generatePage(*m_virtserv, *m_route, m_header_info.uri.absolute_path, m_res_info.path, m_header_info.uri.query);
 					return ;
 				}
 			}

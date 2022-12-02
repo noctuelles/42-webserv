@@ -6,13 +6,15 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:10:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 16:09:08 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 20:30:02 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
+#include <algorithm>
+#include <iterator>
 # include <sstream>
 # include <string>
 # include <vector>
@@ -55,6 +57,14 @@ namespace Utils
 		inline T	charToIntegral(char c)
 		{
 			return (c - '0');
+		}
+
+	template <typename Container, typename BinaryPredicate>
+		Container	RemoveDuplicate(Container& c, BinaryPredicate pred)
+		{
+			Container	c_cpy;
+			std::unique_copy(c.begin(), c.end(), std::back_inserter(c_cpy), pred);
+			return (c_cpy);
 		}
 }
 
