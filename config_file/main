@@ -1,0 +1,40 @@
+server
+{
+	listen					127.0.0.1:8080;
+	server_name				localhost:8080;
+	client_max_body_size	1000000000;
+
+	location /
+	{
+		root			www/a_website/;
+		allowed_methods	GET;
+	}
+
+	location /cgi
+	{
+		root	cgi-bin/;
+		cgi_setup	.php	/usr/bin/php-cgi;
+		cgi_setup	.py		/usr/bin/python3;
+		allowed_methods	GET	POST DELETE;
+	}
+
+	location /upload
+	{
+		root			www/upload/;
+		index			upload_page.html;
+		allowed_methods	GET POST;
+	}
+
+	location /my-uploaded-files
+	{
+		root	uploaded_files/;
+		autoindex	on;
+		allowed_methods	GET POST DELETE;
+	}
+
+	location /google
+	{
+		redirect	https://google.com;
+		allowed_methods	GET;
+	}
+}
