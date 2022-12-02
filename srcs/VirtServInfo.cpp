@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 #include <stack>
+#include <limits>
 
 #include "Http.hpp"
 #include "VirtServ.hpp"
@@ -431,8 +432,11 @@ void VirtServInfo::_parseListen(VirtServInfo::configstream_iterator& it)
 	sockaddr.sin_family = AF_INET;
 	sockaddr.sin_addr.s_addr = inet_addr(host.c_str());
 	if ( sockaddr.sin_addr.s_addr == INADDR_NONE )
-		throw ConfigFileError("listen directive does not have a valid ip address");
-	sockaddr.sin_port = htons(xatol(port.c_str(), "Config file error: invalid port in listen directive "));
+		throw ConfigFileError("listen directive in server block does not have a valid ip address");
+	long tmp = xatol(port.c_str(), "invalid port in server block listen directive: Try using digits only ");
+	if (tmp < 1 or tmp > std::numeric_limits<short>::max())
+		throw ConfigFileError("listen directive in server block does not have a valid port number: Out of range");
+	sockaddr.sin_port = htons(tmp);
 
 	m_virtserv_vec.back().m_sockaddr_vec.push_back(sockaddr);
 
