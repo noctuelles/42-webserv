@@ -22,7 +22,7 @@
 #include "Http.hpp"
 #include "VirtServ.hpp"
 #include "VirtServInfo.hpp"
-#include "Utils.hpp"
+#include "FileUtils.hpp"
 
 using std::ifstream;
 using std::string;
@@ -95,6 +95,8 @@ const vector< VirtServInfo::token_dispatch_t > VirtServInfo::m_location_block_di
 	std::ifstream ifs;
 	if (config != NULL)
 	{
+		if (IO::isADirectory(config))
+			throw ConfigFileError("Parameter is a directory");
 		ifs.open(config);
 		if (not ifs)
 			throw ConfigFileError("Could not open config file passed in paramater");
