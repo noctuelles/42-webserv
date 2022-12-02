@@ -399,7 +399,7 @@ static int xatol(const string& str, const char *info)
 	string::const_iterator end = str.end();
 	for (--end; it != end ; ++it)
 		if ( not std::isdigit(*it) )
-			throw std::runtime_error(info);
+			throw VirtServInfo::ConfigFileError(info);
 	return ::atol(str.c_str());
 }
 
@@ -486,19 +486,24 @@ void VirtServInfo::_parseIndex(VirtServInfo::configstream_iterator& it)
 void VirtServInfo::_parseErrorPage(VirtServInfo::configstream_iterator& it)
 {
 	stack<HTTP::StatusCode> codes;
-	for (++it; not it.is_delim() and (*it)[0] != '/'; ++it)
-		codes.push((HTTP::StatusCode)xatol(*it,"Config file error: Invalid status code in error_page directive in server block: Not a number literal"));
-	if (it.is_delim())
-		throw ConfigFileError("Missing path to default error page file at the end of error_page directive in server block");
-	else if ((*it)[0] != '/')
-		throw ConfigFileError("Invalid path at the end of error_page directive in server block");
-	for (; not codes.empty(); codes.pop())
-	    m_virtserv_vec.back().m_error_page_map[codes.top()] = *it;;
-	++it;
-	if (*it != ";")
-		throw ConfigFileError("missing ; after error_page directive in server block");
-	else
+	string uri;
+	try {
+		for (++it; not it.is_delim(); ++it)
+			codes.push((HTTP::StatusCode)xatol(*it,"Invalid status code in error_page directive in server block: Not a number literal"));
+	}
+	catch  (ConfigFileError&)
+	{
+		if (codes.empty())
+			throw ConfigFileError("No HTTP status codes were defined after error_page directive in server block");
+		for (; not codes.empty(); codes.pop())
+			m_virtserv_vec.back().m_error_page_map[codes.top()] = *it;
 		++it;
+		if (*it != ";")
+			throw ConfigFileError("missing ; after error_page directive in server block");
+		++it;
+		return;
+	}
+	throw ConfigFileError("Missing path to default error page file at the end of error_page directive in server block");
 }
 
 void VirtServInfo::_parseClientMaxBodySize(VirtServInfo::configstream_iterator& it)
