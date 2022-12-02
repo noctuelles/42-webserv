@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/11 19:14:03 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 15:47:41 by tpouget          ###   ########.fr       */
+/*   Updated: 2022/12/02 16:02:50 by tpouget          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "Log.hpp"
 #include <stdexcept>
 #include <sys/socket.h>
-#include <string.h>
+#include <cstring>
 #include <fcntl.h>
 #include <errno.h>
 #include <utility>
@@ -85,9 +85,8 @@ namespace IO
 			if (errno != EADDRINUSE)
 			{
 				stringstream ss;
-				ss << "Bad address in after listen directive: ";
-				ss << inet_ntoa(m_sockaddr.sin_addr);
-				throw VirtServInfo::ConfigFileError(ss.str().c_str());
+				ss << "bind on " << inet_ntoa(m_sockaddr.sin_addr) << ":" << htons(m_sockaddr.sin_port);
+				throw std::runtime_error(ss.str().c_str());
 			}
 			else
 				Log().get(WARNING) << "Attempt to bind socket "<< m_fd

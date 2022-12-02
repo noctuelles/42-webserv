@@ -32,6 +32,10 @@ int main(int ac, char **av)
 		std::cerr << e.what();
 		return (1);
 	}
-
+	catch (std::runtime_error& e)
+	{
+		std::cerr << BRED << "Error: " << RESET << e.what() << ": " << strerror(errno) << "\n";
+		return (1);
+	}
 	return 0;
 }
