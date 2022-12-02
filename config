@@ -4,27 +4,17 @@ server
 	server_name				localhost:8080;
 	client_max_body_size	999999999;
 
-<<<<<<< HEAD
-	error_page 404 /error_pages/404.html;
-	error_page 405 /error_pages/405.html;
-
-	cgi_setup .php php-cgi;
-
-	location / {
-		root		www/demo_website/;
-
-		allowed_methods GET;
-=======
 	location /
 	{
+		redirect		/cgi;
 		autoindex		 on;
 		root			www/demo_website/;
 		allowed_methods	GET;
->>>>>>> CGI_Merge
 	}
 
 	location /cgi
 	{
+		autoindex on;
 		root			cgi-bin/;
 		allowed_methods	GET	POST;
 

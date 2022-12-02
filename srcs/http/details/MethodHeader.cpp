@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:38:57 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 21:57:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 13:13:29 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,42 +22,54 @@ namespace HTTP
 {
 	void	RequestHandler::_methodHeaderGet(ResponseHeader& header)
 	{
-		header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
-
-		if (m_request_type == FILE)
+		switch (m_request_type)
 		{
-			MIME		mime = getMimeFromFileExtension(m_res_info.path.c_str());
-			size_t		fileSize = IO::getFileSize(m_res_info.path.c_str());
+			case REDIRECT:
+				header.setReasonPhrase(StatusInfoPages::get()[SeeOther].phrase);
+				header.addField(Field::Location(), m_res_info.path);
+				break;
 
-			header.addField(Field::ContentLength(), Utils::integralToString(fileSize));
-			header.addField(Field::ContentType(), mime);
-			if (mime == MIME::ApplicationOctetStream())
+			case FILE:
 			{
-				header.addField(Field::ContentDisposition(), string("attachment; filename=\"").append(::basename(m_res_info.path.c_str())).append("\""));
-				header.addField(Field::ContentTransferEncoding(), "binary");
-			}
-		}
-		else if (m_request_type == AUTOINDEX)
-		{
-			header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
-			header.addField(Field::ContentLength(), Utils::integralToString(m_autoindex_page.size()));
-			header.addField(Field::ContentType(), MIME::TextHtml());
-		}
-		else if (m_request_type == CGI)
-		{
-			const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
-			const HeaderFieldMap::const_iterator	status_field = script_info.header_field.find(Field::Status());
-
-			header.insert(script_info.header_field.begin(), script_info.header_field.end());
-			if (status_field != script_info.header_field.end())
-			{
-				header.setReasonPhrase(status_field->second);
-				header.removeField(Field::Status());
-			}
-			else
 				header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+				MIME		mime = getMimeFromFileExtension(m_res_info.path.c_str());
+				size_t		fileSize = IO::getFileSize(m_res_info.path.c_str());
 
-			header.addField(Field::ContentLength(), Utils::integralToString(script_info.content_length));
+				header.addField(Field::ContentLength(), Utils::integralToString(fileSize));
+				header.addField(Field::ContentType(), mime);
+				if (mime == MIME::ApplicationOctetStream())
+				{
+					header.addField(Field::ContentDisposition(), string("attachment; filename=\"").append(::basename(m_res_info.path.c_str())).append("\""));
+					header.addField(Field::ContentTransferEncoding(), "binary");
+				}
+			}
+				break;
+
+			case AUTOINDEX:
+				header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+				header.addField(Field::ContentLength(), Utils::integralToString(m_autoindex_page.size()));
+				header.addField(Field::ContentType(), MIME::TextHtml());
+				break;
+
+			case CGI:
+			{
+				const CGIScriptHandler::CGIScriptInfo&	script_info = m_cgi_handler.getScriptInfo();
+				const HeaderFieldMap::const_iterator	status_field = script_info.header_field.find(Field::Status());
+
+				header.insert(script_info.header_field.begin(), script_info.header_field.end());
+				if (status_field != script_info.header_field.end())
+				{
+					header.setReasonPhrase(status_field->second);
+					header.removeField(Field::Status());
+				}
+				else
+					header.setReasonPhrase(StatusInfoPages::get()[OK].phrase);
+
+				header.addField(Field::ContentLength(), Utils::integralToString(script_info.content_length));
+			}
+				break;
+			default:
+				;
 		}
 	}
 

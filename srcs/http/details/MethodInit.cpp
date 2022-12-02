@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:28:38 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 22:00:53 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 13:11:03 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,8 @@ namespace HTTP
 		if (m_request_type == CGI)
 		{
 			m_cgi_handler.addMetaVar("QUERY_STRING", m_header_info.uri.query);
-			// TODO: CGI
 		}
-		else
+		else if (m_request_type == FILE)
 		{
 			if (*m_res_info.path.rbegin() == '/')
 			{

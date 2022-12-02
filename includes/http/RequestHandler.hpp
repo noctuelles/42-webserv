@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 21:51:05 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 12:53:38 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ namespace HTTP
 
 			enum Type
 			{
+				REDIRECT,
 				FILE,
 				FILE_UPLOAD,
 				ERROR,

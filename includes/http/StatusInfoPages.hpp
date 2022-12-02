@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 13:55:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/30 11:05:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 13:05:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ namespace HTTP
 				{
 					vec[OK]						= HTTP_STATUS("200 OK");
 					vec[Created]				= HTTP_STATUS("201 Created");
+					vec[MovedPermanently]		= HTTP_STATUS("301 Moved Permanently");
 					vec[SeeOther]				= HTTP_STATUS("303 See Other");
 					vec[BadRequest]				= HTTP_ERRPAGE("400 Bad Request");
 					vec[Forbidden]				= HTTP_ERRPAGE("403 Forbidden");

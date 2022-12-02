@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 21:51:32 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 13:16:27 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,31 +104,39 @@ namespace HTTP
 					m_header_info = m_header_parser.get();
 					_parseGeneralHeaderFields();
 
-					m_res_info.path = m_header_info.uri.absolute_path;
-					m_res_info.path.erase(0, m_route->m_location_match.length());
-					m_res_info.path.insert(0, m_route->m_root);
-					m_res_info.extension = Utils::getFileExtension(m_res_info.path);
-
-					map<string, string>::const_iterator	cgi_interp = m_route->m_cgi_extensions.find(m_res_info.extension);
-
-					if (cgi_interp != m_route->m_cgi_extensions.end())
+					if (!m_route->m_redirect.empty() && m_route->m_redirect != m_route->m_location_match)
 					{
-						m_cgi_interpr = cgi_interp->second;
+						m_request_type = REDIRECT;
+						m_res_info.path = m_route->m_redirect;
+					}
+					else
+					{
+						m_res_info.path = m_header_info.uri.absolute_path;
+						m_res_info.path.erase(0, m_route->m_location_match.length());
+						m_res_info.path.insert(0, m_route->m_root);
+						m_res_info.extension = Utils::getFileExtension(m_res_info.path);
 
-						m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
-						m_cgi_handler.addMetaVar("REMOTE_HOST", "");
-						m_cgi_handler.addMetaVar("REMOTE_ADDR", m_conn_info.peer_ipv4);
-						m_cgi_handler.addMetaVar("SCRIPT_NAME", m_res_info.path);
-						m_cgi_handler.addMetaVar("SCRIPT_FILENAME", m_res_info.path);
-						m_cgi_handler.addMetaVar("SERVER_NAME", m_header_info.header_field.at(Field::Host()));
-						m_cgi_handler.addMetaVar("SERVER_PORT", m_conn_info.server_port);
-						m_cgi_handler.addMetaVar("REDIRECT_STATUS", "200");
-						m_cgi_handler.addMetaVar("SERVER_PROTOCOL", "HTTP/1.1");
-						m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);
-						m_cgi_handler.addMetaVar("REQUEST_METHOD", HTTP::MethodTable[m_header_info.method]);
-						m_cgi_handler.addMetaVar("PATH_INFO", m_res_info.path);
+						map<string, string>::const_iterator	cgi_interp = m_route->m_cgi_extensions.find(m_res_info.extension);
 
-						m_request_type = CGI;
+						if (cgi_interp != m_route->m_cgi_extensions.end())
+						{
+							m_cgi_interpr = cgi_interp->second;
+
+							m_cgi_handler.addMetaVar("GATEWAY_INTERFACE", CGIScriptHandler::GatewayInterfaceVer);
+							m_cgi_handler.addMetaVar("REMOTE_HOST", "");
+							m_cgi_handler.addMetaVar("REMOTE_ADDR", m_conn_info.peer_ipv4);
+							m_cgi_handler.addMetaVar("SCRIPT_NAME", m_res_info.path);
+							m_cgi_handler.addMetaVar("SCRIPT_FILENAME", m_res_info.path);
+							m_cgi_handler.addMetaVar("SERVER_NAME", m_header_info.header_field.at(Field::Host()));
+							m_cgi_handler.addMetaVar("SERVER_PORT", m_conn_info.server_port);
+							m_cgi_handler.addMetaVar("REDIRECT_STATUS", "200");
+							m_cgi_handler.addMetaVar("SERVER_PROTOCOL", "HTTP/1.1");
+							m_cgi_handler.addMetaVar("SERVER_SOFTWARE", WebServ::Version);
+							m_cgi_handler.addMetaVar("REQUEST_METHOD", HTTP::MethodTable[m_header_info.method]);
+							m_cgi_handler.addMetaVar("PATH_INFO", m_res_info.path);
+
+							m_request_type = CGI;
+						}
 					}
 
 					::Log().get(INFO) << "Req. line " << '"' << getRequestLine() << '"' << " -> " << '"' << m_res_info.path << '"' << '\n';

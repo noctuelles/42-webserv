@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/11 13:41:28 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 21:56:41 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 13:11:46 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,12 @@ namespace HTTP
 	{
 		switch (m_request_type)
 		{
+			case REDIRECT:
+				m_data.first = NULL;
+				m_data.second = 0;
+				m_state = DONE;
+				break;
+
 			case FILE:
 				m_file_handle.read(reinterpret_cast<char *>(m_data_buff.data()), m_data_buff.size());
 
