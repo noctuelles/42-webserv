@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 18:54:18 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/23 18:52:31 by tpouget          ###   ########.fr       */
+/*   Updated: 2022/12/02 14:31:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ class WebServ
 
 		static const size_t			MaxErrorPageSize		= 2097152; // 2MB
 		static const unsigned int	MaxPendingConnection	= 5;
-		static const time_t			ConnectionTimeout		= 20; // in seconds.
+		static const time_t			ConnectionTimeout		= 10; // in seconds.
 		static const std::string	Version;
 
 		WebServ(const char *config_filename);

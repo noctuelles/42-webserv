@@ -1,0 +1,21 @@
+server
+{
+	listen					8080;
+	server_name				localhost:8080;
+	client_max_body_size	99999999999;
+
+	location /
+	{
+		root			www/a_website/;
+		allowed_methods	GET;
+	}
+
+	location /cgi-bin
+	{
+		root			cgi-bin/;
+		allowed_methods	GET POST;
+
+		cgi_setup	.py		/usr/bin/python3;
+		cgi_setup	.php	/usr/bin/php-cgi;
+	}
+}

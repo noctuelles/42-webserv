@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 13:16:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/02 13:53:20 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,26 +197,8 @@ namespace HTTP
 				// A custom page exists...
 				if (custom_page != m_virtserv->m_error_page_map.end())
 				{
-					// See if the redirect file exist, to avoid multiple redirection.
-					std::string	redirect = custom_page->second;
-
-					m_res_info.path = redirect;
-					m_route = &Utils::findRoute(redirect, *m_virtserv);
-					redirect.erase(0, m_route->m_location_match.length());
-					redirect.insert(0, m_route->m_root);
-
-					try
-					{
-						mode_t	file_mode = IO::getFileMode(redirect.c_str());
-
-						if ((file_mode & S_IFMT) & S_IFREG && (file_mode & S_IRUSR))
-						{
-							m_request_type = REDIRECT_ERROR;
-							_setErrorState(PROCESSING_RESPONSE_HEADER, SeeOther);
-						}
-					}
-					catch (const RequestHandler::Exception& er)
-					{}
+					m_request_type = REDIRECT_ERROR;
+					m_res_info.path = custom_page->second;
 				}
 			}
 		}
