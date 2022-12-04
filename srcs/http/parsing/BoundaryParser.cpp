@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/28 14:41:45 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 16:10:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 23:27:56 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ namespace HTTP
 		m_boundary(boundary),
 		m_cmp_it(m_boundary.begin())
 	{
+		m_data.reserve(150);
 	}
 
 	Buffer::const_iterator	BoundaryParser::operator()(const Buffer& buff, Buffer::const_iterator it)

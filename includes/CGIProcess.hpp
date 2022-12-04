@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/04 19:30:02 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/04 19:34:14 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 23:44:42 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ namespace HTTP
 	{
 		public:
 
-			static const size_t	TimeoutThreshold = 2000;
+			static const size_t	TimeoutThreshold = 10000;
 
 			class Timeout : public std::exception
 			{

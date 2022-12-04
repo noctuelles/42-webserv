@@ -4,6 +4,7 @@
 #include "Log.hpp"
 
 #include <sys/wait.h>
+#include <string.h>
 #include <iostream>
 #include <stdexcept>
 #include <cassert>
@@ -36,6 +37,17 @@ namespace HTTP
 				Log().get(INFO)
 					<< "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_pid << Color::Modifier::rst() << "]"
 					<< " has exited with return code (" << Color::Modifier(1, Color::FG_CYAN) << WEXITSTATUS(status) << Color::Modifier::rst() <<  ").\n";
+			}
+			else if (WIFSIGNALED(status))
+			{
+				if (WCOREDUMP(status))
+					Log().get(WARNING)
+						<< "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_pid << Color::Modifier::rst() << "]"
+						<< " crashed.\n";
+				else
+					Log().get(WARNING)
+						<< "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_pid << Color::Modifier::rst() << "]"
+						<< " has been terminated by signal ("  << Color::Modifier(1, Color::FG_RED) << "SIG" << ::sigabbrev_np(WTERMSIG(status)) << Color::Modifier::rst() <<  ").\n";
 			}
 			else
 			{
@@ -89,6 +101,8 @@ namespace HTTP
 		std::cout << "Status: " << StatusInfoPages::get()[InternalServerError].phrase << "\r\n"
 			<< "Content-Type: text/html\r\n\r\n"
 			<< StatusInfoPages::get()[InternalServerError].page;
+
+		::exit(1);
 	}
 
 	void	CGIProcess::inParent()
