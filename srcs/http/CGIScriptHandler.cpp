@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/04 19:29:21 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/04 19:36:27 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 23:12:01 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ namespace HTTP
 		m_body_len(0),
 		m_wrote(0)
 	{
-		m_proc_info.env.reserve(20);
+		m_proc_info.env.reserve(30);
 		m_script_info.output_buffer.reserve(1000*10);
 	}
 
@@ -49,7 +49,6 @@ namespace HTTP
 		m_proc_info.interpreter = interpreter;
 
 		m_proc = new CGIProcess(m_proc_info, m);
-
 	}
 
 	void	CGIScriptHandler::getOutput()

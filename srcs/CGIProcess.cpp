@@ -138,9 +138,12 @@ namespace HTTP
 	{
 		assert(m_pid > 0);
 
+		std::iterator_traits<Buffer::const_iterator>::difference_type	to_write = std::distance(beg, buff.end());
+		if (to_write == 0)
+			return (0);
+
 		int		nfds = ::poll(m_fds, 2, -1);
 		ssize_t	bytes_wrote = 0;
-		std::iterator_traits<Buffer::const_iterator>::difference_type	to_write = std::distance(beg, buff.end());
 
 		if (nfds < 0)
 			throw std::runtime_error("::poll");
@@ -149,7 +152,7 @@ namespace HTTP
 			if (m_fds[1].revents & POLLOUT)
 			{
 				bytes_wrote = ::write(m_parent_to_child.second, reinterpret_cast<const char*>(beg.base()), to_write);
-				if (bytes_wrote <= 0)
+				if (bytes_wrote < 0)
 					throw std::runtime_error("::write");
 			}
 		}

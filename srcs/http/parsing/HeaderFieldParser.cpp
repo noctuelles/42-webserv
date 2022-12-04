@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:54:42 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 14:14:37 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 23:14:22 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,10 @@ namespace HTTP
 		m_buffer(),
 		m_eat(true),
 		m_f(NULL)
-	{}
+	{
+		m_buffer.first.reserve(90);
+		m_buffer.second.reserve(200);
+	}
 
 	HeaderFieldParser::~HeaderFieldParser()
 	{}

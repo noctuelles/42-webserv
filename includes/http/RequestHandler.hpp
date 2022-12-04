@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/17 14:23:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 12:53:38 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 22:58:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,7 @@ namespace HTTP
 					MatchingServerName(const string& hostField)
 						: m_host_field(hostField) {}
 
-					inline bool	operator()(const vector<VirtServ*>::value_type ptr)
+					inline bool	operator()(const argument_type ptr)
 					{
 						for(vector<std::string>::const_iterator it = ptr->m_server_name_vec.begin();
 							it != ptr->m_server_name_vec.end();

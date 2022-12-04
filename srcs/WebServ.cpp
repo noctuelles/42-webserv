@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/04 19:14:25 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 23:16:06 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ int	WebServ::run()
 			}
 			catch (const std::exception& e)
 			{
-				::Log().get(FATAL) << "a major problem occured and the server couldn't fullfill the request.\n";
+				::Log().get(FATAL) << "a major problem occured and the server couldn't fullfill the request: " << e.what() << ".\n";
 				_removeSocket(inSockPtr);
 			}
 		}

@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:10:47 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 20:30:02 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 23:09:15 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,8 @@ namespace Utils
 		Container	RemoveDuplicate(Container& c, BinaryPredicate pred)
 		{
 			Container	c_cpy;
+
+			c_cpy.reserve(c.size());
 			std::unique_copy(c.begin(), c.end(), std::back_inserter(c_cpy), pred);
 			return (c_cpy);
 		}

@@ -6,14 +6,17 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 11:11:22 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/04 19:17:07 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 23:05:48 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Utils.hpp"
 #include "Http.hpp"
 #include "RequestHandler.hpp"
+#include "Algorithm.hpp"
+#include "Functor.hpp"
 #include <ctime>
+#include <iterator>
 #include <stdexcept>
 #include <string>
 
@@ -86,10 +89,8 @@ namespace Utils
 		vector<RouteOptionsIt>									matching_candidate;
 
 		for (RouteOptionsIt it = routes.begin(); it != routes.end(); it++)
-		{
 			if (uri.compare(0, it->m_location_match.length(), it->m_location_match) == 0)
 				matching_candidate.push_back(it);
-		}
 
 		// Select the longest matching location match.
 		vector<RouteOptionsIt>::const_iterator	best_candidate = std::max_element(matching_candidate.begin(), matching_candidate.end());

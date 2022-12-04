@@ -43,7 +43,7 @@ DEFINES			= ${DEBUG} -DDEFAULT_CONFIG=\"$(DEFAULT_CONFIG)\"
 CPPFLAGS		+= $(INCLUDE_FLAGS) $(IMACROS_FLAGS) $(DEFINES) -MMD #output .d dependencies rules to be included
 
 ## Compile flags
-CXXFLAGS		= -Wall -Wextra -Werror -std=c++98 -g3 ${ASAN_FLAG}
+CXXFLAGS		= -Wall -Wextra -Werror -std=c++98 -g3 -O2 ${ASAN_FLAG}
 
 ## Link flags
 LDFLAGS			=	${ASAN_FLAG}

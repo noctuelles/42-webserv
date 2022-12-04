@@ -2,6 +2,8 @@
 # define FUNCTOR_HPP
 
 # include <functional>
+# include <string>
+# include "VirtServ.hpp"
 
 namespace Functor 
 {
