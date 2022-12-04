@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/04 19:29:21 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/04 19:29:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 19:36:27 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ namespace HTTP
 		m_proc_info.interpreter = interpreter;
 
 		m_proc = new CGIProcess(m_proc_info, m);
+
 	}
 
 	void	CGIScriptHandler::getOutput()

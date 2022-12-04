@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/04 19:30:02 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/04 19:30:04 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 19:34:14 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ namespace HTTP
 			CGIProcess(const CGIProcessInfo& info, Method m);
 			~CGIProcess();
 
-			void	fork();
 
 			Buffer	recvFromChild();
 			size_t	writeToChild(const Buffer& buff, Buffer::const_iterator beg);
@@ -52,6 +51,7 @@ namespace HTTP
 
 		private:
 
+			void	fork();
 			void	inChild();
 			void	inParent();
 
