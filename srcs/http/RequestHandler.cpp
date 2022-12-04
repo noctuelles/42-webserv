@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 16:11:40 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 20:35:12 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 17:40:09 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ namespace HTTP
 						m_cgi_handler.start(m_cgi_interpr, m_res_info.path, m_header_info.method);
 						// for POST request, we need to send the body first ! For GET request, we can read the CGI script output directly.
 						if (m_header_info.method == Get)
-							m_cgi_handler.readOutput();
+							m_cgi_handler.getOutput();
 						else
 							m_cgi_handler.initWriting(m_content_len);
 					}
@@ -179,7 +179,7 @@ namespace HTTP
 					{
 						if (m_cgi_handler.write(buff, it) == true)
 						{
-							m_cgi_handler.readOutput();
+							m_cgi_handler.getOutput();
 							_setState(PROCESSING_RESPONSE_HEADER);
 						}
 					}

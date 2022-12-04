@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 08:13:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/21 17:36:19 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 16:34:34 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,13 @@
 namespace IO
 {
 	FileDescriptor::FileDescriptor(int fd)
-		: m_fd(fd), m_should_close(true)
+		: m_fd(fd)
 	{}
 
 	FileDescriptor::FileDescriptor(const FileDescriptor& other)
-		: m_fd(other.m_fd), m_should_close(true)
+		: m_fd(other.m_fd)
 	{
-		other.m_should_close = false;
+		other.m_fd = -1;
 	}
 
 	FileDescriptor&	FileDescriptor::operator=(const FileDescriptor& rhs)
@@ -33,8 +33,7 @@ namespace IO
 		if (this == &rhs)
 			return (*this);
 		m_fd = rhs.m_fd;
-		m_should_close = true;
-		rhs.m_should_close = false;
+		rhs.m_fd = -1;
 		return (*this);
 	}
 
@@ -45,16 +44,24 @@ namespace IO
 
 	FileDescriptor::~FileDescriptor()
 	{
-		if (m_should_close)
-			close(m_fd);
+		release();
 	}
 
-	int	FileDescriptor::getFd() const
+	void FileDescriptor::release() const
+	{
+		if (m_fd != -1)
+		{
+			close(m_fd);
+			m_fd = -1;
+		}
+	}
+
+	int	FileDescriptor::get() const
 	{
 		return (m_fd);
 	}
 
-	int	FileDescriptor::getFdFlags() const
+	int	FileDescriptor::getFlags() const
 	{
 		int ret;
 
@@ -63,7 +70,7 @@ namespace IO
 		return (ret);
 	}
 
-	void	FileDescriptor::setFdFlags(int flags) const
+	void	FileDescriptor::setFlags(int flags) const
 	{
 		if (fcntl(m_fd, F_SETFL, flags) < 0)
 			throw (std::runtime_error("fcntl(F_SETFL)"));
@@ -73,16 +80,16 @@ namespace IO
 	 * If <blocking> is false, set the current socket to a non-blocking state. */
 	void	FileDescriptor::setBlockingMode(bool blocking) const
 	{
-		setFdFlags(blocking ? (getFdFlags() & ~O_NONBLOCK) : (getFdFlags() | O_NONBLOCK));
+		setFlags(blocking ? (getFlags() & ~O_NONBLOCK) : (getFlags() | O_NONBLOCK));
 	}
 
 	bool	FileDescriptor::isBlocking() const
 	{
-		return !(static_cast<bool>(getFdFlags() & O_NONBLOCK));
+		return !(static_cast<bool>(getFlags() & O_NONBLOCK));
 	}
 
 	void	FileDescriptor::setCloseOnExecMode(bool blocking) const
 	{
-		setFdFlags(blocking ? (getFdFlags() & ~O_CLOEXEC) : (getFdFlags() | O_CLOEXEC));
+		setFlags(blocking ? (getFlags() & ~O_CLOEXEC) : (getFlags() | O_CLOEXEC));
 	}
 }

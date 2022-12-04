@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/02 21:49:36 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/04 19:14:25 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ WebServ::WebServ(const char *config_filename)
 	for (; it != end; ++it)
 	{
 		m_socks.push_back(new IO::ListeningSocket(it->first));
-		m_poller.add(m_socks.back()->getFd(), IO::EPoll::Event::In(), m_socks.back());
+		m_poller.add(m_socks.back()->get(), IO::EPoll::Event::In(), m_socks.back());
 		::Log().get(INFO) << "Now listening on [" << ::inet_ntoa(it->first.sin_addr) << ':' << ::ntohs(it->first.sin_port) << "]...\n";
 	}
 }
@@ -115,13 +115,10 @@ int	WebServ::run()
 				else if (it->events & EPOLLHUP)
 					_removeSocket(inSockPtr);
 			}
-			catch (const std::runtime_error& err)
-			{
-				::Log().get(FATAL) << "syscall has failed: " << err.what() << ": " << strerror(errno) << ".\n";
-			}
 			catch (const std::exception& e)
 			{
 				::Log().get(FATAL) << "a major problem occured and the server couldn't fullfill the request.\n";
+				_removeSocket(inSockPtr);
 			}
 		}
 	}
