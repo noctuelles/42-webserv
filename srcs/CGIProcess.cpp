@@ -47,7 +47,7 @@ namespace HTTP
 				else
 					Log().get(WARNING)
 						<< "Child [" << Color::Modifier(2, Color::FG_RED, Color::UNDERLINE) << m_pid << Color::Modifier::rst() << "]"
-						<< " has been terminated by signal ("  << Color::Modifier(1, Color::FG_RED) << "SIG" << ::sigabbrev_np(WTERMSIG(status)) << Color::Modifier::rst() <<  ").\n";
+						<< " has been terminated by signal.\n";
 			}
 			else
 			{

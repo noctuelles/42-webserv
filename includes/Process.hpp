@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/04 19:29:54 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/04 19:33:55 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/05 16:22:05 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,6 @@ template <typename T>
 		private:
 
 			Process(const Process& other);
-			template <typename C>
-				Process<T>	operator=(const Process<C>& rhs);
 
 		protected:
 

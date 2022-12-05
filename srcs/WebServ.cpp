@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/25 19:10:52 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/04 23:16:06 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/05 16:41:24 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,8 +77,7 @@ int	WebServ::run()
 {
 	using namespace IO;
 
-	assert(!m_socks.empty());
-	while (true)
+	while (!m_socks.empty())
 	{
 		try
 		{
@@ -130,8 +129,12 @@ int	WebServ::run()
 			}
 			catch (const std::exception& e)
 			{
+				ConnectionSocket*	con_sock = dynamic_cast<ConnectionSocket*>(inSockPtr);
+
 				::Log().get(FATAL) << "a major problem occured and the server couldn't fullfill the request: " << e.what() << ".\n";
-				_removeSocket(inSockPtr);
+
+				if (con_sock)
+					_removeSocket(inSockPtr);
 			}
 		}
 	}

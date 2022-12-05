@@ -6,7 +6,7 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/14 15:51:35 by plouvel           #+#    #+#             */
-/*   Updated: 2022/12/01 15:24:23 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/05 16:35:43 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ namespace IO
 
 	ConnectionSocket::~ConnectionSocket()
 	{
-		// clog << inet_ntoa(m_peer_sockaddr.sin_addr) << " - - " << '[' << utils::getRFC822NowDate() << ']' << " \"" << m_request_handler.getAbsPath() << "\" " << m_request_handler.getStatusCode() << ' ' << m_sent_bytes << '\n';
 	}
 
 	int	ConnectionSocket::recv()

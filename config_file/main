@@ -14,7 +14,7 @@ server
 	location /cgi
 	{
 		root	cgi-bin/;
-		cgi_setup	.php	/usr/local/bin/php-cgi;
+		cgi_setup	.php	/usr/bin/php-cgi;
 		cgi_setup	.py		/usr/bin/python3;
 		allowed_methods	GET	POST DELETE;
 	}
