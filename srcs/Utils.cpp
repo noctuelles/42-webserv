@@ -13,7 +13,6 @@
 #include "Utils.hpp"
 #include "Http.hpp"
 #include "RequestHandler.hpp"
-#include "Algorithm.hpp"
 #include "Functor.hpp"
 #include <ctime>
 #include <iterator>

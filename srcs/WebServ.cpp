@@ -26,6 +26,7 @@
 #include <utility>
 #include <iostream>
 #include <signal.h>
+#include <set>
 #include "Log.hpp"
 
 const std::string	WebServ::Version("webserv/0.1");
@@ -45,13 +46,25 @@ WebServ::WebServ(const char *config_filename)
 		throw (std::runtime_error("sigaction"));
 
 	// Init listening_sockets and add them to watchlist
+	std::set<in_port_t> wildcards;
 	VirtServInfo::iterator it  = m_virtserv_info.begin();
 	VirtServInfo::iterator end = m_virtserv_info.end();
-	for (; it != end; ++it)
+	// By virtue of the map being ordered, sockets with a 0 ip adress will always come first
+	for (; it != end and it->first.sin_addr.s_addr == 0; ++it)
 	{
+		wildcards.insert(it->first.sin_port);
 		m_socks.push_back(new IO::ListeningSocket(it->first));
 		m_poller.add(m_socks.back()->get(), IO::EPoll::Event::In(), m_socks.back());
 		::Log().get(INFO) << "Now listening on [" << ::inet_ntoa(it->first.sin_addr) << ':' << ::ntohs(it->first.sin_port) << "]...\n";
+	}
+	for (; it != end; ++it)
+	{
+		if (wildcards.find(it->first.sin_port) == wildcards.end())
+		{
+			m_socks.push_back(new IO::ListeningSocket(it->first));
+			m_poller.add(m_socks.back()->get(), IO::EPoll::Event::In(), m_socks.back());
+			::Log().get(INFO) << "Now listening on [" << ::inet_ntoa(it->first.sin_addr) << ':' << ::ntohs(it->first.sin_port) << "]...\n";
+		}
 	}
 }
 

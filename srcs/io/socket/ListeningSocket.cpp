@@ -82,16 +82,18 @@ namespace IO
 	{
 		if (::bind(m_fd, (struct sockaddr*) &m_sockaddr, sizeof(m_sockaddr)) < 0)
 		{
-			if (errno != EADDRINUSE)
+			//if (errno == EADDRINUSE)
+			//{
+			//    Log().get(WARNING) << "Attempt to bind socket "<< m_fd
+			//        << " on " << inet_ntoa(m_sockaddr.sin_addr) << ":" << htons(m_sockaddr.sin_port)
+			//        <<". host:port already bound to another socket\n";
+			//}
+			//else
 			{
 				stringstream ss;
 				ss << "bind on " << inet_ntoa(m_sockaddr.sin_addr) << ":" << htons(m_sockaddr.sin_port);
 				throw std::runtime_error(ss.str().c_str());
 			}
-			else
-				Log().get(WARNING) << "Attempt to bind socket "<< m_fd
-					<< " on " << inet_ntoa(m_sockaddr.sin_addr) << ":" << htons(m_sockaddr.sin_port)
-					<<". host:port already bound to another socket\n";
 		}
 	}
 
