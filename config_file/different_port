@@ -1,7 +1,6 @@
 server
 {
-	listen		<ip_du_poste>:8080;
-	server_name	<server_name>:8080;
+	listen		8081;
 
 	location /
 	{
@@ -12,8 +11,7 @@ server
 
 server
 {
-	listen		127.0.0.1:8080;
-	server_name	localhost:8080;
+	listen		8080;
 
 	location /
 	{

@@ -6,12 +6,13 @@
 /*   By: plouvel <plouvel@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 18:06:36 by plouvel           #+#    #+#             */
-/*   Updated: 2022/11/29 17:28:34 by plouvel          ###   ########.fr       */
+/*   Updated: 2022/12/05 16:54:21 by plouvel          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HeaderParser.hpp"
 #include "RequestHandler.hpp"
+#include <string>
 
 namespace HTTP
 {
@@ -167,7 +168,7 @@ namespace HTTP
 		{
 			/* https://www.rfc-editor.org/rfc/rfc7230.html#section-5.4 */
 
-			if (m_data.uri.absolute_path.find("..") != std::string::npos)
+			if (m_data.uri.absolute_path.find("..") != std::string::npos || m_data.uri.absolute_path.compare("./") == 0)
 				throw (RequestHandler::Exception(BadRequest));
 			try
 			{
