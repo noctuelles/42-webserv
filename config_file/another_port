@@ -1,0 +1,11 @@
+server
+{
+	listen		4242;
+	server_name	localhost:8080;
+
+	location /
+	{
+		root			www/a_website/;
+		allowed_methods	GET;
+	}
+}
